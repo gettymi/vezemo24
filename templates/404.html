@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Сторінку не знайдено | Веземо24{% endblock %}
+{% block description %}Такої сторінки немає. Поверніться на головну або зателефонуйте — підкажемо все голосом.{% endblock %}
+{% block head %}
+<meta name="robots" content="noindex, follow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+{% block content %}
+<section class="error-page container">
+  <p class="error-code">404</p>
+  <h1 class="error-title">Такої сторінки немає</h1>
+  <p class="error-text">
+    Можливо, адреса змінилась або в посиланні є помилка. Ось куди варто заглянути:
+  </p>
+  <div class="error-links">
+    <a href="{{ url_for('main.index') }}" class="btn-primary">На головну</a>
+    <a href="{{ url_for('main.services') }}" class="btn-ghost">Послуги</a>
+    <a href="{{ url_for('main.calculate_km') }}" class="btn-ghost">Розрахувати вартість</a>
+    <a href="tel:{{ PHONE_E164 }}" class="btn-ghost" data-cta="phone-404">📞 {{ PHONE_DISPLAY }}</a>
+  </div>
+</section>
+{% endblock %}

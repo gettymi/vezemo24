@@ -1,55 +1,70 @@
 {% extends "base.html" %}
 
-{% block title %}Зв’язатися з нами — залишити заявку | Vezemo24{% endblock %}
-{% block description %}Залиште заявку на перевезення: достатньо номера телефону. Передзвонимо та розрахуємо вартість. Київ та Київська область.{% endblock %}
-{% block keywords %}замовити перевезення київ, заявка вантажне таксі, передзвонити переїзд{% endblock %}
+{% block title %}Замовити перевезення — залишити заявку | Веземо24{% endblock %}
+{% block description %}Залиште номер — передзвонимо і назвемо точну ціну. Або подзвоніть самі: {{ PHONE_DISPLAY }}. Київ, область та вся Україна.{% endblock %}
 
 {% block head %}
-  {{ super() }}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
 {% endblock %}
 
 {% block content %}
 <section class="contact-section">
   <div class="container">
     <div class="form-card">
-      
+
       <div class="form-header">
-        <h1 class="contact-title">Зв’язатися з нами</h1>
-        <p class="contact-desc">Залиште номер телефону — передзвонимо та розрахуємо вартість. Ім'я та коментар необов'язкові.</p>
-        <p class="contact-hint">Достатньо лише телефону — передзвонимо найближчим часом.</p>
+        <h1 class="contact-title">Залишити заявку</h1>
+        <p class="contact-desc">Достатньо номера телефону — передзвонимо і назвемо точну ціну.</p>
       </div>
 
-      <form id="contactForm" method="POST" action="/contact">
-        
+      {# Дзвінок — головний канал у цій ніші, тому він стоїть перед формою #}
+      <a href="tel:{{ PHONE_E164 }}" class="contact-call-btn" data-cta="phone-contact-page">
+        <span aria-hidden="true">📞</span>
+        <span>
+          <strong>{{ PHONE_DISPLAY }}</strong>
+          <small>{{ HOURS_LABEL }}</small>
+        </span>
+      </a>
+
+      <div class="contact-or"><span>або залиште номер</span></div>
+
+      <form id="contactForm" method="POST" action="{{ url_for('contact.contact_submit') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {# Пастка для ботів — реальна людина цього поля не бачить #}
+        <div class="hp-field" aria-hidden="true">
+          <label for="website">Не заповнюйте це поле</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
         <div class="form-group form-group--phone">
-          <label for="phone">Телефон <span class="required">*</span></label>
-          <input id="phone" name="phone" type="tel" required class="form-input" placeholder="Номер телефону">
+          <label for="phone">Ваш телефон <span class="required">*</span></label>
+          <input id="phone" name="phone" type="tel" required class="form-input" placeholder="Номер телефону" autocomplete="tel">
         </div>
 
-        <div class="form-group">
-          <label for="name">Імʼя (необов'язково)</label>
-          <input type="text" id="name" name="name" placeholder="Ваше ім’я" class="form-input">
-        </div>
-
-        <div class="form-group">
-          <label for="email">Електронна пошта (необов’язково)</label>
-          <input type="email" id="email" name="email" placeholder="example@gmail.com" class="form-input">
-        </div>
-
-        <div class="form-group">
-          <label for="message">Повідомлення (необов'язково)</label>
-          <textarea id="message" name="message" rows="4" placeholder="Опишіть вантаж, маршрут або запитання — можна залишити порожнім" class="form-input"></textarea>
-        </div>
+        <details class="form-extra">
+          <summary>Додати деталі (необовʼязково)</summary>
+          <div class="form-group">
+            <label for="name">Імʼя</label>
+            <input type="text" id="name" name="name" placeholder="Ваше імʼя" class="form-input" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label for="message">Що і куди везти</label>
+            <textarea id="message" name="message" rows="4" placeholder="Наприклад: диван і 5 коробок, Оболонь → Бровари, завтра зранку" class="form-input"></textarea>
+          </div>
+        </details>
 
         <button type="submit" id="submitBtn" class="btn-submit">
-          <span>Надіслати повідомлення</span>
+          <span>Передзвоніть мені</span>
         </button>
+
+        <p class="form-privacy">Номер потрібен лише для дзвінка щодо цього замовлення.</p>
 
         <div id="formAlert" class="alert"></div>
       </form>
-      
+
     </div>
   </div>
 </section>

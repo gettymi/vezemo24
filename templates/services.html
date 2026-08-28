@@ -1,65 +1,113 @@
 {% extends 'base.html' %}
 
-{% block title %}Послуги перевезень — бус, самосвал, переїзд, вантажники | Vezemo24{% endblock %}
-{% block description %}Послуги вантажних перевезень у Києві та області: бус до 2,5 т, самосвал до 10 т, квартирний переїзд під ключ, вантажники. Прозорі ціни.{% endblock %}
-{% block keywords %}послуги перевезень київ, вантажне таксі київ, переїзд під ключ, самосвал київ, вантажники київ, бус київ{% endblock %}
+{% block title %}Послуги — розвіз товару, міжміські, вантажне таксі, переїзд | Веземо24{% endblock %}
+{% block description %}Послуги вантажних перевезень: розвіз товару для бізнесу, міжміські рейси по Україні, вантажне таксі, квартирний та офісний переїзд, вантажники. Бус до 3,5 т. Київ та область.{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
 {% endblock %}
 
 {% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Головна", "item": "{{ SITE_URL }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Послуги", "item": "{{ SITE_URL }}{{ url_for('main.services') }}" }
+  ]
+}
+</script>
+
 <div class="services-page">
   <div class="container">
+    <nav class="crumbs" aria-label="Навігація">
+      <a href="{{ url_for('main.index') }}">Головна</a> <span aria-hidden="true">→</span> <span>Послуги</span>
+    </nav>
+
     <header class="services-page-header">
       <h1 class="section-title">Наші послуги</h1>
       <p class="services-page-intro">
-        Повний спектр вантажних перевезень у Києві та Київській області. Підбираємо транспорт і вантажників під ваше завдання. Прозорі ціни, фіксація до старту.
+        Працюємо власним бусом до 3,5 тонн по Києву, області та всій Україні.
+        Один водій — один контакт: ви одразу говорите з тим, хто везе ваш вантаж.
+        Ціна фіксується до старту.
       </p>
+      <div class="page-actions">
+        <a href="tel:{{ PHONE_E164 }}" class="btn-primary" data-cta="phone-services">📞 {{ PHONE_DISPLAY }}</a>
+        <a href="{{ url_for('main.calculate_km') }}" class="btn-ghost">Розрахувати вартість</a>
+      </div>
     </header>
 
     <div class="services-list">
-      <article class="service-card">
-        <div class="service-card-image">
-          <img src="{{ url_for('static', filename='images/busik.png') }}" alt="Бус до 2,5 тонн">
-        </div>
-        <div class="service-card-body">
-          <h2 class="service-card-title">Бус до 2,5 тонн</h2>
-          <p class="service-card-desc">Вантажне таксі для невеликих вантажів: меблі, побутова техніка, коробки. Швидкий виїзд, мінімум формальностей.</p>
-          <ul class="service-card-features">
-            <li>Переїзд з однієї квартири</li>
-            <li>Доставка меблів та техніки</li>
-            <li>По Києву та області</li>
-          </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
-        </div>
-      </article>
 
       <article class="service-card">
         <div class="service-card-image">
-          <img src="{{ url_for('static', filename='images/samosval.png') }}" alt="Самосвал до 10 тонн">
+          <img src="{{ url_for('static', filename='images/busik.png') }}"
+               alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
         </div>
         <div class="service-card-body">
-          <h2 class="service-card-title">Самосвал до 10 тонн</h2>
-          <p class="service-card-desc">Перевезення сипучих матеріалів, будівельних відходів, піску, щебеню. Вивіз сміття після ремонту.</p>
+          <span class="card-badge">Основний напрямок</span>
+          <h2 class="service-card-title">Розвіз товару для бізнесу</h2>
+          <p class="service-card-desc">
+            Регулярна доставка товару по точках: магазини, кафе, склади, пункти видачі.
+            Працюємо за вашим графіком — щодня, кілька разів на тиждень або в конкретні дні.
+          </p>
           <ul class="service-card-features">
-            <li>Сипучі матеріали та відходи</li>
-            <li>Доставка на об'єкт</li>
-            <li>Київ та Київська область</li>
+            <li>Постійний маршрут за фіксованою домовленістю</li>
+            <li>Один і той самий водій — знає ваші точки</li>
+            <li>Тариф під обсяг і графік, вигідніше за погодинний</li>
           </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
+          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Обговорити графік</a>
+        </div>
+      </article>
+
+      <article class="service-card service-card--no-img">
+        <div class="service-card-icon" aria-hidden="true">🛣️</div>
+        <div class="service-card-body">
+          <h2 class="service-card-title">Міжміські перевезення</h2>
+          <p class="service-card-desc">
+            Київ – Львів, Одеса, Дніпро, Харків та будь-який інший напрямок по Україні.
+            Ваш вантаж їде окремим рейсом, без перевантажень і складів.
+          </p>
+          <ul class="service-card-features">
+            <li>Один вантаж — один рейс</li>
+            <li>Здебільшого один день у дорозі</li>
+            <li>Розрахунок за маршрутом</li>
+          </ul>
+          <a href="{{ url_for('main.mizhmiski') }}" class="service-card-btn">Детальніше</a>
+        </div>
+      </article>
+
+      <article class="service-card service-card--no-img">
+        <div class="service-card-icon" aria-hidden="true">📦</div>
+        <div class="service-card-body">
+          <h2 class="service-card-title">Вантажне таксі (бус до 3,5 т)</h2>
+          <p class="service-card-desc">
+            Меблі, побутова техніка, коробки, будматеріали в упаковці. Швидкий виїзд по Києву
+            та області, мінімум формальностей.
+          </p>
+          <ul class="service-card-features">
+            <li>Виїзд у день звернення</li>
+            <li>Київ та Київська область</li>
+            <li>від 799 грн/год, мінімум 2 години + подача</li>
+          </ul>
+          <a href="tel:{{ PHONE_E164 }}" class="service-card-btn" data-cta="phone-service-taxi">Подзвонити</a>
         </div>
       </article>
 
       <article class="service-card service-card--no-img">
         <div class="service-card-icon" aria-hidden="true">🏠</div>
         <div class="service-card-body">
-          <h2 class="service-card-title">Квартирний переїзд під ключ</h2>
-          <p class="service-card-desc">Авто + вантажники: збираємо, завантажуємо, веземо, розвантажуємо та розставляємо. Можна замовити упаковку та матеріали.</p>
+          <h2 class="service-card-title">Квартирний та офісний переїзд</h2>
+          <p class="service-card-desc">
+            Авто плюс вантажники: завантажуємо, веземо, розвантажуємо та заносимо на місце.
+            За потреби допоможемо з пакувальними матеріалами.
+          </p>
           <ul class="service-card-features">
-            <li>Повний цикл: від збирання до розстановки</li>
-            <li>Упаковка та матеріали за запитом</li>
-            <li>Вартість під ваш обсяг</li>
+            <li>Повний цикл — від завантаження до розстановки</li>
+            <li>Підйом на поверх</li>
+            <li>від 1099 грн/год</li>
           </ul>
           <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
         </div>
@@ -69,21 +117,30 @@
         <div class="service-card-icon" aria-hidden="true">👷</div>
         <div class="service-card-body">
           <h2 class="service-card-title">Вантажники</h2>
-          <p class="service-card-desc">Допомога з завантаженням і розвантаженням — з авто або без. Підйом на поверх, розстановка меблів.</p>
+          <p class="service-card-desc">
+            Допомога із завантаженням і розвантаженням — разом з нашим авто або окремо.
+            Підйом на поверх, перестановка меблів у межах приміщення.
+          </p>
           <ul class="service-card-features">
-            <li>Завантаження / розвантаження</li>
-            <li>Підйом на поверх</li>
+            <li>Завантаження та розвантаження</li>
+            <li>Підйом на поверх без ліфта</li>
             <li>Тариф від години</li>
           </ul>
           <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
         </div>
       </article>
+
     </div>
 
-    <div class="services-page-cta">
-      <p class="services-page-cta-text">Не знайшли потрібне? Опишіть задачу — підберемо варіант.</p>
-      <a href="{{ url_for('contact.contact') }}" class="btn-primary btn-cta-large">Залишити заявку</a>
-    </div>
+    <section class="page-cta" style="margin-top:3rem">
+      <h2 class="page-cta-title">Не знайшли потрібне?</h2>
+      <p class="page-cta-text">Опишіть задачу — скажемо одразу, чи беремось і скільки це коштує.</p>
+      <div class="page-actions page-actions--center">
+        <a href="tel:{{ PHONE_E164 }}" class="btn-primary" data-cta="phone-services-bottom">📞 {{ PHONE_DISPLAY }}</a>
+        <a href="{{ url_for('contact.contact') }}" class="btn-ghost" data-cta="form-services">Передзвоніть мені</a>
+      </div>
+      <p class="page-cta-note">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
+    </section>
   </div>
 </div>
 {% endblock %}

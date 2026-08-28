@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Технічна помилка | Веземо24{% endblock %}
+{% block description %}На сайті тимчасова помилка. Зателефонуйте — приймемо заявку голосом.{% endblock %}
+{% block head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+{% block content %}
+<section class="error-page container">
+  <p class="error-code">500</p>
+  <h1 class="error-title">Щось пішло не так</h1>
+  <p class="error-text">
+    Ми вже бачимо цю помилку і розбираємось. Щоб не втрачати час — просто зателефонуйте,
+    приймемо заявку голосом.
+  </p>
+  <div class="error-links">
+    <a href="tel:{{ PHONE_E164 }}" class="btn-primary" data-cta="phone-500">📞 {{ PHONE_DISPLAY }}</a>
+    <a href="{{ url_for('main.index') }}" class="btn-ghost">На головну</a>
+  </div>
+</section>
+{% endblock %}

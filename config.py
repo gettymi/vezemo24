@@ -1,11 +1,52 @@
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
+
 class Config:
+    # ─── Secrets / integrations ──────────────────────────────────────────────
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
     GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_API")
+
+    # ─── Rate limiting ───────────────────────────────────────────────────────
+    # Порожній REDIS_URL -> Flask-Limiter працює в памʼяті (memory://).
+    # Раніше цей ключ був відсутній взагалі, через що ліміт мовчки не працював.
+    REDIS_URL = os.getenv("REDIS_URL", "")
+
+    # ─── Analytics (заповнити реальними ID) ──────────────────────────────────
+    GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "")   # напр. G-XXXXXXXXXX
+    GTM_CONTAINER_ID = os.getenv("GTM_CONTAINER_ID", "")       # напр. GTM-XXXXXXX
+    GOOGLE_ADS_ID = os.getenv("GOOGLE_ADS_ID", "")             # напр. AW-XXXXXXXXX
+    GOOGLE_ADS_CONVERSION_LABEL = os.getenv("GOOGLE_ADS_CONVERSION_LABEL", "")
+
+    # ─── Канонічний домен ────────────────────────────────────────────────────
+    SITE_URL = os.getenv("SITE_URL", "https://vezemo24.com")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  КОНТАКТИ — ЄДИНЕ МІСЦЕ ЗМІНИ
+    #  ⚠️  ТИМЧАСОВИЙ НОМЕР-ЗАГЛУШКА. Замінити на реальний перед продакшеном:
+    #      достатньо змінити PHONE_E164 та PHONE_DISPLAY тут — і номер
+    #      оновиться в шапці, футері, мобільній панелі, schema.org та формі.
+    # ══════════════════════════════════════════════════════════════════════════
+    PHONE_E164 = os.getenv("PHONE_E164", "+380390000000")
+    PHONE_DISPLAY = os.getenv("PHONE_DISPLAY", "+380 (39) 000-00-00")
+    PHONE_IS_PLACEHOLDER = os.getenv("PHONE_E164") is None
+
+    VIBER_URL = os.getenv("VIBER_URL", "")        # viber://chat?number=%2B380390000000
+    TELEGRAM_URL = os.getenv("TELEGRAM_URL", "")  # https://t.me/username
+    EMAIL = os.getenv("CONTACT_EMAIL", "info@vezemo24.com")
+
+    # ─── Графік роботи ───────────────────────────────────────────────────────
+    # Дзвінки 07:00–22:00, заявки через сайт — цілодобово.
+    HOURS_OPEN = "07:00"
+    HOURS_CLOSE = "22:00"
+    HOURS_LABEL = "Дзвінки 07:00 – 22:00"
+    HOURS_NOTE = "Заявки на сайті — цілодобово"
+
+    # ─── Зона обслуговування ─────────────────────────────────────────────────
+    CITY = "Київ"
+    REGION = "Київська область"
+    AREAS_SERVED = ["Київ", "Київська область", "Україна"]

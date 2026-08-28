@@ -27,3 +27,8 @@ instance/
 # Secrets
 credentials.json
 */secret_*.json
+.phase0-backup/
+
+# Заявки (Phase 0)
+leads.db
+leads-fallback.jsonl

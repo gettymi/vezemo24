@@ -570,3 +570,52 @@
     align-items: center;
   }
 }
+/* --- Дія після розрахунку (Phase 0) --- */
+.result-cta {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: 1.15rem 0 .5rem;
+  padding-top: 1.15rem;
+  border-top: 1px dashed #e2e8f0;
+}
+.result-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .97rem;
+  text-align: center;
+  transition: transform .18s, box-shadow .18s, background .18s;
+}
+.result-cta-btn--call {
+  background: var(--primary, #0ea5e9);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(14,165,233,.32);
+}
+.result-cta-btn--call:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(14,165,233,.42); }
+.result-cta-btn--form {
+  background: transparent;
+  color: var(--text-main, #0f172a);
+  border: 2px solid #e2e8f0;
+}
+.result-cta-btn--form:hover { border-color: var(--primary, #0ea5e9); color: var(--primary, #0ea5e9); }
+.result-cta-note {
+  margin: .25rem 0 0;
+  font-size: .82rem;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+}
+
+/* Виправлення накладання: випадайку підказок опускаємо під шапку сайту.
+   Було z-index:2000 проти хедера 1000 — список перекривав навігацію. */
+.autocomplete-dropdown { z-index: 900; }
+
+/* 100dvh враховує панель браузера на мобільних; 72px була «магічним числом» */
+.map-page { height: calc(100vh - var(--header-height, 72px)); }
+@supports (height: 100dvh) {
+  .map-page { height: calc(100dvh - var(--header-height, 72px)); }
+}

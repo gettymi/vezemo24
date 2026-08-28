@@ -237,3 +237,67 @@ label {
   }
 }
 
+
+/* --- Phase 0: дзвінок перед формою, пастка для ботів, згорнуті поля --- */
+.contact-call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: var(--primary, #0ea5e9);
+  color: #fff;
+  font-size: 1.05rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 6px 20px rgba(14,165,233,.3);
+  transition: transform .18s, box-shadow .18s;
+}
+.contact-call-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(14,165,233,.4); }
+.contact-call-btn strong { display: block; font-size: 1.2rem; font-weight: 800; letter-spacing: -.01em; }
+.contact-call-btn small { display: block; font-size: .82rem; opacity: .9; font-weight: 500; }
+
+.contact-or {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  margin: 0 0 1.5rem;
+  color: var(--text-muted, #64748b);
+  font-size: .875rem;
+}
+.contact-or::before, .contact-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+/* Honeypot — прибираємо з потоку, але не display:none (боти це читають) */
+.hp-field {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-extra { margin-bottom: 1.25rem; }
+.form-extra summary {
+  cursor: pointer;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--primary, #0ea5e9);
+  padding: .5rem 0;
+  list-style: none;
+}
+.form-extra summary::-webkit-details-marker { display: none; }
+.form-extra summary::before { content: "＋ "; font-weight: 400; }
+.form-extra[open] summary::before { content: "－ "; }
+.form-extra[open] { margin-bottom: .5rem; }
+
+.form-privacy {
+  margin: .85rem 0 0;
+  font-size: .8rem;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+}
