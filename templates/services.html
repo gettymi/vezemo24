@@ -37,7 +37,7 @@
 
     <ul class="grid grid--2">
       <li class="card card--feature">
-        <div class="card__media">
+        <div class="card__media card__media--contain">
           <img src="{{ url_for('static', filename='images/busik.png') }}"
                alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
         </div>
@@ -58,7 +58,10 @@
       </li>
 
       <li class="card">
-        <div class="card__icon" aria-hidden="true">🛣️</div>
+        <div class="card__media">
+          <img src="{{ url_for('static', filename='images/road-card.jpg') }}"
+               alt="Траса — міжміські перевезення з Києва" width="800" height="520" loading="lazy">
+        </div>
         <h2 class="card__title">Міжміські перевезення</h2>
         <p class="card__text">
           Київ – Львів, Одеса, Дніпро, Харків та будь-який інший напрямок по Україні.
@@ -74,7 +77,7 @@
         </div>
       </li>
 
-      <li class="card">
+      <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">📦</div>
         <h2 class="card__title">Вантажне таксі (бус до 3,5 т)</h2>
         <p class="card__text">
@@ -91,7 +94,7 @@
         </div>
       </li>
 
-      <li class="card">
+      <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">🏠</div>
         <h2 class="card__title">Квартирний та офісний переїзд</h2>
         <p class="card__text">
@@ -108,7 +111,7 @@
         </div>
       </li>
 
-      <li class="card">
+      <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">👷</div>
         <h2 class="card__title">Вантажники</h2>
         <p class="card__text">

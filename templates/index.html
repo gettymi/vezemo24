@@ -77,8 +77,8 @@
       </li>
       <li class="card card--icon">
         <div class="card__icon"><img src="{{ url_for('static', filename='icons/card.svg') }}" alt="" width="28" height="28"></div>
-        <h2 class="card__title">Ціна фіксується до старту</h2>
-        <p class="card__text">Домовились — так і залишиться. Жодних доплат «по факту» після завантаження.</p>
+        <h2 class="card__title">Бус до 3,5 тонн</h2>
+        <p class="card__text">Меблі, техніка, коробки, довгі речі. Не впевнені, чи влізе? Опишіть вантаж — скажемо одразу.</p>
       </li>
       <li class="card card--icon">
         <div class="card__icon"><img src="{{ url_for('static', filename='icons/globe.svg') }}" alt="" width="28" height="28"></div>
@@ -87,8 +87,8 @@
       </li>
       <li class="card card--icon">
         <div class="card__icon"><img src="{{ url_for('static', filename='icons/chat.svg') }}" alt="" width="28" height="28"></div>
-        <h2 class="card__title">Один водій — один контакт</h2>
-        <p class="card__text">Спілкуєтесь напряму з тим, хто везе. Без диспетчерів і зіпсованого телефону.</p>
+        <h2 class="card__title">Вартість — до дзвінка</h2>
+        <p class="card__text">Порахуйте орієнтовну ціну на сайті за хвилину, ще до того, як наберете нас.</p>
       </li>
     </ul>
   </div>
@@ -103,7 +103,7 @@
     </div>
     <ul class="grid grid--3">
       <li class="card card--feature card--link">
-        <div class="card__media">
+        <div class="card__media card__media--contain">
           <img src="{{ url_for('static', filename='images/busik.png') }}"
                alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
         </div>
@@ -118,7 +118,10 @@
         </div>
       </li>
       <li class="card card--link">
-        <div class="card__icon" aria-hidden="true">🛣️</div>
+        <div class="card__media">
+          <img src="{{ url_for('static', filename='images/road-card.jpg') }}"
+               alt="Траса — міжміські перевезення по Україні" width="800" height="520" loading="lazy">
+        </div>
         <h3 class="card__title">Міжміські рейси</h3>
         <p class="card__text">
           Київ – Львів, Київ – Одеса, Київ – Дніпро, Київ – Харків та інші напрямки.
@@ -128,7 +131,7 @@
           <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">Детальніше</a>
         </div>
       </li>
-      <li class="card card--link">
+      <li class="card card--link card--accent">
         <div class="card__icon" aria-hidden="true">📦</div>
         <h3 class="card__title">Вантажне таксі та переїзд</h3>
         <p class="card__text">
@@ -197,30 +200,67 @@
 <section class="section section--dark trust" id="trust">
   <div class="container">
     <div class="section-head">
+      <span class="section-head__eyebrow">Наші зобовʼязання</span>
       <h2>Чому з нами спокійніше</h2>
     </div>
-    <ul class="trust__list">
-      <li class="trust__line">Ціна фіксується до старту — жодних прихованих доплат.</li>
-      <li class="trust__line">Ви говорите напряму з водієм, а не з колл-центром.</li>
-      <li class="trust__line">Акуратність і пунктуальність — це стандарт, а не опція.</li>
+    <ul class="trust__grid">
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">₴</div>
+        <h3 class="trust__title">Ціна фіксується до старту</h3>
+        <p class="trust__text">
+          Домовились — так і залишиться. Жодних «а тут вийшло більше» після того,
+          як речі вже в машині.
+        </p>
+      </li>
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">☎</div>
+        <h3 class="trust__title">Ви говорите напряму з водієм</h3>
+        <p class="trust__text">
+          Без диспетчерів і зіпсованого телефону. Хто відповів на дзвінок —
+          той і приїде до вас.
+        </p>
+      </li>
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">✓</div>
+        <h3 class="trust__title">Акуратність — це стандарт</h3>
+        <p class="trust__text">
+          Кріпимо вантаж, працюємо без поспіху й не залишаємо по собі
+          подряпаних меблів і стін.
+        </p>
+      </li>
     </ul>
   </div>
 </section>
 
-{% include 'partials/_cta.html' %}
-
 <!-- МІЖМІСЬКІ -->
-<section class="section band">
-  <div class="container band__inner">
-    <p class="band__hook">Потрібно далі, ніж Київська область?</p>
-    <h2 class="band__title">Міжміські перевезення по всій Україні</h2>
-    <p class="band__text">
-      Київ – Львів, Київ – Одеса, Київ – Дніпро, Київ – Харків та індивідуальні маршрути.
-      Ваш вантаж їде окремим рейсом — без перевантажень, складів і очікування попутки.
-    </p>
-    <a class="btn btn--accent btn--lg" href="{{ url_for('main.mizhmiski') }}">Подивитись напрямки</a>
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div class="split__media">
+        <img src="{{ url_for('static', filename='images/road-wide.jpg') }}"
+             alt="Міжміські вантажні перевезення з Києва по Україні"
+             width="1040" height="720" loading="lazy">
+        <span class="split__tag">Київ → вся Україна</span>
+      </div>
+      <div class="split__body">
+        <p class="split__hook">Потрібно далі, ніж Київська область?</p>
+        <h2>Міжміські перевезення по всій Україні</h2>
+        <p class="split__text">
+          Київ – Львів, Київ – Одеса, Київ – Дніпро, Київ – Харків та індивідуальні маршрути.
+          Ваш вантаж їде окремим рейсом — без перевантажень, складів і очікування попутки.
+        </p>
+        <div class="cluster">
+          <a class="btn btn--primary" href="{{ url_for('main.mizhmiski') }}">Подивитись напрямки</a>
+          <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">
+            📞 {{ PHONE_DISPLAY }}
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+{% include 'partials/_cta.html' %}
 {% endblock %}
 
 {% block scripts %}

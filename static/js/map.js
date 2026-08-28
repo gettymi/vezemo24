@@ -5,7 +5,6 @@
 (function () {
   "use strict";
 
-  var NOMINATIM_UA = "Vezemo24/1.0 (https://vezemo24.com)";
   var KYIV = [50.4501, 30.5234];
   var NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
   var NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
@@ -71,9 +70,10 @@
       format: "json",
       limit: 6,
       countrycodes: "ua",
+      "accept-language": "uk",   // без цього Nominatim віддає назви не українською
     });
     return fetch(NOMINATIM_URL + "?" + params, {
-      headers: { Accept: "application/json", "User-Agent": NOMINATIM_UA },
+      headers: { Accept: "application/json" },
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {
@@ -178,11 +178,12 @@
       q: query,
       format: "json",
       limit: 1,
+      countrycodes: "ua",
+      "accept-language": "uk",
     });
     return fetch(NOMINATIM_URL + "?" + params, {
       headers: {
         Accept: "application/json",
-        "User-Agent": NOMINATIM_UA,
       },
     })
       .then(function (r) { return r.json(); })
@@ -198,11 +199,11 @@
       lat: lat,
       lon: lng,
       format: "json",
+      "accept-language": "uk",
     });
     return fetch(NOMINATIM_REVERSE + "?" + params, {
       headers: {
         Accept: "application/json",
-        "User-Agent": NOMINATIM_UA,
       },
     })
       .then(function (r) { return r.json(); })
