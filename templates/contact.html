@@ -1,76 +1,35 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}Замовити перевезення — залишити заявку | Веземо24{% endblock %}
 {% block description %}Залиште номер — передзвонимо і назвемо точну ціну. Або подзвоніть самі: {{ PHONE_DISPLAY }}. Київ, область та вся Україна.{% endblock %}
 
-{% block head %}
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
-{% endblock %}
-
 {% block content %}
-<section class="contact-section">
+<section class="section">
   <div class="container">
-    <div class="form-card">
-
-      <div class="form-header">
-        <h1 class="contact-title">Залишити заявку</h1>
-        <p class="contact-desc">Достатньо номера телефону — передзвонимо і назвемо точну ціну.</p>
+    <div class="formcard">
+      <div class="formcard__head">
+        <h1>Залишити заявку</h1>
+        <p>Достатньо номера телефону — передзвонимо і назвемо точну ціну.</p>
       </div>
 
-      {# Дзвінок — головний канал у цій ніші, тому він стоїть перед формою #}
-      <a href="tel:{{ PHONE_E164 }}" class="contact-call-btn" data-cta="phone-contact-page">
-        <span aria-hidden="true">📞</span>
+      {# Дзвінок стоїть перед формою: у цій ніші це головний канал. #}
+      <a class="callbox" href="tel:{{ PHONE_E164 }}" data-cta="phone-contact-page">
+        <span aria-hidden="true" style="font-size:1.6rem">📞</span>
         <span>
-          <strong>{{ PHONE_DISPLAY }}</strong>
-          <small>{{ HOURS_LABEL }}</small>
+          <span class="callbox__num">{{ PHONE_DISPLAY }}</span>
+          <span class="callbox__hours">{{ HOURS_LABEL }}</span>
         </span>
       </a>
 
-      <div class="contact-or"><span>або залиште номер</span></div>
+      <div class="divider"><span>або залиште номер</span></div>
 
-      <form id="contactForm" method="POST" action="{{ url_for('contact.contact_submit') }}" novalidate>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        {# Пастка для ботів — реальна людина цього поля не бачить #}
-        <div class="hp-field" aria-hidden="true">
-          <label for="website">Не заповнюйте це поле</label>
-          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-        </div>
-
-        <div class="form-group form-group--phone">
-          <label for="phone">Ваш телефон <span class="required">*</span></label>
-          <input id="phone" name="phone" type="tel" required class="form-input" placeholder="Номер телефону" autocomplete="tel">
-        </div>
-
-        <details class="form-extra">
-          <summary>Додати деталі (необовʼязково)</summary>
-          <div class="form-group">
-            <label for="name">Імʼя</label>
-            <input type="text" id="name" name="name" placeholder="Ваше імʼя" class="form-input" autocomplete="name">
-          </div>
-          <div class="form-group">
-            <label for="message">Що і куди везти</label>
-            <textarea id="message" name="message" rows="4" placeholder="Наприклад: диван і 5 коробок, Оболонь → Бровари, завтра зранку" class="form-input"></textarea>
-          </div>
-        </details>
-
-        <button type="submit" id="submitBtn" class="btn-submit">
-          <span>Передзвоніть мені</span>
-        </button>
-
-        <p class="form-privacy">Номер потрібен лише для дзвінка щодо цього замовлення.</p>
-
-        <div id="formAlert" class="alert"></div>
-      </form>
-
+      {% include 'partials/_lead_form.html' %}
     </div>
   </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
-<script src="{{ url_for('static', filename='js/contact.js') }}"></script>
+<script src="{{ url_for('static', filename='js/phoneField.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/contact.js') }}" defer></script>
 {% endblock %}

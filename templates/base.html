@@ -2,15 +2,15 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0ea5e9">
+  <script>document.documentElement.classList.add("js")</script>
 
-  <title>{% block title %}Вантажні перевезення Київ — розвіз товару та міжміські | Веземо24{% endblock %}</title>
-  <meta name="description" content="{% block description %}Вантажні перевезення Київ та область: розвіз товару для бізнесу, міжміські рейси (Київ–Львів, Київ–Одеса), вантажне таксі, переїзд. Бус до 3,5 т. Ціна фіксується до старту.{% endblock %}">
+  <title>{% block title %}Вантажні перевезення Київ та по Україні | Веземо24{% endblock %}</title>
+  <meta name="description" content="{% block description %}Вантажні перевезення Київ, область та по Україні: розвіз товару для бізнесу, міжміські рейси, вантажне таксі, переїзд. Бус до 3,5 т.{% endblock %}">
 
-  {# Канонічний URL завжди на одному хості + https, незалежно від того, як прийшов запит #}
   <link rel="canonical" href="{{ SITE_URL }}{{ request.path }}">
 
-  {# Іконки — тепер усередині <head> і за реальними шляхами #}
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 
@@ -26,67 +26,23 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="sitemap" type="application/xml" href="{{ url_for('main.sitemap') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 
-  {% if GTM_CONTAINER_ID %}
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-  var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
-  j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})
-  (window,document,'script','dataLayer','{{ GTM_CONTAINER_ID }}');</script>
-  {% elif GA4_MEASUREMENT_ID %}
-  <script async src="https://www.googletagmanager.com/gtag/js?id={{ GA4_MEASUREMENT_ID }}"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '{{ GA4_MEASUREMENT_ID }}');
-  </script>
-  {% endif %}
+  {% include 'partials/_analytics.html' %}
 </head>
 <body>
+  <a class="visually-hidden" href="#main">Перейти до вмісту</a>
 
-  <header class="site-header" id="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="{{ url_for('main.index') }}" aria-label="Веземо24 — на головну">
-        <div class="logo-wrapper">
-          <span class="text-logo">Веземо</span>
-          <span class="badge-24">24</span>
-        </div>
-      </a>
+  {% include 'partials/_header.html' %}
 
-      <nav class="nav" id="main-nav" aria-label="Головна навігація">
-        <a class="nav-link" href="{{ url_for('main.index') }}">Головна</a>
-        <a class="nav-link" href="{{ url_for('main.services') }}">Послуги</a>
-        <a class="nav-link" href="{{ url_for('main.mizhmiski') }}">Міжміські</a>
-        <a class="nav-link" href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a>
-        <a class="nav-phone nav-phone--menu" href="tel:{{ PHONE_E164 }}" data-cta="phone-menu">
-          <span class="nav-phone-icon" aria-hidden="true">📞</span>
-          <span class="nav-phone-num">{{ PHONE_DISPLAY }}</span>
-        </a>
-        <a class="nav-link nav-btn" href="{{ url_for('contact.contact') }}">Залишити заявку</a>
-      </nav>
-
-      <a class="nav-phone nav-phone--header" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">
-        <span class="nav-phone-icon" aria-hidden="true">📞</span>
-        <span class="nav-phone-num">{{ PHONE_DISPLAY }}</span>
-      </a>
-
-      <button class="burger" id="burger" type="button" aria-label="Відкрити меню" aria-expanded="false" aria-controls="main-nav">
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-      </button>
-    </div>
-  </header>
-
-  <main class="main-content">
+  <main class="page" id="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="container">
-          <div class="alerts">
+        <div class="container section--tight">
+          <div class="stack stack--sm">
             {% for category, msg in messages %}
-              <div class="alert {% if category == 'success' %}alert-success{% elif category == 'error' %}alert-error{% endif %}">{{ msg }}</div>
+              <div class="notice is-shown notice--{{ 'ok' if category == 'success' else 'error' }}">{{ msg }}</div>
             {% endfor %}
           </div>
         </div>
@@ -96,78 +52,10 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col footer-brand">
-          <a href="{{ url_for('main.index') }}" class="footer-logo">
-            <span class="footer-logo-text">Веземо</span>
-            <span class="footer-logo-badge">24</span>
-          </a>
-          <p class="footer-desc">
-            Вантажні перевезення по <strong>Києву, області та Україні</strong>. Власний бус до 3,5 т.
-          </p>
-          <div class="footer-trust">
-            <span class="footer-trust-item">✓ Ціна фіксується до старту</span>
-            <span class="footer-trust-item">✓ Без прихованих доплат</span>
-          </div>
-        </div>
+  {% include 'partials/_footer.html' %}
+  {% include 'partials/_mobilebar.html' %}
 
-        <div class="footer-col">
-          <h4 class="footer-heading">Меню</h4>
-          <ul class="footer-links">
-            <li><a href="{{ url_for('main.index') }}">Головна</a></li>
-            <li><a href="{{ url_for('main.services') }}">Послуги</a></li>
-            <li><a href="{{ url_for('main.mizhmiski') }}">Міжміські перевезення</a></li>
-            <li><a href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a></li>
-            <li><a href="{{ url_for('contact.contact') }}">Контакти / Заявка</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Послуги</h4>
-          <ul class="footer-links">
-            <li><a href="{{ url_for('main.services') }}">Розвіз товару для бізнесу</a></li>
-            <li><a href="{{ url_for('main.mizhmiski') }}">Міжміські рейси</a></li>
-            <li><a href="{{ url_for('main.services') }}">Вантажне таксі</a></li>
-            <li><a href="{{ url_for('main.services') }}">Квартирний переїзд</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Контакти</h4>
-          <ul class="footer-contact">
-            <li><a class="footer-phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-footer">{{ PHONE_DISPLAY }}</a></li>
-            {% if VIBER_URL %}<li><a href="{{ VIBER_URL }}" data-cta="viber-footer">Viber</a></li>{% endif %}
-            {% if TELEGRAM_URL %}<li><a href="{{ TELEGRAM_URL }}" data-cta="telegram-footer">Telegram</a></li>{% endif %}
-            <li><strong>{{ HOURS_LABEL }}</strong></li>
-            <li>{{ HOURS_NOTE }}</li>
-            <li>{{ CITY }} · {{ REGION }} · Україна</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p>© 2026 <strong>Веземо 24</strong>. Вантажні перевезення Київ, область та по Україні.</p>
-      </div>
-    </div>
-  </footer>
-
-  {# Мобільна панель дії — завжди на екрані, головний канал конверсії #}
-  <div class="mobile-cta" role="group" aria-label="Швидкий контакт">
-    <a class="mobile-cta-btn mobile-cta-btn--call" href="tel:{{ PHONE_E164 }}" data-cta="phone-sticky">
-      <span aria-hidden="true">📞</span> Подзвонити
-    </a>
-    {% if VIBER_URL %}
-    <a class="mobile-cta-btn mobile-cta-btn--viber" href="{{ VIBER_URL }}" data-cta="viber-sticky">Viber</a>
-    {% endif %}
-    <a class="mobile-cta-btn mobile-cta-btn--form" href="{{ url_for('contact.contact') }}" data-cta="form-sticky">
-      Заявка
-    </a>
-  </div>
-
-  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/analytics.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,222 @@
+/* ==========================================================================
+   Веземо24 — сторінка калькулятора маршруту.
+   Єдина сторінка з картою, тому винесена окремо: решта сайту не платить
+   за ці стилі. Токени й шари успадковані з app.css.
+   ========================================================================== */
+@layer pages {
+
+  /* Висота: 100dvh враховує панель браузера на мобільних — 100vh її не бачить
+     і карта виявлялась обрізаною. Висоту шапки беремо з токена, не з "72px". */
+  .mapview {
+    display: flex;
+    height: calc(100vh - var(--header-h));
+    min-height: 420px;
+    overflow: hidden;
+  }
+  @supports (height: 100dvh) {
+    .mapview { height: calc(100dvh - var(--header-h)); }
+  }
+
+  .mapview__panel {
+    flex: none;
+    width: 420px;
+    max-width: 100%;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mapview__canvas { flex: 1; min-width: 0; height: 100%; }
+  #map { width: 100%; height: 100%; background: var(--ink-100); }
+
+  .panel { display: flex; flex-direction: column; gap: var(--sp-5); padding: var(--sp-5); }
+  .panel__head h1 { font-size: var(--fs-xl); }
+  .panel__head p { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--text-muted); }
+  .panel__note { font-size: var(--fs-xs); color: var(--text-muted); }
+
+  /* ── Вибір послуги ──────────────────────────────────────────────────── */
+  .choice { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .choice__label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .choice__options { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .choice__options input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .choice__opt {
+    display: block;
+    padding: var(--sp-3) var(--sp-4);
+    border: 2px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface-sunk);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease),
+                color var(--dur-1) var(--ease);
+  }
+  .choice__opt:hover { border-color: var(--brand-300); background: var(--white); }
+  input:checked + .choice__opt {
+    border-color: var(--brand-500);
+    background: var(--brand-50);
+    color: var(--brand-800);
+  }
+  input:focus-visible + .choice__opt { outline: 3px solid var(--accent-500); outline-offset: 2px; }
+
+  /* ── Точки маршруту ─────────────────────────────────────────────────── */
+  .points { position: relative; display: flex; flex-direction: column; gap: var(--sp-3); }
+  .points::before {
+    content: "";
+    position: absolute;
+    left: 15px; top: 26px; bottom: 26px;
+    width: 2px;
+    background: repeating-linear-gradient(180deg, var(--line) 0 5px, transparent 5px 10px);
+  }
+  .point { position: relative; display: flex; align-items: center; gap: var(--sp-3); }
+  .point__pin {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--brand-500);
+    color: var(--white);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    box-shadow: 0 0 0 4px var(--surface);
+  }
+  .point__pin--start { background: #10b981; }
+  .point__pin--end   { background: #ef4444; }
+  .point__pin--via   { background: var(--brand-500); width: 26px; height: 26px; margin-left: 3px; }
+  .point .input { padding-block: var(--sp-2); }
+  .point__remove {
+    flex: none;
+    width: 30px; height: 30px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--ink-400);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .point__remove:hover { color: var(--err-600); background: var(--err-50); }
+
+  /* Підказки адрес. z-index з токена і НИЖЧЕ шапки — раніше було 2000
+     проти 1000, і список малювався поверх навігації. */
+  .suggest {
+    position: fixed;
+    z-index: var(--z-dropdown);
+    display: none;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-3);
+    font-size: var(--fs-sm);
+  }
+  .suggest.is-open { display: block; }
+  .suggest__item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+  }
+  .suggest__item:last-child { border-bottom: 0; }
+  .suggest__item:hover, .suggest__item.is-active { background: var(--brand-50); }
+  .suggest__item--hint { color: var(--text-muted); cursor: default; }
+  .suggest__item--hint:hover { background: transparent; }
+
+  /* ── Дії ────────────────────────────────────────────────────────────── */
+  .panel__actions { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .panel__actions-row { display: flex; gap: var(--sp-2); }
+  .panel__actions-row .btn { flex: 1; }
+  .btn--text {
+    min-height: 40px;
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--brand-700);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .btn--text:hover { background: var(--brand-50); transform: none; }
+
+  /* ── Результат ──────────────────────────────────────────────────────── */
+  .result {
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-4);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+  .result.is-shown { display: flex; }
+  .result__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .result__row dt { color: var(--text-muted); }
+  .result__row dd { margin: 0; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+  .result__row--total {
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-3);
+    border-top: 2px solid var(--line);
+    align-items: center;
+  }
+  .result__row--total dd {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 800;
+    color: var(--brand-700);
+    letter-spacing: -.02em;
+  }
+  .result__breakdown, .result__legs {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    line-height: var(--lh-snug);
+  }
+  .result__leg { display: flex; justify-content: space-between; gap: var(--sp-2); }
+  .result__disclaimer { font-size: var(--fs-xs); color: var(--text-muted); }
+
+  /* Дія після розрахунку — раніше калькулятор був глухим кутом */
+  .result__cta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-4);
+    border-top: 1px dashed var(--line);
+  }
+
+  .map-picking { cursor: crosshair; }
+  .map-picking .leaflet-interactive { cursor: crosshair; }
+
+  /* ── Мобільна розкладка: панель зверху, карта під нею ───────────────── */
+  @media (max-width: 900px) {
+    .mapview {
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+    .mapview__panel {
+      width: 100%;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      overflow: visible;
+    }
+    .mapview__canvas { height: 58vh; min-height: 320px; }
+  }
+}

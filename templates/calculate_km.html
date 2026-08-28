@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}Розрахувати вартість перевезення — калькулятор маршруту | Веземо24{% endblock %}
 {% block description %}Порахуйте відстань, час у дорозі та орієнтовну вартість перевезення по Києву, області та Україні. Вкажіть адреси — і одразу побачите ціну. Бус до 3,5 т.{% endblock %}
@@ -6,118 +6,119 @@
 {% block head %}
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/calculate_km.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="map-page">
-  <aside class="map-page-form">
-    <div class="control-panel">
-      <div class="panel-header">
+<div class="mapview">
+  <aside class="mapview__panel">
+    <div class="panel">
+
+      <div class="panel__head">
         <h1>Розрахувати вартість</h1>
         <p>Вкажіть адреси або поставте точки на карті — побачите відстань, час у дорозі та орієнтовну ціну.</p>
       </div>
 
-      <div class="service-type" id="service-type-block">
-        <span class="service-type-label">Що потрібно</span>
-        <div id="services-bus" class="service-options service-options--bus">
-          <label class="service-option-wrap">
+      <div class="choice">
+        <span class="choice__label" id="service-label">Що потрібно</span>
+        <div class="choice__options" id="services-bus" role="radiogroup" aria-labelledby="service-label">
+          <label>
             <input type="radio" name="service" value="bus_taxi" data-service-id="bus_taxi" checked>
-            <span class="service-option">Вантажне таксі</span>
+            <span class="choice__opt">Вантажне таксі</span>
           </label>
-          <label class="service-option-wrap">
+          <label>
             <input type="radio" name="service" value="bus_delivery" data-service-id="bus_delivery">
-            <span class="service-option">Доставка меблів / техніки</span>
+            <span class="choice__opt">Доставка меблів / техніки</span>
           </label>
-          <label class="service-option-wrap">
+          <label>
             <input type="radio" name="service" value="bus_relocation" data-service-id="bus_relocation">
-            <span class="service-option">Переїзд під ключ</span>
+            <span class="choice__opt">Переїзд під ключ</span>
           </label>
         </div>
       </div>
 
-      <div id="points-container" class="inputs-stack">
-        <div class="input-row" data-index="0">
-          <div class="icon-marker start">A</div>
-          <input type="text" class="route-input" placeholder="Звідки (місто або адреса)" autocomplete="off" aria-label="Звідки">
+      <div class="points" id="points-container">
+        <div class="point" data-index="0">
+          <div class="point__pin point__pin--start">A</div>
+          <input type="text" class="input point__input" placeholder="Звідки (місто або адреса)"
+                 autocomplete="off" aria-label="Звідки">
         </div>
-        <div class="input-row" data-index="1">
-          <div class="icon-marker end">B</div>
-          <input type="text" class="route-input" placeholder="Куди (місто або адреса)" autocomplete="off" aria-label="Куди">
-        </div>
-      </div>
-
-      <div class="actions actions-wrap">
-        <div class="actions-row actions-row--add">
-          <button type="button" id="add-point" class="btn-text">+ Додати точку</button>
-          <button type="button" id="add-point-map" class="btn-text">+ Точка на карті</button>
-        </div>
-        <div class="actions-row actions-row--main">
-          <button type="button" id="build-route" class="btn-primary btn-build">
-            <span>Розрахувати</span>
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </button>
-          <button type="button" id="clear-route" class="btn-clear" title="Очистити маршрут">Очистити</button>
+        <div class="point" data-index="1">
+          <div class="point__pin point__pin--end">B</div>
+          <input type="text" class="input point__input" placeholder="Куди (місто або адреса)"
+                 autocomplete="off" aria-label="Куди">
         </div>
       </div>
 
-      <div id="route-result" class="result-card" style="display: none;">
-        <div class="result-item">
-          <span class="label">Транспорт:</span>
-          <span class="value" id="res-vehicle">Бус до 3,5 т</span>
+      <div class="panel__actions">
+        <div class="panel__actions-row">
+          <button type="button" id="add-point" class="btn btn--text">+ Додати точку</button>
+          <button type="button" id="add-point-map" class="btn btn--text">+ Точка на карті</button>
         </div>
-        <div class="result-item">
-          <span class="label">Послуга:</span>
-          <span class="value" id="res-service">—</span>
+        <div class="panel__actions-row">
+          <button type="button" id="build-route" class="btn btn--primary">Розрахувати</button>
+          <button type="button" id="clear-route" class="btn btn--ghost">Очистити</button>
         </div>
-        <div class="result-item">
-          <span class="label">Відстань:</span>
-          <span class="value" id="res-distance">0 км</span>
-        </div>
-        <div class="result-item">
-          <span class="label">Час у дорозі:</span>
-          <span class="value" id="res-duration">0 год</span>
-        </div>
-        <div class="result-item result-item--hourly-rate" id="hourly-rate-item" style="display: none;">
-          <span class="label">Тариф за годину:</span>
-          <span class="value" id="res-hourly-rate">—</span>
-        </div>
-        <div class="result-item result-item--price">
-          <span class="label">
-            <span class="price-label-text">Орієнтовна вартість</span>
-            <span class="price-label-badge">орієнтовно</span>
-          </span>
-          <span class="value" id="res-price">—</span>
-        </div>
-        <p class="result-breakdown" id="res-price-breakdown" style="display: none;"></p>
-        <div id="legs-details" class="legs-list"></div>
+      </div>
 
-        {# Головна конверсія калькулятора: до цього тут не було жодної дії #}
-        <div class="result-cta">
-          <a href="tel:{{ PHONE_E164 }}" class="result-cta-btn result-cta-btn--call" data-cta="phone-calculator">
+      <dl class="result" id="route-result">
+        <div class="result__row">
+          <dt>Транспорт</dt>
+          <dd id="res-vehicle">Бус до 3,5 т</dd>
+        </div>
+        <div class="result__row">
+          <dt>Послуга</dt>
+          <dd id="res-service">—</dd>
+        </div>
+        <div class="result__row">
+          <dt>Відстань</dt>
+          <dd id="res-distance">0 км</dd>
+        </div>
+        <div class="result__row">
+          <dt>Час у дорозі</dt>
+          <dd id="res-duration">0 год</dd>
+        </div>
+        <div class="result__row" id="hourly-rate-item" style="display:none">
+          <dt>Тариф за годину</dt>
+          <dd id="res-hourly-rate">—</dd>
+        </div>
+        <div class="result__row result__row--total">
+          <dt>Орієнтовна вартість</dt>
+          <dd id="res-price">—</dd>
+        </div>
+
+        <p class="result__breakdown" id="res-price-breakdown" style="display:none"></p>
+        <div class="result__legs" id="legs-details"></div>
+
+        {# Дія в момент найвищого наміру. Раніше тут не було жодної кнопки. #}
+        <div class="result__cta">
+          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
             📞 Замовити за цією ціною
           </a>
-          <a href="{{ url_for('contact.contact') }}" id="order-this-route" class="result-cta-btn result-cta-btn--form" data-cta="form-calculator">
+          <a class="btn btn--ghost btn--block" id="order-this-route"
+             href="{{ url_for('contact.contact') }}" data-cta="form-calculator">
             Передзвоніть мені
           </a>
-          <p class="result-cta-note">Назвемо точну ціну і зафіксуємо її до виїзду.</p>
         </div>
 
-        <p class="result-disclaimer result-disclaimer--note" id="result-price-note">
+        <p class="result__disclaimer">
           Відстань, час і вартість — орієнтовні. Точну ціну підтвердимо після короткої розмови.
         </p>
-      </div>
+      </dl>
 
-      <p class="panel-disclaimer">Розрахунок орієнтовний. Точну вартість підкажемо індивідуально.</p>
+      <p class="panel__note">Розрахунок орієнтовний. Точну вартість підкажемо індивідуально.</p>
     </div>
   </aside>
-  <div class="map-page-map" id="map"></div>
+
+  <div class="mapview__canvas" id="map"></div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="{{ url_for('static', filename='js/priceCalculator.js') }}"></script>
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/orderRoute.js') }}" defer></script>

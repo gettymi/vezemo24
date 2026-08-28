@@ -1,0 +1,38 @@
+{# Форма заявки. Мінімум обовʼязкових полів: лише телефон.
+   Решта — за розкриттям, щоб не лякати обсягом. #}
+<form id="contactForm" method="POST" action="{{ url_for('contact.contact_submit') }}" novalidate class="stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="honeypot" aria-hidden="true">
+    <label for="website">Не заповнюйте це поле</label>
+    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label class="field__label" for="phone">Ваш телефон <span class="field__req">*</span></label>
+    <input class="input" id="phone" name="phone" type="tel" required
+           placeholder="Номер телефону" autocomplete="tel">
+  </div>
+
+  <details class="disclosure">
+    <summary>Додати деталі (необовʼязково)</summary>
+    <div class="stack" style="padding-top: var(--sp-3)">
+      <div class="field">
+        <label class="field__label" for="name">Імʼя</label>
+        <input class="input" type="text" id="name" name="name" placeholder="Ваше імʼя" autocomplete="name">
+      </div>
+      <div class="field">
+        <label class="field__label" for="message">Що і куди везти</label>
+        <textarea class="input" id="message" name="message" rows="4"
+                  placeholder="Наприклад: диван і 5 коробок, Оболонь → Бровари, завтра зранку"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <button type="submit" id="submitBtn" class="btn btn--primary btn--lg btn--block">
+    <span>Передзвоніть мені</span>
+  </button>
+
+  <p class="field__hint center">Номер потрібен лише для дзвінка щодо цього замовлення.</p>
+  <div id="formAlert" class="notice notice--error" role="alert"></div>
+</form>

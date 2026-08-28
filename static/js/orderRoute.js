@@ -12,17 +12,17 @@
   }
 
   link.addEventListener("click", function () {
-    var inputs = document.querySelectorAll("#points-container .route-input");
-    var points = [];
-    inputs.forEach(function (i) { if (i.value.trim()) points.push(i.value.trim()); });
-
     var parts = [];
+    var points = [];
+    document.querySelectorAll("#points-container .point__input").forEach(function (i) {
+      if (i.value.trim()) points.push(i.value.trim());
+    });
     if (points.length) parts.push("Маршрут: " + points.join(" → "));
-    var dist = textOf("res-distance"); if (dist) parts.push("Відстань: " + dist);
-    var dur = textOf("res-duration");  if (dur)  parts.push("Час у дорозі: " + dur);
-    var svc = textOf("res-service");   if (svc && svc !== "—") parts.push("Послуга: " + svc);
-    var price = textOf("res-price");   if (price && price !== "—") parts.push("Орієнтовна вартість: " + price);
 
+    var dist  = textOf("res-distance"); if (dist) parts.push("Відстань: " + dist);
+    var dur   = textOf("res-duration"); if (dur)  parts.push("Час у дорозі: " + dur);
+    var svc   = textOf("res-service");  if (svc && svc !== "—") parts.push("Послуга: " + svc);
+    var price = textOf("res-price");    if (price && price !== "—") parts.push("Орієнтовна вартість: " + price);
     if (!parts.length) return;
 
     var msg = parts.join("\n");

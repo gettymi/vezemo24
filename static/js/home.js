@@ -1,15 +1,14 @@
-/* Головна сторінка: відео лише там, де воно того варте + трекінг конверсій. */
+/* Головна: відео лише там, де воно того варте, і поява блоку довіри. */
 (function () {
   "use strict";
 
-  /* ── 1. Hero-відео: НЕ вантажимо на мобільних ───────────────────────────
-     Раніше 4,5 МБ відео завантажувалось на всіх пристроях з autoplay.
-     Тепер: широкий екран + не economy-режим + користувач не просив
-     зменшити анімацію. На телефоні лишається лише poster (~250 КБ). */
-  var video = document.getElementById("hero-video");
+  /* Hero-відео НЕ вантажимо на мобільних: раніше 4,5 МБ їхало на кожен
+     телефон з autoplay. Тепер широкий екран + не economy + без reduced-motion.
+     На телефоні лишається тільки poster. */
+  var video = document.getElementById("js-hero-video");
   if (video) {
     var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    var saveData = !!(conn && (conn.saveData || /2g/.test(conn.effectiveType || "")));
+    var saveData = !!(conn && (conn.saveData || /(^|[^4])2g/.test(conn.effectiveType || "")));
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var wide = window.matchMedia("(min-width: 900px)").matches;
 
@@ -28,21 +27,19 @@
     }
   }
 
-  /* ── 2. Поява блоку довіри ─────────────────────────────────────────────── */
-  var trust = document.getElementById("trust-section");
+  var trust = document.getElementById("trust");
   if (trust) {
     if ("IntersectionObserver" in window) {
       var obs = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.classList.add("trust-section--visible");
-            obs.unobserve(e.target);
-          }
+          if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
         });
-      }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+      }, { threshold: 0.2, rootMargin: "0px 0px -40px 0px" });
       obs.observe(trust);
+      // Страховка: якщо observer чомусь не спрацював, текст усе одно зʼявиться.
+      setTimeout(function () { trust.classList.add("is-visible"); }, 1500);
     } else {
-      trust.classList.add("trust-section--visible");
+      trust.classList.add("is-visible");
     }
   }
 })();

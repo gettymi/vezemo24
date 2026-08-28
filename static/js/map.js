@@ -43,35 +43,15 @@
     document.getElementById("build-route")?.addEventListener("click", buildRoute);
     document.getElementById("clear-route")?.addEventListener("click", clearRoute);
 
-    var vehicleRadios = document.querySelectorAll('input[name="vehicle"]');
-    vehicleRadios.forEach(function (radio) {
-      radio.addEventListener("change", function () {
-        syncServicePanel();
-        recalculatePrice();
-      });
-    });
-    syncServicePanel();
-    var samosvalServiceRadios = document.querySelectorAll('#services-samosval input[name="service"]');
-    samosvalServiceRadios.forEach(function (radio) {
-      radio.addEventListener("change", function () {
-        syncSamosvalQuantityBlock();
-        recalculatePrice();
-      });
-    });
-    var busServiceRadios = document.querySelectorAll('#services-bus input[name="service"]');
-    busServiceRadios.forEach(function (radio) {
+    // Один тип транспорту — бус до 3,5 т. Вибору «бус / самосвал» більше немає.
+    document.querySelectorAll('#services-bus input[name="service"]').forEach(function (radio) {
       radio.addEventListener("change", recalculatePrice);
     });
-    var quantityInput = document.getElementById("samosval-quantity");
-    if (quantityInput) {
-      quantityInput.addEventListener("input", recalculatePrice);
-      quantityInput.addEventListener("change", recalculatePrice);
-    }
 
     map.on("click", onMapClick);
 
     createAutocompleteDropdown();
-    document.querySelectorAll("#points-container .route-input").forEach(function (inp) {
+    document.querySelectorAll("#points-container .point__input").forEach(function (inp) {
       if (!inp.readOnly) setupAutocomplete(inp);
     });
   }
@@ -79,7 +59,7 @@
   function createAutocompleteDropdown() {
     if (autocompleteDropdown) return;
     autocompleteDropdown = document.createElement("div");
-    autocompleteDropdown.className = "autocomplete-dropdown";
+    autocompleteDropdown.className = "suggest";
     autocompleteDropdown.setAttribute("role", "listbox");
     document.body.appendChild(autocompleteDropdown);
   }
@@ -117,13 +97,13 @@
     autocompleteDropdown.style.width = Math.max(rect.width, 280) + "px";
     autocompleteDropdown.innerHTML = "";
     if (!results.length) {
-      autocompleteDropdown.classList.add("autocomplete-dropdown--empty");
-      autocompleteDropdown.innerHTML = '<div class="autocomplete-item autocomplete-item--hint">Нічого не знайдено</div>';
+      autocompleteDropdown.classList.add("suggest--empty");
+      autocompleteDropdown.innerHTML = '<div class="suggest__item suggest__item--hint">Нічого не знайдено</div>';
     } else {
-      autocompleteDropdown.classList.remove("autocomplete-dropdown--empty");
+      autocompleteDropdown.classList.remove("suggest--empty");
       results.forEach(function (r) {
         var div = document.createElement("div");
-        div.className = "autocomplete-item";
+        div.className = "suggest__item";
         div.setAttribute("role", "option");
         div.textContent = r.display;
         div.addEventListener("click", function () {
@@ -137,8 +117,8 @@
 
   function selectAutocompleteItem(input, item) {
     input.value = item.display;
-    var row = input.closest(".input-row");
-    if (row && !row.classList.contains("input-row-map")) {
+    var row = input.closest(".point");
+    if (row && !row.classList.contains("point--map")) {
       row.setAttribute("data-lat", item.lat);
       row.setAttribute("data-lng", item.lng);
     }
@@ -155,15 +135,15 @@
     input._autocompleteSetup = true;
 
     input.addEventListener("input", function () {
-      var row = input.closest(".input-row");
+      var row = input.closest(".point");
       if (row && row.getAttribute("data-lat") != null) {
         row.removeAttribute("data-lat");
         row.removeAttribute("data-lng");
-        row.classList.remove("input-row-map");
+        row.classList.remove("point--map");
         if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
         row._mapMarker = null;
       }
-      if (row && row.classList.contains("input-row-map")) return;
+      if (row && row.classList.contains("point--map")) return;
       if (autocompleteTimer) clearTimeout(autocompleteTimer);
       var value = input.value.trim();
       if (value.length < 2) {
@@ -239,13 +219,13 @@
       .setLatLng(map.getCenter())
       .setContent("<strong>Натисніть на карту</strong>, щоб додати точку маршруту.")
       .openOn(map);
-    map.getContainer().classList.add("map-click-mode");
+    map.getContainer().classList.add("map-picking");
   }
 
   function onMapClick(e) {
     if (!mapClickMode) return;
     mapClickMode = false;
-    map.getContainer().classList.remove("map-click-mode");
+    map.getContainer().classList.remove("map-picking");
     if (mapClickHint) {
       mapClickHint.remove();
       mapClickHint = null;
@@ -253,12 +233,12 @@
     var lat = e.latlng.lat;
     var lng = e.latlng.lng;
     var container = document.getElementById("points-container");
-    var rows = Array.from(container.querySelectorAll(".input-row"));
+    var rows = Array.from(container.querySelectorAll(".point"));
     if (rows.length === 0) return;
     var firstRow = rows[0];
     var lastRow = rows[rows.length - 1];
     function rowIsEmpty(row) {
-      var inp = row.querySelector(".route-input");
+      var inp = row.querySelector(".point__input");
       var hasCoords = row.getAttribute("data-lat") != null && row.getAttribute("data-lng") != null;
       var hasValue = inp && inp.value.trim().length > 0;
       return !hasCoords && !hasValue;
@@ -278,8 +258,8 @@
     if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
     row.setAttribute("data-lat", lat);
     row.setAttribute("data-lng", lng);
-    row.classList.add("input-row-map");
-    var inp = row.querySelector(".route-input");
+    row.classList.add("point--map");
+    var inp = row.querySelector(".point__input");
     if (!inp) return;
     inp.value = "Точка на карті…";
     reverseGeocode(lat, lng).then(function (label) {
@@ -292,18 +272,18 @@
 
   function addRowFromMapClick(lat, lng) {
     var container = document.getElementById("points-container");
-    var rows = container.querySelectorAll(".input-row");
+    var rows = container.querySelectorAll(".point");
     var lastRow = rows[rows.length - 1];
 
     var div = document.createElement("div");
-    div.className = "input-row input-row-map";
+    div.className = "point point--map";
     div.setAttribute("data-lat", lat);
     div.setAttribute("data-lng", lng);
     div.innerHTML =
-      '<div class="icon-marker waypoint">•</div>' +
-      '<input type="text" class="route-input" placeholder="Точка на карті" readonly>' +
-      '<button class="remove-btn" title="Видалити">✕</button>';
-    var inp = div.querySelector(".route-input");
+      '<div class="point__pin point__pin--via">•</div>' +
+      '<input type="text" class="point__input" placeholder="Точка на карті" readonly>' +
+      '<button class="point__remove" title="Видалити">✕</button>';
+    var inp = div.querySelector(".point__input");
     inp.value = "Точка на карті…";
     reverseGeocode(lat, lng).then(function (label) {
       inp.value = label;
@@ -311,7 +291,7 @@
     var marker = L.marker([lat, lng]).addTo(markersLayer);
     marker.bindPopup(inp.value || "Точка на карті");
     div._mapMarker = marker;
-    div.querySelector(".remove-btn").addEventListener("click", function () {
+    div.querySelector(".point__remove").addEventListener("click", function () {
       if (div._mapMarker && div._mapMarker.remove) div._mapMarker.remove();
       div.remove();
     });
@@ -322,53 +302,10 @@
     });
   }
 
-  function syncServicePanel() {
-    var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-    var vehicle = vehicleRadio ? vehicleRadio.value : "bus";
-    var busPanel = document.getElementById("services-bus");
-    var samosvalPanel = document.getElementById("services-samosval");
-    var quantityBlock = document.getElementById("samosval-quantity-block");
-    if (busPanel && samosvalPanel) {
-      if (vehicle === "samosval") {
-        busPanel.style.display = "none";
-        samosvalPanel.style.display = "flex";
-        var firstSamosval = samosvalPanel.querySelector('input[name="service"]');
-        if (firstSamosval) firstSamosval.checked = true;
-        if (quantityBlock) quantityBlock.style.display = "flex";
-        syncSamosvalQuantityBlock();
-      } else {
-        busPanel.style.display = "flex";
-        samosvalPanel.style.display = "none";
-        var firstBus = busPanel.querySelector('input[name="service"]');
-        if (firstBus) firstBus.checked = true;
-        if (quantityBlock) quantityBlock.style.display = "none";
-      }
-    }
-  }
-
-  function syncSamosvalQuantityBlock() {
-    var quantityBlock = document.getElementById("samosval-quantity-block");
-    var labelEl = document.getElementById("samosval-quantity-label");
-    var unitEl = document.getElementById("samosval-quantity-unit");
-    var serviceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-    if (!quantityBlock || !labelEl || !unitEl) return;
-    var serviceId = serviceRadio ? serviceRadio.value : "samosval_sand";
-    var config = typeof PriceCalculator !== "undefined" && PriceCalculator.getDumpServiceConfig && PriceCalculator.getDumpServiceConfig()[serviceId];
-    if (config && config.unit) {
-      quantityBlock.style.display = "flex";
-      labelEl.textContent = "Кількість (" + (config.unitLabel || "") + ")";
-      unitEl.textContent = config.unitLabel || "";
-      unitEl.style.display = "";
-    } else {
-      quantityBlock.style.display = "none";
-      unitEl.style.display = "none";
-    }
-  }
-
   function clearRoute() {
     var container = document.getElementById("points-container");
     if (!container) return;
-    var rows = Array.from(container.querySelectorAll(".input-row"));
+    var rows = Array.from(container.querySelectorAll(".point"));
     rows.forEach(function (row, i) {
       if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
       row._mapMarker = null;
@@ -377,41 +314,39 @@
     var first = rows[0];
     var second = rows[1];
     if (first) {
-      var inp1 = first.querySelector(".route-input");
+      var inp1 = first.querySelector(".point__input");
       if (inp1) { inp1.value = ""; inp1.readOnly = false; }
       first.removeAttribute("data-lat");
       first.removeAttribute("data-lng");
-      first.classList.remove("input-row-map");
+      first.classList.remove("point--map");
     }
     if (second) {
-      var inp2 = second.querySelector(".route-input");
+      var inp2 = second.querySelector(".point__input");
       if (inp2) { inp2.value = ""; inp2.readOnly = false; }
       second.removeAttribute("data-lat");
       second.removeAttribute("data-lng");
-      second.classList.remove("input-row-map");
+      second.classList.remove("point--map");
     }
     markersLayer.clearLayers();
     routeLayer.clearLayers();
     currentRouteData = null;
     var resCard = document.getElementById("route-result");
-    if (resCard) resCard.style.display = "none";
-    var qInput = document.getElementById("samosval-quantity");
-    if (qInput) qInput.value = "";
+    if (resCard) resCard.classList.remove("is-shown");
   }
 
   function addWayPoint() {
     var container = document.getElementById("points-container");
-    var rows = container.querySelectorAll(".input-row");
+    var rows = container.querySelectorAll(".point");
     var lastRow = rows[rows.length - 1];
 
     var div = document.createElement("div");
-    div.className = "input-row";
+    div.className = "point";
     div.innerHTML =
-      '<div class="icon-marker waypoint">•</div>' +
-      '<input type="text" class="route-input" placeholder="Проміжна точка (місто або адреса)" autocomplete="off">' +
-      '<button class="remove-btn" title="Видалити">✕</button>';
-    var inp = div.querySelector(".route-input");
-    div.querySelector(".remove-btn").addEventListener("click", function () {
+      '<div class="point__pin point__pin--via">•</div>' +
+      '<input type="text" class="point__input" placeholder="Проміжна точка (місто або адреса)" autocomplete="off">' +
+      '<button class="point__remove" title="Видалити">✕</button>';
+    var inp = div.querySelector(".point__input");
+    div.querySelector(".point__remove").addEventListener("click", function () {
       div.remove();
     });
     container.insertBefore(div, lastRow);
@@ -419,11 +354,11 @@
   }
 
   function getOrderedPoints() {
-    var rows = Array.from(document.querySelectorAll("#points-container .input-row"));
+    var rows = Array.from(document.querySelectorAll("#points-container .point"));
     return rows.map(function (row) {
       var lat = row.getAttribute("data-lat");
       var lng = row.getAttribute("data-lng");
-      var input = row.querySelector(".route-input");
+      var input = row.querySelector(".point__input");
       var value = input ? input.value.trim() : "";
       if (lat != null && lng != null) {
         return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng), label: value || "Точка на карті" };
@@ -455,7 +390,7 @@
     }
 
     var resCard = document.getElementById("route-result");
-    resCard.style.display = "none";
+    resCard.classList.remove("is-shown");
     markersLayer.clearLayers();
     routeLayer.clearLayers();
 
@@ -514,19 +449,18 @@
             var a = (labels[i] || "Точка " + (i + 1)).split(",")[0].trim();
             var b = (labels[i + 1] || "Точка " + (i + 2)).split(",")[0].trim();
             var dist = ((leg.distance || 0) / 1000).toFixed(1);
-            return '<div class="leg-row"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + " км</strong></div>";
+            return '<div class="result__leg"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + " км</strong></div>";
           })
           .join("");
 
-        var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-        var vehicleValue = vehicleRadio ? vehicleRadio.value : "bus";
-        var vehicleLabel = vehicleValue === "samosval" ? "Самосвал" : "Бус";
+        var vehicleValue = "bus";
+        var vehicleLabel = "Бус до 3,5 т";
         var resVehicle = document.getElementById("res-vehicle");
         if (resVehicle) resVehicle.textContent = vehicleLabel;
         var serviceRadio = document.querySelector('input[name="service"]:checked');
         var serviceLabel = "";
         if (serviceRadio) {
-          var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".service-option");
+          var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".choice__opt");
           if (opt) serviceLabel = opt.textContent.trim();
         }
         var resService = document.getElementById("res-service");
@@ -538,18 +472,9 @@
         if (typeof PriceCalculator !== "undefined") {
           var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
           var options;
-          if (serviceType === "DUMP_TRUCK") {
-            var dumpServiceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-            var dumpServiceId = dumpServiceRadio ? dumpServiceRadio.value : "samosval_sand";
-            var qInput = document.getElementById("samosval-quantity");
-            var quantity = qInput && qInput.value !== "" ? parseFloat(qInput.value) : null;
-            if (quantity !== null && isNaN(quantity)) quantity = null;
-            options = { dumpTruckServiceId: dumpServiceId, quantity: quantity };
-          } else if (serviceType === "BUS") {
             var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
             var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
             options = { busServiceId: busServiceId };
-          }
           var priceResult = PriceCalculator.calculate(route.distance, route.duration, serviceType, options);
           var resPrice = document.getElementById("res-price");
           if (resPrice) resPrice.textContent = priceResult.total + " грн";
@@ -561,7 +486,7 @@
           var hourlyRateItem = document.getElementById("hourly-rate-item");
           var resHourlyRate = document.getElementById("res-hourly-rate");
           if (hourlyRateItem && resHourlyRate) {
-            var serviceId = serviceType === "BUS" ? (options && options.busServiceId) || "bus_taxi" : (options && options.dumpTruckServiceId) || "samosval_sand";
+            var serviceId = (options && options.busServiceId) || "bus_taxi";
             var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
             if (hourlyRate) {
               resHourlyRate.textContent = hourlyRate + " грн/год";
@@ -577,7 +502,7 @@
           if (resBreakdown) resBreakdown.style.display = "none";
         }
 
-        resCard.style.display = "block";
+        resCard.classList.add("is-shown");
       })
       .catch(function (err) {
         console.error(err);
@@ -588,18 +513,17 @@
   function recalculatePrice() {
     if (!currentRouteData) return;
     var resCard = document.getElementById("route-result");
-    if (!resCard || resCard.style.display === "none") return;
+    if (!resCard || !resCard.classList.contains("is-shown")) return;
 
-    var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-    var vehicleValue = vehicleRadio ? vehicleRadio.value : "bus";
-    var vehicleLabel = vehicleValue === "samosval" ? "Самосвал" : "Бус";
+    var vehicleValue = "bus";
+    var vehicleLabel = "Бус до 3,5 т";
     var resVehicle = document.getElementById("res-vehicle");
     if (resVehicle) resVehicle.textContent = vehicleLabel;
 
     var serviceRadio = document.querySelector('input[name="service"]:checked');
     var serviceLabel = "";
     if (serviceRadio) {
-      var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".service-option");
+      var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".choice__opt");
       if (opt) serviceLabel = opt.textContent.trim();
     }
     var resService = document.getElementById("res-service");
@@ -608,18 +532,9 @@
     if (typeof PriceCalculator !== "undefined") {
       var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
       var options;
-      if (serviceType === "DUMP_TRUCK") {
-        var dumpServiceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-        var dumpServiceId = dumpServiceRadio ? dumpServiceRadio.value : "samosval_sand";
-        var qInput = document.getElementById("samosval-quantity");
-        var quantity = qInput && qInput.value !== "" ? parseFloat(qInput.value) : null;
-        if (quantity !== null && isNaN(quantity)) quantity = null;
-        options = { dumpTruckServiceId: dumpServiceId, quantity: quantity };
-      } else if (serviceType === "BUS") {
         var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
         var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
         options = { busServiceId: busServiceId };
-      }
       var priceResult = PriceCalculator.calculate(currentRouteData.distance, currentRouteData.duration, serviceType, options);
       var resPrice = document.getElementById("res-price");
       if (resPrice) resPrice.textContent = priceResult.total + " грн";
@@ -631,7 +546,7 @@
       var hourlyRateItem = document.getElementById("hourly-rate-item");
       var resHourlyRate = document.getElementById("res-hourly-rate");
       if (hourlyRateItem && resHourlyRate) {
-        var serviceId = serviceType === "BUS" ? (options && options.busServiceId) || "bus_taxi" : (options && options.dumpTruckServiceId) || "samosval_sand";
+        var serviceId = (options && options.busServiceId) || "bus_taxi";
         var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
         if (hourlyRate) {
           resHourlyRate.textContent = hourlyRate + " грн/год";

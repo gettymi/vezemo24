@@ -1,0 +1,53 @@
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__col footer__col--brand">
+        <a class="logo" href="{{ url_for('main.index') }}">
+          <span class="logo__word">Веземо</span>
+          <span class="logo__badge">24</span>
+        </a>
+        <p class="footer__desc">
+          Вантажні перевезення по <strong>Києву, області та всій Україні</strong>.
+          Власний бус до 3,5 т.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h2 class="footer__heading">Меню</h2>
+        <ul class="footer__list">
+          <li><a href="{{ url_for('main.index') }}">Головна</a></li>
+          <li><a href="{{ url_for('main.services') }}">Послуги</a></li>
+          <li><a href="{{ url_for('main.mizhmiski') }}">Міжміські перевезення</a></li>
+          <li><a href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a></li>
+          <li><a href="{{ url_for('contact.contact') }}">Контакти</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h2 class="footer__heading">Послуги</h2>
+        <ul class="footer__list">
+          <li><a href="{{ url_for('main.services') }}">Розвіз товару для бізнесу</a></li>
+          <li><a href="{{ url_for('main.mizhmiski') }}">Міжміські рейси</a></li>
+          <li><a href="{{ url_for('main.services') }}">Вантажне таксі</a></li>
+          <li><a href="{{ url_for('main.services') }}">Квартирний переїзд</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h2 class="footer__heading">Контакти</h2>
+        <ul class="footer__list">
+          <li><a class="footer__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-footer">{{ PHONE_DISPLAY }}</a></li>
+          {% if VIBER_URL %}<li><a href="{{ VIBER_URL }}" data-cta="viber-footer">Viber</a></li>{% endif %}
+          {% if TELEGRAM_URL %}<li><a href="{{ TELEGRAM_URL }}" data-cta="telegram-footer">Telegram</a></li>{% endif %}
+          <li><strong>{{ HOURS_LABEL }}</strong></li>
+          <li>{{ HOURS_NOTE }}</li>
+          <li>{{ CITY }} · {{ REGION }} · Україна</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      © {{ YEAR }} <strong>Веземо 24</strong>. Вантажні перевезення Київ, область та по Україні.
+    </div>
+  </div>
+</footer>

@@ -3,13 +3,7 @@
 {% block title %}Вантажні перевезення Київ та по Україні — розвіз товару, міжміські | Веземо24{% endblock %}
 {% block description %}Вантажні перевезення Київ, область та по Україні: розвіз товару для бізнесу, міжміські рейси (Київ–Львів, Київ–Одеса), вантажне таксі, квартирний переїзд. Бус до 3,5 т. Ціна фіксується до старту.{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-{% endblock %}
-
 {% block content %}
-<div class="index-page-wrap">
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -44,185 +38,189 @@
       { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Квартирний переїзд" } }
     ]
   },
-  "description": "Вантажні перевезення по Києву, Київській області та Україні: розвіз товару для бізнесу, міжміські рейси, вантажне таксі, квартирний переїзд. Власний бус до 3,5 т. Ціна фіксується до старту."
+  "description": "Вантажні перевезення по Києву, Київській області та Україні. Власний бус до 3,5 т. Ціна фіксується до старту."
 }
 </script>
 
-<!-- HERO -->
-<section class="hero-video-container">
-  <video id="hero-video" muted loop playsinline
-         class="bg-video"
+<!-- ГЕРОЙ -->
+<section class="hero">
+  <video id="js-hero-video" class="hero__media" muted loop playsinline preload="none"
          poster="{{ url_for('static', filename='images/video-poster.jpg') }}"
-         preload="none" disablePictureInPicture
-         data-src="{{ url_for('static', filename='videos/hero.mp4') }}"></video>
-  <div class="video-overlay"></div>
-  <div class="hero-content container">
-    <p class="hero-eyebrow">Київ · область · вся Україна</p>
-    <h1 class="hero-title">Вантажні перевезення Київ та по Україні</h1>
-    <p class="hero-lead">
+         data-src="{{ url_for('static', filename='videos/hero.mp4') }}"
+         disablePictureInPicture aria-hidden="true"></video>
+  <div class="hero__scrim"></div>
+  <div class="container hero__inner">
+    <p class="hero__eyebrow">Київ · область · вся Україна</p>
+    <h1 class="hero__title">Вантажні перевезення Київ та по Україні</h1>
+    <p class="hero__lead">
       Розвіз товару для бізнесу, міжміські рейси, вантажне таксі та переїзди.
       Власний бус до 3,5 т. Ціна фіксується до старту — без доплат у процесі.
     </p>
-    <div class="main-screen__buttons">
-      <a href="tel:{{ PHONE_E164 }}" class="btn-hero-cta btn-primary" data-cta="phone-hero">
+    <div class="cluster cluster--center">
+      <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-hero">
         📞 {{ PHONE_DISPLAY }}
       </a>
-      <a href="{{ url_for('main.calculate_km') }}" class="btn-hero-cta btn-outline-white">Розрахувати вартість</a>
+      <a class="btn btn--on-dark btn--lg" href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a>
     </div>
-    <p class="hero-hours">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
+    <p class="hero__note">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
   </div>
 </section>
 
-<!-- ADVANTAGES -->
-<section class="advantages-section container">
-  <div class="advantages-grid">
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/truck.svg') }}" alt="" width="40" height="40"></div>
-      <h3 class="adv-title">Виїзд у день звернення</h3>
-      <p class="adv-text">Працюємо з 07:00 — раніше за більшість перевізників. Терміновий виїзд по Києву.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/card.svg') }}" alt="" width="40" height="40"></div>
-      <h3 class="adv-title">Ціна фіксується до старту</h3>
-      <p class="adv-text">Домовились — так і залишиться. Жодних доплат «по факту» після завантаження.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/globe.svg') }}" alt="" width="40" height="40"></div>
-      <h3 class="adv-title">Київ, область і вся Україна</h3>
-      <p class="adv-text">Міські рейси, доставка по області та міжміські маршрути — Львів, Одеса, Дніпро, Харків.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/chat.svg') }}" alt="" width="40" height="40"></div>
-      <h3 class="adv-title">Один водій — один контакт</h3>
-      <p class="adv-text">Спілкуєтесь напряму з тим, хто везе. Без диспетчерів і зіпсованого телефону.</p>
-    </div>
+<!-- ПЕРЕВАГИ -->
+<section class="section section--tight">
+  <div class="container">
+    <ul class="grid grid--4">
+      <li class="card card--icon">
+        <div class="card__icon"><img src="{{ url_for('static', filename='icons/truck.svg') }}" alt="" width="28" height="28"></div>
+        <h2 class="card__title">Виїзд у день звернення</h2>
+        <p class="card__text">Працюємо з 07:00 — раніше за більшість перевізників. Терміновий виїзд по Києву.</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon"><img src="{{ url_for('static', filename='icons/card.svg') }}" alt="" width="28" height="28"></div>
+        <h2 class="card__title">Ціна фіксується до старту</h2>
+        <p class="card__text">Домовились — так і залишиться. Жодних доплат «по факту» після завантаження.</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon"><img src="{{ url_for('static', filename='icons/globe.svg') }}" alt="" width="28" height="28"></div>
+        <h2 class="card__title">Київ, область і вся Україна</h2>
+        <p class="card__text">Міські рейси, доставка по області та міжміські маршрути — Львів, Одеса, Дніпро, Харків.</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon"><img src="{{ url_for('static', filename='icons/chat.svg') }}" alt="" width="28" height="28"></div>
+        <h2 class="card__title">Один водій — один контакт</h2>
+        <p class="card__text">Спілкуєтесь напряму з тим, хто везе. Без диспетчерів і зіпсованого телефону.</p>
+      </li>
+    </ul>
   </div>
 </section>
 
 <!-- ЩО ВОЗИМО -->
-<section class="services-section container">
-  <h2 class="section-title">Що ми возимо</h2>
-  <div class="services-grid services-grid--focus">
-    <div class="card card--highlight">
-      <div class="card-content">
-        <span class="card-badge">Основний напрямок</span>
-        <h3 class="card-title">Розвіз товару для бізнесу</h3>
-        <p class="card-text">
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Напрямки роботи</span>
+      <h2>Що ми возимо</h2>
+    </div>
+    <ul class="grid grid--3">
+      <li class="card card--feature card--link">
+        <div class="card__media">
+          <img src="{{ url_for('static', filename='images/busik.png') }}"
+               alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
+        </div>
+        <span class="badge">Основний напрямок</span>
+        <h3 class="card__title">Розвіз товару для бізнесу</h3>
+        <p class="card__text">
           Регулярна доставка замовлень, товару по точках, постачання в магазини й кафе.
           Працюємо за графіком — щодня, кілька разів на тиждень або під ваші дні.
         </p>
-        <a href="{{ url_for('contact.contact') }}" class="link-more">Обговорити маршрут →</a>
-      </div>
-      <div class="card-image">
-        <img src="{{ url_for('static', filename='images/busik.png') }}"
-             alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-content">
-        <h3 class="card-title">Міжміські рейси</h3>
-        <p class="card-text">
+        <div class="card__foot">
+          <a class="btn btn--outline btn--block" href="{{ url_for('contact.contact') }}">Обговорити маршрут</a>
+        </div>
+      </li>
+      <li class="card card--link">
+        <div class="card__icon" aria-hidden="true">🛣️</div>
+        <h3 class="card__title">Міжміські рейси</h3>
+        <p class="card__text">
           Київ – Львів, Київ – Одеса, Київ – Дніпро, Київ – Харків та інші напрямки.
           Один вантаж — один рейс, без перевантажень і складів.
         </p>
-        <a href="{{ url_for('main.mizhmiski') }}" class="link-more">Детальніше →</a>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-content">
-        <h3 class="card-title">Вантажне таксі та переїзд</h3>
-        <p class="card-text">
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">Детальніше</a>
+        </div>
+      </li>
+      <li class="card card--link">
+        <div class="card__icon" aria-hidden="true">📦</div>
+        <h3 class="card__title">Вантажне таксі та переїзд</h3>
+        <p class="card__text">
           Меблі, техніка, коробки, квартирний та офісний переїзд по Києву й області.
           За потреби — з вантажниками.
         </p>
-        <a href="{{ url_for('main.services') }}" class="link-more">Детальніше →</a>
-      </div>
-    </div>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.services') }}">Детальніше</a>
+        </div>
+      </li>
+    </ul>
   </div>
 </section>
 
-<!-- PRICES -->
-<section class="prices-section container">
-  <h2 class="section-title">Ціни та тарифи</h2>
-  <p class="prices-intro">Орієнтовні тарифи по Києву та області. Точну ціну назвемо одразу після дзвінка.</p>
-
-  <div class="prices-grid" aria-label="Тарифи">
-    <div class="price-card price-card-featured">
-      <span class="price-card-badge">Найчастіше замовляють</span>
-      <h3 class="price-card-title">Вантажне таксі</h3>
-      <p class="price-card-desc">Бус до 3,5 т</p>
-      <p class="price-card-value">від 799 <span class="price-unit">грн/год</span></p>
-      <a href="tel:{{ PHONE_E164 }}" class="price-card-btn" data-cta="phone-price">Подзвонити</a>
-    </div>
-    <div class="price-card">
-      <h3 class="price-card-title">Переїзд під ключ</h3>
-      <p class="price-card-desc">Квартира або офіс</p>
-      <p class="price-card-value">від 1099 <span class="price-unit">грн/год</span></p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn">Замовити</a>
-    </div>
-    <div class="price-card">
-      <h3 class="price-card-title">Розвіз товару</h3>
-      <p class="price-card-desc">Регулярні маршрути</p>
-      <p class="price-card-value price-card-value--discuss">Тариф під графік</p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn price-card-btn--secondary">Розрахувати</a>
-    </div>
-    <div class="price-card">
-      <h3 class="price-card-title">Міжміські</h3>
-      <p class="price-card-desc">По Україні</p>
-      <p class="price-card-value price-card-value--discuss">Розрахунок за маршрутом</p>
-      <a href="{{ url_for('main.calculate_km') }}" class="price-card-btn price-card-btn--secondary">Порахувати</a>
-    </div>
-  </div>
-
-  <p class="prices-note">
-    Мінімальне замовлення по місту — <strong>2&nbsp;години + подача</strong>.
-    Міжміські та регулярні маршрути рахуємо індивідуально: часто виходить вигідніше за погодинний тариф.
-  </p>
-</section>
-
-<!-- TRUST -->
-<section class="trust-section" id="trust-section">
+<!-- ТАРИФИ -->
+<section class="section">
   <div class="container">
-    <h2 class="trust-heading">Чому з нами спокійніше</h2>
-    <div class="trust-grid">
-      <p class="trust-line trust-line-1">Ціна фіксується до старту — жодних прихованих доплат.</p>
-      <p class="trust-line trust-line-2">Ви говорите напряму з водієм, а не з колл-центром.</p>
-      <p class="trust-line trust-line-3">Акуратність і пунктуальність — це стандарт, а не опція.</p>
+    <div class="section-head section-head--center">
+      <span class="section-head__eyebrow">Прозоро</span>
+      <h2>Ціни та тарифи</h2>
+      <p class="section-head__lead">Орієнтовні тарифи по Києву та області. Точну ціну назвемо одразу після дзвінка.</p>
     </div>
+    <ul class="grid grid--4">
+      <li class="price price--feature">
+        <span class="badge">Найчастіше</span>
+        <h3 class="price__name">Вантажне таксі</h3>
+        <p class="price__desc">Бус до 3,5 т</p>
+        <p class="price__value">від 799 <span class="price__unit">грн/год</span></p>
+        <div class="price__foot">
+          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-price">Подзвонити</a>
+        </div>
+      </li>
+      <li class="price">
+        <h3 class="price__name">Переїзд під ключ</h3>
+        <p class="price__desc">Квартира або офіс</p>
+        <p class="price__value">від 1099 <span class="price__unit">грн/год</span></p>
+        <div class="price__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">Замовити</a>
+        </div>
+      </li>
+      <li class="price">
+        <h3 class="price__name">Розвіз товару</h3>
+        <p class="price__desc">Регулярні маршрути</p>
+        <p class="price__value price__value--soft">Тариф під ваш графік</p>
+        <div class="price__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">Розрахувати</a>
+        </div>
+      </li>
+      <li class="price">
+        <h3 class="price__name">Міжміські</h3>
+        <p class="price__desc">По Україні</p>
+        <p class="price__value price__value--soft">Розрахунок за маршрутом</p>
+        <div class="price__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.calculate_km') }}">Порахувати</a>
+        </div>
+      </li>
+    </ul>
+    <p class="price__note">
+      Мінімальне замовлення по місту — <strong>2&nbsp;години + подача</strong>.
+      Міжміські та регулярні маршрути рахуємо індивідуально: часто виходить вигідніше за погодинний тариф.
+    </p>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section" aria-label="Замовити перевезення">
+<!-- ДОВІРА -->
+<section class="section section--dark trust" id="trust">
   <div class="container">
-    <div class="cta-inner">
-      <h2 class="cta-title">Потрібно щось перевезти?</h2>
-      <p class="cta-text">Подзвоніть — назвемо ціну за одну хвилину. Або залиште номер, і ми передзвонимо.</p>
-      <div class="cta-actions">
-        <a href="tel:{{ PHONE_E164 }}" class="btn-primary btn-cta" data-cta="phone-cta">📞 {{ PHONE_DISPLAY }}</a>
-        <a href="{{ url_for('contact.contact') }}" class="btn-cta btn-cta--ghost">Передзвоніть мені</a>
-      </div>
-      <p class="cta-trust">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
+    <div class="section-head">
+      <h2>Чому з нами спокійніше</h2>
     </div>
+    <ul class="trust__list">
+      <li class="trust__line">Ціна фіксується до старту — жодних прихованих доплат.</li>
+      <li class="trust__line">Ви говорите напряму з водієм, а не з колл-центром.</li>
+      <li class="trust__line">Акуратність і пунктуальність — це стандарт, а не опція.</li>
+    </ul>
   </div>
 </section>
+
+{% include 'partials/_cta.html' %}
 
 <!-- МІЖМІСЬКІ -->
-<section class="international-section">
-  <div class="international-bg" aria-hidden="true"></div>
-  <div class="international-overlay"></div>
-  <div class="container international-inner">
-    <p class="international-hook">Потрібно далі, ніж Київська область?</p>
-    <h2 class="international-title">Міжміські перевезення по всій Україні</h2>
-    <p class="international-desc">
+<section class="section band">
+  <div class="container band__inner">
+    <p class="band__hook">Потрібно далі, ніж Київська область?</p>
+    <h2 class="band__title">Міжміські перевезення по всій Україні</h2>
+    <p class="band__text">
       Київ – Львів, Київ – Одеса, Київ – Дніпро, Київ – Харків та індивідуальні маршрути.
       Ваш вантаж їде окремим рейсом — без перевантажень, складів і очікування попутки.
     </p>
-    <a href="{{ url_for('contact.contact') }}" class="international-btn">Розрахувати маршрут</a>
+    <a class="btn btn--accent btn--lg" href="{{ url_for('main.mizhmiski') }}">Подивитись напрямки</a>
   </div>
 </section>
-
-</div><!-- .index-page-wrap -->
 {% endblock %}
 
 {% block scripts %}

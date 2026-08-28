@@ -1,0 +1,12 @@
+{# Завжди на екрані на мобільних — головний канал конверсії в цій ніші. #}
+<div class="mobilebar" role="group" aria-label="Швидкий контакт">
+  <a class="mobilebar__btn mobilebar__btn--call" href="tel:{{ PHONE_E164 }}" data-cta="phone-sticky">
+    <span aria-hidden="true">📞</span> Подзвонити
+  </a>
+  {% if VIBER_URL %}
+  <a class="mobilebar__btn mobilebar__btn--viber" href="{{ VIBER_URL }}" data-cta="viber-sticky">Viber</a>
+  {% endif %}
+  <a class="mobilebar__btn mobilebar__btn--form" href="{{ url_for('contact.contact') }}" data-cta="form-sticky">
+    Заявка
+  </a>
+</div>

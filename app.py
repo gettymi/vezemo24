@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import Flask, jsonify, render_template, request
 
 from config import Config
@@ -39,6 +41,7 @@ def create_app():
             "SITE_URL": c["SITE_URL"].rstrip("/"),
             "GA4_MEASUREMENT_ID": c["GA4_MEASUREMENT_ID"],
             "GTM_CONTAINER_ID": c["GTM_CONTAINER_ID"],
+            "YEAR": date.today().year,
         }
 
     # ─── Заголовки безпеки ──────────────────────────────────────────────────

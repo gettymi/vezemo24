@@ -3,11 +3,6 @@
 {% block title %}Міжміські вантажні перевезення з Києва по Україні | Веземо24{% endblock %}
 {% block description %}Міжміські вантажні перевезення з Києва: Львів, Одеса, Дніпро, Харків, Вінниця та інші міста. Окремий бус до 3,5 т під ваш вантаж — без перевантажень і складів. Розрахунок за маршрутом.{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
-{% endblock %}
-
 {% block content %}
 <script type="application/ld+json">
 {
@@ -24,118 +19,119 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Скільки коштує перевезення Київ – Львів?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Вартість залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, вона фіксується до виїзду." }
-    },
-    {
-      "@type": "Question",
-      "name": "Мій вантаж їде окремо чи разом з чужим?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка." }
-    },
-    {
-      "@type": "Question",
-      "name": "Скільки часу займає доставка в інше місто?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Здебільшого це один день у дорозі. Виїзд можливий у день звернення або на наступний ранок, залежно від напрямку та завантаженості." }
-    },
-    {
-      "@type": "Question",
-      "name": "Що можна перевозити?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття." }
-    }
+    { "@type": "Question", "name": "Скільки коштує перевезення Київ – Львів?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Вартість залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, вона фіксується до виїзду." } },
+    { "@type": "Question", "name": "Мій вантаж їде окремо чи разом з чужим?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка." } },
+    { "@type": "Question", "name": "Скільки часу займає доставка в інше місто?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Здебільшого це один день у дорозі. Виїзд можливий у день звернення або на наступний ранок, залежно від напрямку." } },
+    { "@type": "Question", "name": "Що можна перевозити?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття." } }
   ]
 }
 </script>
 
-<div class="page-wrap container">
-  <nav class="crumbs" aria-label="Навігація">
-    <a href="{{ url_for('main.index') }}">Головна</a> <span aria-hidden="true">→</span> <span>Міжміські перевезення</span>
-  </nav>
+<section class="section">
+  <div class="container">
+    <nav class="crumbs" aria-label="Навігація">
+      <a href="{{ url_for('main.index') }}">Головна</a> <span aria-hidden="true">→</span> <span>Міжміські перевезення</span>
+    </nav>
 
-  <header class="page-header">
-    <h1 class="section-title">Міжміські вантажні перевезення з Києва</h1>
-    <p class="page-intro">
-      Возимо вантажі з Києва в будь-яке місто України власним бусом до 3,5 тонн.
-      Ваш вантаж їде окремим рейсом — його не перевантажують на складах і не тримають,
-      поки набереться попутний груз. Ціна фіксується до виїзду.
-    </p>
-    <div class="page-actions">
-      <a href="tel:{{ PHONE_E164 }}" class="btn-primary" data-cta="phone-mizhmiski">📞 {{ PHONE_DISPLAY }}</a>
-      <a href="{{ url_for('main.calculate_km') }}" class="btn-ghost">Розрахувати маршрут</a>
+    <div class="section-head">
+      <span class="section-head__eyebrow">По всій Україні</span>
+      <h1>Міжміські вантажні перевезення з Києва</h1>
+      <p class="section-head__lead">
+        Возимо вантажі з Києва в будь-яке місто України власним бусом до 3,5 тонн.
+        Ваш вантаж їде окремим рейсом — його не перевантажують на складах і не тримають,
+        поки набереться попутний груз. Ціна фіксується до виїзду.
+      </p>
+      <div class="cluster" style="margin-top: var(--sp-5)">
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-mizhmiski">📞 {{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">Розрахувати маршрут</a>
+      </div>
     </div>
-  </header>
+  </div>
+</section>
 
-  <section class="routes-block">
-    <h2 class="block-title">Популярні напрямки</h2>
-    <p class="block-sub">Відстані орієнтовні — точний маршрут і вартість рахуємо під ваше замовлення.</p>
-    <ul class="routes-grid">
-      <li class="route-item"><span class="route-name">Київ → Львів</span><span class="route-km">≈ 540 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Одеса</span><span class="route-km">≈ 475 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Дніпро</span><span class="route-km">≈ 480 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Харків</span><span class="route-km">≈ 480 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Запоріжжя</span><span class="route-km">≈ 520 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Полтава</span><span class="route-km">≈ 340 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Вінниця</span><span class="route-km">≈ 265 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Житомир</span><span class="route-km">≈ 140 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Черкаси</span><span class="route-km">≈ 190 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Рівне</span><span class="route-km">≈ 330 км</span></li>
-      <li class="route-item"><span class="route-name">Київ → Чернівці</span><span class="route-km">≈ 540 км</span></li>
-      <li class="route-item route-item--any"><span class="route-name">Інший напрямок</span><span class="route-km">Порахуємо</span></li>
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head">
+      <h2>Популярні напрямки</h2>
+      <p class="section-head__lead">Відстані орієнтовні — точний маршрут і вартість рахуємо під ваше замовлення.</p>
+    </div>
+    <ul class="routes">
+      {% for city, km in [
+        ('Львів', '540'), ('Одеса', '475'), ('Дніпро', '480'), ('Харків', '480'),
+        ('Запоріжжя', '520'), ('Полтава', '340'), ('Вінниця', '265'), ('Житомир', '140'),
+        ('Черкаси', '190'), ('Рівне', '330'), ('Чернівці', '540')
+      ] %}
+      <li class="route">
+        <span class="route__name">Київ → {{ city }}</span>
+        <span class="route__km">≈ {{ km }} км</span>
+      </li>
+      {% endfor %}
+      <li class="route route--any">
+        <span class="route__name">Інший напрямок</span>
+        <span class="route__km">Порахуємо</span>
+      </li>
     </ul>
-  </section>
+  </div>
+</section>
 
-  <section class="info-cols">
-    <article class="info-card">
-      <h2 class="block-title">Що возимо міжміськими рейсами</h2>
-      <ul class="check-list">
-        <li>Товар для бізнесу — постачання в інші міста, доставка замовлень</li>
-        <li>Меблі та побутову техніку</li>
-        <li>Обладнання, інструмент, виставкові матеріали</li>
-        <li>Особисті речі при переїзді в інше місто</li>
-      </ul>
-      <p class="info-note">Не беремо небезпечні вантажі та будівельне сміття.</p>
-    </article>
+<section class="section">
+  <div class="container">
+    <div class="grid grid--2">
+      <article class="card">
+        <h2 class="card__title">Що возимо міжміськими рейсами</h2>
+        <ul class="checks">
+          <li>Товар для бізнесу — постачання в інші міста, доставка замовлень</li>
+          <li>Меблі та побутову техніку</li>
+          <li>Обладнання, інструмент, виставкові матеріали</li>
+          <li>Особисті речі при переїзді в інше місто</li>
+        </ul>
+        <p class="field__hint">Не беремо небезпечні вантажі та будівельне сміття.</p>
+      </article>
 
-    <article class="info-card">
-      <h2 class="block-title">Як це працює</h2>
-      <ol class="steps-list">
-        <li><strong>Ви телефонуєте</strong> або лишаєте заявку — кажете маршрут і що саме везти.</li>
-        <li><strong>Називаємо ціну</strong> одразу. Вона фіксується і не змінюється після завантаження.</li>
-        <li><strong>Забираємо вантаж</strong> у зручний час — часто вже в день звернення.</li>
-        <li><strong>Веземо напряму</strong> без перевантажень і віддаємо отримувачу.</li>
-      </ol>
-    </article>
-  </section>
-
-  <section class="faq-block">
-    <h2 class="block-title">Часті питання</h2>
-    <details class="faq-item">
-      <summary>Скільки коштує перевезення Київ – Львів?</summary>
-      <p>Залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, і вона фіксується до виїзду.</p>
-    </details>
-    <details class="faq-item">
-      <summary>Мій вантаж їде окремо чи разом з чужим?</summary>
-      <p>Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка.</p>
-    </details>
-    <details class="faq-item">
-      <summary>Скільки часу займає доставка в інше місто?</summary>
-      <p>Здебільшого один день у дорозі. Виїзд можливий у день звернення або на наступний ранок — залежно від напрямку.</p>
-    </details>
-    <details class="faq-item">
-      <summary>Що можна перевозити?</summary>
-      <p>Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття.</p>
-    </details>
-  </section>
-
-  <section class="page-cta">
-    <h2 class="page-cta-title">Порахуємо ваш маршрут за хвилину</h2>
-    <p class="page-cta-text">Скажіть, звідки й куди — і що саме везти. Ціну назвемо одразу.</p>
-    <div class="page-actions page-actions--center">
-      <a href="tel:{{ PHONE_E164 }}" class="btn-primary" data-cta="phone-mizhmiski-bottom">📞 {{ PHONE_DISPLAY }}</a>
-      <a href="{{ url_for('contact.contact') }}" class="btn-ghost" data-cta="form-mizhmiski">Передзвоніть мені</a>
+      <article class="card">
+        <h2 class="card__title">Як це працює</h2>
+        <ol class="steps">
+          <li><strong>Ви телефонуєте</strong> або лишаєте заявку — кажете маршрут і що саме везти.</li>
+          <li><strong>Називаємо ціну</strong> одразу. Вона фіксується і не змінюється після завантаження.</li>
+          <li><strong>Забираємо вантаж</strong> у зручний час — часто вже в день звернення.</li>
+          <li><strong>Веземо напряму</strong> без перевантажень і віддаємо отримувачу.</li>
+        </ol>
+      </article>
     </div>
-    <p class="page-cta-note">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
-  </section>
-</div>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center">
+      <h2>Часті питання</h2>
+    </div>
+    <div class="faq">
+      <details class="faq__item">
+        <summary class="faq__q">Скільки коштує перевезення Київ – Львів?</summary>
+        <p class="faq__a">Залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, і вона фіксується до виїзду.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">Мій вантаж їде окремо чи разом з чужим?</summary>
+        <p class="faq__a">Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">Скільки часу займає доставка в інше місто?</summary>
+        <p class="faq__a">Здебільшого один день у дорозі. Виїзд можливий у день звернення або на наступний ранок — залежно від напрямку.</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">Що можна перевозити?</summary>
+        <p class="faq__a">Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+{% with cta_title = 'Порахуємо ваш маршрут за хвилину', cta_text = 'Скажіть, звідки й куди — і що саме везти. Ціну назвемо одразу.', cta_source = 'mizhmiski' %}
+  {% include 'partials/_cta.html' %}
+{% endwith %}
 {% endblock %}
