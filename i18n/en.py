@@ -36,7 +36,7 @@ STRINGS = {
 
     "foot.desc_pre": "Van delivery and removals across",
     "foot.desc_strong": "Kyiv, the region and all of Ukraine",
-    "foot.desc_post": "Our own van, up to 3.5 tonnes.",
+    "foot.desc_post": "Our own fleet — four vans up to 3.5 tonnes.",
     "foot.menu": "Menu",
     "foot.services": "Services",
     "foot.contacts": "Contact",
@@ -68,7 +68,7 @@ STRINGS = {
     "meta.home.desc": "English-speaking van transport in Kyiv, the Kyiv region and across Ukraine: business deliveries, intercity runs (Kyiv–Lviv, Kyiv–Odesa), van with driver, home and office removals. Up to 3.5 tonnes. Price fixed before we start.",
     "home.eyebrow": "Kyiv · the region · all of Ukraine",
     "home.h1": "Van transport in Kyiv and across Ukraine",
-    "home.lead": "Business deliveries, intercity runs, a van with a driver, and home or office removals. Our own van, up to 3.5 tonnes. The price is agreed before we start — nothing is added along the way.",
+    "home.lead": "Business deliveries, intercity runs, a van with a driver, and home or office removals. Our own fleet — four vans up to 3.5 tonnes. The price is agreed before we start — nothing is added along the way.",
 
     "home.adv1.title": "Same-day pickup",
     "home.adv1.text": "We start at 07:00, earlier than most. Urgent jobs across Kyiv on the same day.",
@@ -171,7 +171,7 @@ STRINGS = {
     "e500.text": "We can see this error and are looking into it. Rather than lose time, just give us a call and we will take the booking over the phone.",
 
     # ── Структуровані дані ──
-    "schema.desc": "Van transport in Kyiv, the Kyiv region and across Ukraine. Our own van up to 3.5 tonnes. The price is fixed before we start.",
+    "schema.desc": "Van transport in Kyiv, the Kyiv region and across Ukraine. Our own fleet of four vans up to 3.5 tonnes. The price is fixed before we start.",
     "schema.city": "Kyiv",
     "schema.region": "Kyiv Oblast",
     "schema.catalog": "Transport services",
@@ -183,7 +183,7 @@ STRINGS = {
     "svc.crumbs": "Breadcrumb",
     "svc.eyebrow": "What we do",
     "svc.h1": "Our services",
-    "svc.lead": "We work with our own van, up to 3.5 tonnes, across Kyiv, the region and all of Ukraine. One driver, one point of contact — you speak directly to the person carrying your load. We do not provide loaders: loading and unloading are your side of the job, which is part of why the price is lower.",
+    "svc.lead": "We work with our own fleet of four vans up to 3.5 tonnes, across Kyiv, the region and all of Ukraine. One driver, one point of contact — you speak directly to the person carrying your load. We do not provide loaders: loading and unloading are your side of the job, which is part of why the price is lower.",
     "svc.b2b.title": "Business deliveries",
     "svc.b2b.text": "Regular deliveries between locations: shops, cafes, warehouses, pickup points. We work to your schedule — daily, a few times a week, or on specific days.",
     "svc.b2b.c1": "A standing route on agreed terms",
@@ -208,7 +208,7 @@ STRINGS = {
     "meta.mizh.desc": "Intercity van transport from Kyiv to Lviv, Odesa, Dnipro, Kharkiv, Vinnytsia and other cities. A dedicated van up to 3.5 t for your load — no transfers, no warehouses. Quoted per route.",
     "mizh.eyebrow": "Anywhere in Ukraine",
     "mizh.h1": "Intercity van transport from Kyiv",
-    "mizh.lead": "We carry loads from Kyiv to any city in Ukraine in our own van, up to 3.5 tonnes. Your load travels on its own trip — it is not transferred at a warehouse, and it does not sit waiting for other cargo to fill a lorry. The price is agreed before we set off.",
+    "mizh.lead": "We carry loads from Kyiv to any city in Ukraine in our own fleet of four vans up to 3.5 tonnes. Your load travels on its own trip — it is not transferred at a warehouse, and it does not sit waiting for other cargo to fill a lorry. The price is agreed before we set off.",
     "mizh.calc": "Plan a route",
     "mizh.routes.h2": "Common destinations",
     "mizh.routes.lead": "Distances are approximate — we work out the exact route and price for your job.",
@@ -304,7 +304,7 @@ STRINGS = {
     "meta.abroad.desc": "Van transport Ukraine to Europe, up to 3.5 tonnes: Poland, Czechia, Slovakia, Germany. One load, one trip, no transfers. Priced per kilometre and fixed before departure.",
     "abroad.eyebrow": "Ukraine → Europe",
     "abroad.h1": "International transport from Kyiv",
-    "abroad.lead": "We carry loads from Ukraine into Europe in our own van, up to 3.5 tonnes. Your load travels on its own trip — no transfers at warehouses, no waiting for a groupage lorry to fill up. The price is worked out per kilometre and fixed before we set off.",
+    "abroad.lead": "We carry loads from Ukraine into Europe in our own fleet of four vans up to 3.5 tonnes. Your load travels on its own trip — no transfers at warehouses, no waiting for a groupage lorry to fill up. The price is worked out per kilometre and fixed before we set off.",
     "abroad.zones.h2": "What it costs",
     "abroad.zones.lead": "The rate covers the full mileage — out and back. Across the border there is nothing to offset an empty return leg, so the whole journey is chargeable. If you prefer to think in one-way distance, it is the same figure doubled.",
     "abroad.zone.east.name": "Central and Eastern Europe",
