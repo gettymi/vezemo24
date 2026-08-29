@@ -64,24 +64,13 @@
       <p class="section-head__lead">{{ t('mizh.routes.lead') }}</p>
     </div>
     <ul class="routes">
-      {# Спершу напрямки з власними сторінками — вони клікабельні. #}
+      {# Джерело — content/routes.py, тож список не може розійтися зі сторінками. #}
       {% for r in routes %}
       <li class="route">
         <a class="route__link" href="{{ url_for('main.route_page', slug=r.slug) }}">
           <span class="route__name">{{ t('city.kyiv') }} → {{ t(r.city) }}</span>
           <span class="route__km">≈ {{ r.km }} {{ t('common.km') }}</span>
         </a>
-      </li>
-      {% endfor %}
-      {# Решта — поки без окремої сторінки, тож і без посилання. #}
-      {% for key, km in [
-        ('city.zapor', '520'), ('city.poltava', '340'), ('city.vinnytsia', '265'),
-        ('city.zhytomyr', '140'), ('city.cherkasy', '190'), ('city.rivne', '330'),
-        ('city.chernivtsi', '540')
-      ] %}
-      <li class="route">
-        <span class="route__name">{{ t('city.kyiv') }} → {{ t(key) }}</span>
-        <span class="route__km">≈ {{ km }} {{ t('common.km') }}</span>
       </li>
       {% endfor %}
       <li class="route route--any">

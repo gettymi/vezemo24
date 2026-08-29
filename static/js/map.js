@@ -18,12 +18,27 @@
     return window.VZ && window.VZ.t ? window.VZ.t(k, v) : k;
   };
   var KYIV_LL = [50.4501, 30.5234];
-  var PRESETS = [
-    { slug: "kyiv-lviv",    to: "city.lviv",    ll: [49.8397, 24.0297] },
-    { slug: "kyiv-odesa",   to: "city.odesa",   ll: [46.4825, 30.7233] },
-    { slug: "kyiv-dnipro",  to: "city.dnipro",  ll: [48.4647, 35.0462] },
-    { slug: "kyiv-kharkiv", to: "city.kharkiv", ll: [49.9935, 36.2304] },
-  ];
+  /* Координати всіх напрямків, що мають власну сторінку. Завдяки їм перехід
+     за ?route=<slug> будує маршрут миттєво й не витрачає ліміт геокодера.
+     Додаючи напрямок у content/routes.py, додайте пару і сюди. */
+  var ROUTE_COORDS = {
+    "kyiv-lviv":        { to: "city.lviv",        ll: [49.8397, 24.0297] },
+    "kyiv-odesa":       { to: "city.odesa",       ll: [46.4825, 30.7233] },
+    "kyiv-dnipro":      { to: "city.dnipro",      ll: [48.4647, 35.0462] },
+    "kyiv-kharkiv":     { to: "city.kharkiv",     ll: [49.9935, 36.2304] },
+    "kyiv-zhytomyr":    { to: "city.zhytomyr",    ll: [50.2547, 28.6587] },
+    "kyiv-cherkasy":    { to: "city.cherkasy",    ll: [49.4444, 32.0598] },
+    "kyiv-vinnytsia":   { to: "city.vinnytsia",   ll: [49.2331, 28.4682] },
+    "kyiv-rivne":       { to: "city.rivne",       ll: [50.6199, 26.2516] },
+    "kyiv-poltava":     { to: "city.poltava",     ll: [49.5883, 34.5514] },
+    "kyiv-zaporizhzhia":{ to: "city.zapor",       ll: [47.8388, 35.1396] },
+    "kyiv-chernivtsi":  { to: "city.chernivtsi",  ll: [48.2917, 25.9352] },
+  };
+
+  /* У панелі показуємо лише найчастіші напрямки: одинадцять кнопок
+     перетворили б блок на стіну й відсунули б самі поля вводу вниз.
+     Решта доступні з відповідних сторінок напрямків. */
+  var PRESET_SLUGS = ["kyiv-lviv", "kyiv-odesa", "kyiv-dnipro", "kyiv-kharkiv"];
 
   var SERVICE_ORDER = ["bus_taxi", "bus_delivery", "bus_relocation"];
   var selectedService = "bus_taxi";
@@ -120,7 +135,9 @@
   function renderPresets() {
     var host = document.getElementById("presets");
     if (!host) return;
-    PRESETS.forEach(function (preset) {
+    PRESET_SLUGS.forEach(function (slug) {
+      var preset = ROUTE_COORDS[slug];
+      if (!preset) return;
       var b = document.createElement("button");
       b.type = "button";
       b.className = "preset";
@@ -651,10 +668,7 @@
      геокодера — людина не переписує те, що вже прочитала в заголовку. */
   function applyRouteFromQuery() {
     var slug = new URLSearchParams(window.location.search).get("route");
-    if (!slug) return;
-    for (var i = 0; i < PRESETS.length; i++) {
-      if (PRESETS[i].slug === slug) { applyPreset(PRESETS[i]); return; }
-    }
+    if (slug && ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
   }
 
   function boot() {

@@ -97,7 +97,14 @@ def route_page(slug, lang=DEFAULT):
         route=route,
         copy=route_data.copy_for(route, locale),
         via_names=[_t(k) for k in route.get("via", [])],
-        others=[r for r in route_data.ROUTES if r["slug"] != slug],
+        # Показуємо не всі напрямки, а п'ять найближчих за відстанню. Дві
+        # причини: список із десяти однакових рядків на кожній сторінці роздуває
+        # частку шаблонного тексту (а це саме те, за чим Google визначає
+        # дублікати), і читачеві корисніші сусідні плечі, а не повний перелік.
+        others=sorted(
+            (r for r in route_data.ROUTES if r["slug"] != slug),
+            key=lambda r: abs(r["km"] - route["km"]),
+        )[:5],
         calc_url=calc_url,
     )
 

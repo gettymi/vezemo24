@@ -181,6 +181,277 @@ ROUTES = [
             },
         },
     },
+    {
+        "slug": "kyiv-zhytomyr",
+        "city": "city.zhytomyr",
+        "km": 140,
+        "hours": "2",
+        "via": [],
+        "copy": {
+            "uk": {
+                "intro": "Найближчий із міжміських напрямків — 140 км по трасі М06. За часом "
+                         "це ближче до подовженого міського рейсу, ніж до справжнього "
+                         "міжміського: туди й назад укладаємось в один день без поспіху.",
+                "cargo": "Через коротке плече цей напрямок найкраще підходить для регулярних "
+                         "рейсів: постачання магазинів і кафе, розвіз замовлень, дрібні "
+                         "партії товару за графіком. Разові переїзди теж возимо, але саме "
+                         "тут найчастіше домовляються про постійний маршрут.",
+                "note": "Якщо возити треба щотижня, рахуємо не за годинами, а за маршрутом — "
+                        "виходить помітно дешевше.",
+            },
+            "ru": {
+                "intro": "Ближайшее из междугородних направлений — 140 км по трассе М06. По "
+                         "времени это ближе к удлинённому городскому рейсу, чем к настоящему "
+                         "междугороднему: туда и обратно укладываемся в один день без спешки.",
+                "cargo": "Из-за короткого плеча это направление лучше всего подходит для "
+                         "регулярных рейсов: поставки в магазины и кафе, развоз заказов, "
+                         "мелкие партии товара по графику. Разовые переезды тоже возим, но "
+                         "именно здесь чаще всего договариваются о постоянном маршруте.",
+                "note": "Если возить нужно еженедельно, считаем не по часам, а по маршруту — "
+                        "выходит заметно дешевле.",
+            },
+            "en": {
+                "intro": "The shortest of the intercity routes — 140 km on the M06. In "
+                         "practice this is closer to an extended city run than a long-haul "
+                         "trip: there and back fits comfortably into one day.",
+                "cargo": "The short distance makes this the best route for regular runs: "
+                         "resupplying shops and cafes, delivering orders, small batches on a "
+                         "schedule. We do one-off moves too, but this is the direction where "
+                         "people most often set up a standing route.",
+                "note": "If you need this weekly, we price the route rather than the hours — "
+                        "it works out noticeably cheaper.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-cherkasy",
+        "city": "city.cherkasy",
+        "km": 190,
+        "hours": "2–3",
+        "via": [],
+        "copy": {
+            "uk": {
+                "intro": "190 км на південний схід. Дорога спокійна, без затяжних підйомів, "
+                         "тож туди й назад за день — звична справа, а не подвиг.",
+                "cargo": "Меблі й техніка при переїзді, товар для магазинів, обладнання. "
+                         "Черкаси близько, тому сюди часто просять забрати щось терміново — "
+                         "і ми встигаємо в той самий день.",
+                "note": "Терміновий виїзд у день звернення на цьому напрямку реальний, якщо "
+                        "подзвонити до обіду.",
+            },
+            "ru": {
+                "intro": "190 км на юго-восток. Дорога спокойная, без затяжных подъёмов, "
+                         "поэтому туда и обратно за день — обычное дело, а не подвиг.",
+                "cargo": "Мебель и техника при переезде, товар для магазинов, оборудование. "
+                         "Черкассы близко, поэтому сюда часто просят забрать что-то срочно — "
+                         "и мы успеваем в тот же день.",
+                "note": "Срочный выезд в день обращения на этом направлении реален, если "
+                        "позвонить до обеда.",
+            },
+            "en": {
+                "intro": "190 km to the south-east. An easy road with no long climbs, so a "
+                         "same-day return trip is routine rather than ambitious.",
+                "cargo": "Furniture and appliances for people moving, shop stock, equipment. "
+                         "Cherkasy is close enough that urgent collections come up often — "
+                         "and we can usually manage them the same day.",
+                "note": "Same-day departure is realistic on this route if you call before "
+                        "midday.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-vinnytsia",
+        "city": "city.vinnytsia",
+        "km": 265,
+        "hours": "3–4",
+        "via": [],
+        "copy": {
+            "uk": {
+                "intro": "265 км трасою М12. Одне з тих плечей, де ще можна встигнути туди й "
+                         "назад за день, якщо вирушити зранку і не мати довгого вивантаження.",
+                "cargo": "Товар для роздрібу, обладнання для закладів, меблі. Вінниця — "
+                         "великий обласний центр із живим бізнесом, тож звідси регулярно "
+                         "їдуть партії товару в обидва боки.",
+                "note": "Якщо у вас є що везти назад до Києва, скажіть одразу — зворотний "
+                        "рейс здешевлює обидва.",
+            },
+            "ru": {
+                "intro": "265 км по трассе М12. Одно из тех плеч, где ещё можно успеть туда "
+                         "и обратно за день, если выехать утром и не иметь долгой выгрузки.",
+                "cargo": "Товар для розницы, оборудование для заведений, мебель. Винница — "
+                         "крупный областной центр с живым бизнесом, поэтому отсюда регулярно "
+                         "едут партии товара в обе стороны.",
+                "note": "Если у вас есть что везти обратно в Киев, скажите сразу — обратный "
+                        "рейс удешевляет оба.",
+            },
+            "en": {
+                "intro": "265 km on the M12. This is one of the routes where a return trip "
+                         "in a single day still works, if we set off early and unloading is "
+                         "not drawn out.",
+                "cargo": "Retail stock, equipment for bars and restaurants, furniture. "
+                         "Vinnytsia is a substantial regional centre with active business, "
+                         "so consignments run in both directions regularly.",
+                "note": "If you have something to send back to Kyiv, mention it up front — a "
+                        "return leg brings the price down on both.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-rivne",
+        "city": "city.rivne",
+        "km": 330,
+        "hours": "4–5",
+        "via": ["city.zhytomyr"],
+        "copy": {
+            "uk": {
+                "intro": "330 км тією ж трасою М06, що веде на Львів. Рівне стоїть якраз по "
+                         "дорозі, тож цей напрямок часто вдається поєднати з львівським "
+                         "рейсом.",
+                "cargo": "Будматеріали в упаковці, меблі, товар для магазинів, обладнання. "
+                         "Через розташування на трасі сюди зручно завозити партії дорогою "
+                         "далі на захід.",
+                "note": "Якщо ваш вантаж їде в Рівне, а в нас того тижня є рейс на Львів — "
+                        "вийде дешевше. Спитайте при дзвінку.",
+            },
+            "ru": {
+                "intro": "330 км по той же трассе М06, что ведёт на Львов. Ровно стоит как "
+                         "раз по дороге, поэтому это направление часто удаётся совместить со "
+                         "львовским рейсом.",
+                "cargo": "Стройматериалы в упаковке, мебель, товар для магазинов, "
+                         "оборудование. Из-за расположения на трассе сюда удобно завозить "
+                         "партии по дороге дальше на запад.",
+                "note": "Если ваш груз едет в Ровно, а у нас на той неделе есть рейс на "
+                        "Львов — выйдет дешевле. Спросите при звонке.",
+            },
+            "en": {
+                "intro": "330 km along the same M06 that runs to Lviv. Rivne sits directly "
+                         "on that road, so this route can often be combined with a Lviv trip.",
+                "cargo": "Packaged building materials, furniture, shop stock, equipment. "
+                         "Being on the main westbound road makes it convenient to drop a "
+                         "consignment here on the way further west.",
+                "note": "If your load is going to Rivne and we have a Lviv run that week, it "
+                        "comes out cheaper. Ask when you call.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-poltava",
+        "city": "city.poltava",
+        "km": 340,
+        "hours": "4–5",
+        "via": [],
+        "copy": {
+            "uk": {
+                "intro": "340 км трасою М03 — тією самою, що веде на Харків. Дорога хороша, "
+                         "рух рівний, без ділянок, де доводиться повзти.",
+                "cargo": "Харчове й торгове обладнання, товар для магазинів і кафе, меблі. "
+                         "Полтава — сильний аграрний і харчовий регіон, тому часто везуть "
+                         "обладнання для виробництв і закладів.",
+                "note": "Полтава лежить по дорозі на Харків і Дніпро — якщо вантаж їде далі, "
+                        "проміжна точка тут майже нічого не додає до вартості.",
+            },
+            "ru": {
+                "intro": "340 км по трассе М03 — той самой, что ведёт на Харьков. Дорога "
+                         "хорошая, движение ровное, без участков, где приходится ползти.",
+                "cargo": "Пищевое и торговое оборудование, товар для магазинов и кафе, "
+                         "мебель. Полтава — сильный аграрный и пищевой регион, поэтому часто "
+                         "везут оборудование для производств и заведений.",
+                "note": "Полтава лежит по дороге на Харьков и Днепр — если груз едет дальше, "
+                        "промежуточная точка здесь почти ничего не добавляет к стоимости.",
+            },
+            "en": {
+                "intro": "340 km on the M03, the same road that continues to Kharkiv. Good "
+                         "surface and steady traffic, with no stretches where a loaded van "
+                         "has to crawl.",
+                "cargo": "Catering and retail equipment, stock for shops and cafes, "
+                         "furniture. Poltava sits in a strong agricultural and food-producing "
+                         "region, so production and hospitality equipment moves here often.",
+                "note": "Poltava is on the way to both Kharkiv and Dnipro — if your load is "
+                        "going further, adding a stop here costs almost nothing.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-zaporizhzhia",
+        "city": "city.zapor",
+        "km": 520,
+        "hours": "7–9",
+        "via": ["city.poltava", "city.dnipro"],
+        "copy": {
+            "uk": {
+                "intro": "520 км через Полтаву й Дніпро. Один із довших рейсів: виїзд "
+                         "зазвичай рано вранці, щоб вивантажитись того самого дня.",
+                "cargo": "Промислове обладнання, метал у пакуванні, запчастини, товар на "
+                         "склади. Запоріжжя — індустріальне місто, і вантажі тут відповідні: "
+                         "важчі й габаритніші за середні.",
+                "note": "Скажіть вагу й габарити при дзвінку: на цьому напрямку частіше, ніж "
+                        "деінде, буває, що вантаж просто не влазить у бус до 3,5 т — краще "
+                        "зʼясувати це заздалегідь, ніж на місці.",
+            },
+            "ru": {
+                "intro": "520 км через Полтаву и Днепр. Один из более длинных рейсов: выезд "
+                         "обычно рано утром, чтобы выгрузиться в тот же день.",
+                "cargo": "Промышленное оборудование, металл в упаковке, запчасти, товар на "
+                         "склады. Запорожье — индустриальный город, и грузы здесь "
+                         "соответствующие: тяжелее и габаритнее средних.",
+                "note": "Скажите вес и габариты при звонке: на этом направлении чаще, чем "
+                        "где-либо, бывает, что груз просто не влезает в бус до 3,5 т — лучше "
+                        "выяснить это заранее, чем на месте.",
+            },
+            "en": {
+                "intro": "520 km via Poltava and Dnipro. One of the longer runs: we normally "
+                         "leave early so we can unload the same day.",
+                "cargo": "Industrial equipment, packaged metal, spare parts, stock for "
+                         "warehouses. Zaporizhzhia is an industrial city and the loads "
+                         "reflect that — heavier and bulkier than average.",
+                "note": "Tell us the weight and dimensions when you call. More often than on "
+                        "other routes, a load here simply will not fit a 3.5-tonne van — far "
+                        "better to establish that in advance than on the day.",
+            },
+        },
+    },
+    {
+        "slug": "kyiv-chernivtsi",
+        "city": "city.chernivtsi",
+        "km": 540,
+        "hours": "8–10",
+        "via": ["city.vinnytsia"],
+        "copy": {
+            "uk": {
+                "intro": "540 км на південний захід через Вінницю. За кілометрами це як "
+                         "Львів, але часу треба більше: остання третина дороги вужча й "
+                         "повільніша, тож ми не обіцяємо львівських строків.",
+                "cargo": "Меблі й особисті речі при переїзді, товар для магазинів, "
+                         "обладнання. Чернівці — не найчастіший напрямок, тому рейс сюди "
+                         "майже завжди планується під конкретне замовлення.",
+                "note": "Через відстань і дорогу тут майже завжди ночівля в дорозі або "
+                        "вивантаження наступного ранку. Це закладено в розрахунок, ніяких "
+                        "доплат «за ніч» потім не зʼявляється.",
+            },
+            "ru": {
+                "intro": "540 км на юго-запад через Винницу. По километрам это как Львов, но "
+                         "времени нужно больше: последняя треть дороги уже и медленнее, "
+                         "поэтому мы не обещаем львовских сроков.",
+                "cargo": "Мебель и личные вещи при переезде, товар для магазинов, "
+                         "оборудование. Черновцы — не самое частое направление, поэтому рейс "
+                         "сюда почти всегда планируется под конкретный заказ.",
+                "note": "Из-за расстояния и дороги здесь почти всегда ночёвка в пути или "
+                        "выгрузка на следующее утро. Это заложено в расчёт, никаких доплат "
+                        "«за ночь» потом не появляется.",
+            },
+            "en": {
+                "intro": "540 km to the south-west via Vinnytsia. The same distance as Lviv, "
+                         "but it takes longer: the last third of the road is narrower and "
+                         "slower, so we do not promise Lviv timings here.",
+                "cargo": "Furniture and personal belongings for people relocating, shop "
+                         "stock, equipment. Chernivtsi is not a frequent destination, so a "
+                         "run here is almost always planned around a specific booking.",
+                "note": "Given the distance and the road, this usually means an overnight "
+                        "stop or unloading the following morning. That is built into the "
+                        "quote — no overnight surcharge appears afterwards.",
+            },
+        },
+    },
 ]
 
 BY_SLUG = {r["slug"]: r for r in ROUTES}
