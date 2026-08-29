@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Міжміські вантажні перевезення з Києва по Україні | Веземо24{% endblock %}
-{% block description %}Міжміські вантажні перевезення з Києва: Львів, Одеса, Дніпро, Харків, Вінниця та інші міста. Окремий бус до 3,5 т під ваш вантаж — без перевантажень і складів. Розрахунок за маршрутом.{% endblock %}
+{% block title %}{{ t('meta.mizh.title') }}{% endblock %}
+{% block description %}{{ t('meta.mizh.desc') }}{% endblock %}
 
 {% block content %}
 <script type="application/ld+json">
@@ -9,8 +9,8 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Головна", "item": "{{ SITE_URL }}/" },
-    { "@type": "ListItem", "position": 2, "name": "Міжміські перевезення", "item": "{{ SITE_URL }}{{ url_for('main.mizhmiski') }}" }
+    { "@type": "ListItem", "position": 1, "name": "{{ t('nav.home') }}", "item": "{{ SITE_URL }}{{ url_for('main.index') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ t('foot.mizh_full') }}", "item": "{{ SITE_URL }}{{ url_for('main.mizhmiski') }}" }
   ]
 }
 </script>
@@ -19,42 +19,40 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    { "@type": "Question", "name": "Скільки коштує перевезення Київ – Львів?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Вартість залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, вона фіксується до виїзду." } },
-    { "@type": "Question", "name": "Мій вантаж їде окремо чи разом з чужим?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка." } },
-    { "@type": "Question", "name": "Скільки часу займає доставка в інше місто?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Здебільшого це один день у дорозі. Виїзд можливий у день звернення або на наступний ранок, залежно від напрямку." } },
-    { "@type": "Question", "name": "Що можна перевозити?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття." } }
+    { "@type": "Question", "name": "{{ t('mizh.faq.q1') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a1') }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q2') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a2') }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q3') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a3') }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q4') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a4') }}" } }
   ]
 }
 </script>
 
 <section class="section">
   <div class="container">
-    <nav class="crumbs" aria-label="Навігація">
-      <a href="{{ url_for('main.index') }}">Головна</a> <span aria-hidden="true">→</span> <span>Міжміські перевезення</span>
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a> <span aria-hidden="true">→</span> <span>{{ t('foot.mizh_full') }}</span>
     </nav>
 
     <div class="section-head">
-      <span class="section-head__eyebrow">По всій Україні</span>
-      <h1>Міжміські вантажні перевезення з Києва</h1>
+      <span class="section-head__eyebrow">{{ t('mizh.eyebrow') }}</span>
+      <h1>{{ t('mizh.h1') }}</h1>
       <p class="section-head__lead">
-        Возимо вантажі з Києва в будь-яке місто України власним бусом до 3,5 тонн.
-        Ваш вантаж їде окремим рейсом — його не перевантажують на складах і не тримають,
-        поки набереться попутний груз. Ціна фіксується до виїзду.
+        {{ t('mizh.lead') }}
       </p>
       <div class="cluster" style="margin-top: var(--sp-5)">
         <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-mizhmiski">📞 {{ PHONE_DISPLAY }}</a>
-        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">Розрахувати маршрут</a>
+        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('mizh.calc') }}</a>
       </div>
     </div>
 
     <div class="split__media" style="aspect-ratio: 21/9; margin-top: var(--sp-6)">
-      {{ picture('road-wide.jpg', alt='Міжміські вантажні перевезення з Києва по Україні',
+      {{ picture('road-wide.jpg', alt=t('home.img.road_wide'),
                  sizes='(min-width: 1140px) 1092px, 100vw') }}
-      <span class="split__tag">Київ → вся Україна</span>
+      <span class="split__tag">{{ t('home.split.tag') }}</span>
     </div>
   </div>
 </section>
@@ -62,23 +60,23 @@
 <section class="section section--flush">
   <div class="container">
     <div class="section-head">
-      <h2>Популярні напрямки</h2>
-      <p class="section-head__lead">Відстані орієнтовні — точний маршрут і вартість рахуємо під ваше замовлення.</p>
+      <h2>{{ t('mizh.routes.h2') }}</h2>
+      <p class="section-head__lead">{{ t('mizh.routes.lead') }}</p>
     </div>
     <ul class="routes">
-      {% for city, km in [
-        ('Львів', '540'), ('Одеса', '475'), ('Дніпро', '480'), ('Харків', '480'),
-        ('Запоріжжя', '520'), ('Полтава', '340'), ('Вінниця', '265'), ('Житомир', '140'),
-        ('Черкаси', '190'), ('Рівне', '330'), ('Чернівці', '540')
+      {% for key, km in [
+        ('city.lviv', '540'), ('city.odesa', '475'), ('city.dnipro', '480'), ('city.kharkiv', '480'),
+        ('city.zapor', '520'), ('city.poltava', '340'), ('city.vinnytsia', '265'), ('city.zhytomyr', '140'),
+        ('city.cherkasy', '190'), ('city.rivne', '330'), ('city.chernivtsi', '540')
       ] %}
       <li class="route">
-        <span class="route__name">Київ → {{ city }}</span>
-        <span class="route__km">≈ {{ km }} км</span>
+        <span class="route__name">{{ t('city.kyiv') }} → {{ t(key) }}</span>
+        <span class="route__km">≈ {{ km }} {{ t('common.km') }}</span>
       </li>
       {% endfor %}
       <li class="route route--any">
-        <span class="route__name">Інший напрямок</span>
-        <span class="route__km">Порахуємо</span>
+        <span class="route__name">{{ t('mizh.routes.other') }}</span>
+        <span class="route__km">{{ t('mizh.routes.other_km') }}</span>
       </li>
     </ul>
   </div>
@@ -88,23 +86,23 @@
   <div class="container">
     <div class="grid grid--2">
       <article class="card">
-        <h2 class="card__title">Що возимо міжміськими рейсами</h2>
+        <h2 class="card__title">{{ t('mizh.what.h2') }}</h2>
         <ul class="checks">
-          <li>Товар для бізнесу — постачання в інші міста, доставка замовлень</li>
-          <li>Меблі та побутову техніку</li>
-          <li>Обладнання, інструмент, виставкові матеріали</li>
-          <li>Особисті речі при переїзді в інше місто</li>
+          <li>{{ t('mizh.what.c1') }}</li>
+          <li>{{ t('mizh.what.c2') }}</li>
+          <li>{{ t('mizh.what.c3') }}</li>
+          <li>{{ t('mizh.what.c4') }}</li>
         </ul>
-        <p class="field__hint">Не беремо небезпечні вантажі та будівельне сміття.</p>
+        <p class="field__hint">{{ t('mizh.what.note') }}</p>
       </article>
 
       <article class="card">
-        <h2 class="card__title">Як це працює</h2>
+        <h2 class="card__title">{{ t('mizh.how.h2') }}</h2>
         <ol class="steps">
-          <li><strong>Ви телефонуєте</strong> або лишаєте заявку — кажете маршрут і що саме везти.</li>
-          <li><strong>Називаємо ціну</strong> одразу. Вона фіксується і не змінюється після завантаження.</li>
-          <li><strong>Забираємо вантаж</strong> у зручний час — часто вже в день звернення.</li>
-          <li><strong>Веземо напряму</strong> без перевантажень і віддаємо отримувачу.</li>
+          <li><strong>{{ t('mizh.how.s1b') }}</strong> {{ t('mizh.how.s1') }}</li>
+          <li><strong>{{ t('mizh.how.s2b') }}</strong> {{ t('mizh.how.s2') }}</li>
+          <li><strong>{{ t('mizh.how.s3b') }}</strong> {{ t('mizh.how.s3') }}</li>
+          <li><strong>{{ t('mizh.how.s4b') }}</strong> {{ t('mizh.how.s4') }}</li>
         </ol>
       </article>
     </div>
@@ -114,30 +112,30 @@
 <section class="section section--flush">
   <div class="container container--narrow">
     <div class="section-head section-head--center">
-      <h2>Часті питання</h2>
+      <h2>{{ t('mizh.faq.h2') }}</h2>
     </div>
     <div class="faq">
       <details class="faq__item">
-        <summary class="faq__q">Скільки коштує перевезення Київ – Львів?</summary>
-        <p class="faq__a">Залежить від обсягу вантажу, потреби у вантажниках і того, чи потрібен зворотний рейс. Зателефонуйте — назвемо точну ціну одразу, і вона фіксується до виїзду.</p>
+        <summary class="faq__q">{{ t('mizh.faq.q1') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a1') }}</p>
       </details>
       <details class="faq__item">
-        <summary class="faq__q">Мій вантаж їде окремо чи разом з чужим?</summary>
-        <p class="faq__a">Окремо. Ми беремо один вантаж на рейс — без перевантажень на складах і без очікування, поки набереться попутка.</p>
+        <summary class="faq__q">{{ t('mizh.faq.q2') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a2') }}</p>
       </details>
       <details class="faq__item">
-        <summary class="faq__q">Скільки часу займає доставка в інше місто?</summary>
-        <p class="faq__a">Здебільшого один день у дорозі. Виїзд можливий у день звернення або на наступний ранок — залежно від напрямку.</p>
+        <summary class="faq__q">{{ t('mizh.faq.q3') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a3') }}</p>
       </details>
       <details class="faq__item">
-        <summary class="faq__q">Що можна перевозити?</summary>
-        <p class="faq__a">Меблі, побутову техніку, товар для бізнесу, обладнання, особисті речі при переїзді. Не перевозимо небезпечні вантажі та будівельне сміття.</p>
+        <summary class="faq__q">{{ t('mizh.faq.q4') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a4') }}</p>
       </details>
     </div>
   </div>
 </section>
 
-{% with cta_title = 'Порахуємо ваш маршрут за хвилину', cta_text = 'Скажіть, звідки й куди — і що саме везти. Ціну назвемо одразу.', cta_source = 'mizhmiski' %}
+{% with cta_title = t('mizh.cta.title'), cta_text = t('mizh.cta.text'), cta_source = 'mizhmiski' %}
   {% include 'partials/_cta.html' %}
 {% endwith %}
 {% endblock %}

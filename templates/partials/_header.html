@@ -1,31 +1,33 @@
 <header class="header" id="js-header">
   <div class="container header__inner">
-    <a class="logo" href="{{ url_for('main.index') }}" aria-label="Веземо24 — на головну">
-      <span class="logo__word">Веземо</span>
+    <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ t('nav.logo_aria') }}">
+      <span class="logo__word">{{ t('brand.word') }}</span>
       <span class="logo__badge">24</span>
     </a>
 
-    <nav class="nav" id="js-nav" aria-label="Головна навігація">
+    <nav class="nav" id="js-nav" aria-label="{{ t('nav.aria') }}">
       {% set nav_items = [
-        ('main.index',        'Головна'),
-        ('main.services',     'Послуги'),
-        ('main.mizhmiski',    'Міжміські'),
-        ('main.calculate_km', 'Розрахувати вартість'),
+        ('main.index',        'nav.home'),
+        ('main.services',     'nav.services'),
+        ('main.mizhmiski',   'nav.mizh'),
+        ('main.calculate_km', 'nav.calc'),
       ] %}
-      {% for endpoint, label in nav_items %}
+      {% for endpoint, key in nav_items %}
         <a class="nav__link{% if request.endpoint == endpoint %} is-current{% endif %}"
            href="{{ url_for(endpoint) }}"
-           {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a>
+           {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ t(key) }}</a>
       {% endfor %}
+
+      {% include 'partials/_langswitch.html' %}
 
       <a class="header__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">
         <span aria-hidden="true">📞</span>{{ PHONE_DISPLAY }}
       </a>
-      <a class="btn btn--solid-dark" href="{{ url_for('contact.contact') }}">Залишити заявку</a>
+      <a class="btn btn--solid-dark" href="{{ url_for('contact.contact') }}">{{ t('nav.lead') }}</a>
     </nav>
 
     <button class="burger" id="js-burger" type="button"
-            aria-label="Відкрити меню" aria-expanded="false" aria-controls="js-nav">
+            aria-label="{{ t('nav.burger') }}" aria-expanded="false" aria-controls="js-nav">
       <span class="burger__line"></span>
       <span class="burger__line"></span>
       <span class="burger__line"></span>

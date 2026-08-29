@@ -10,11 +10,19 @@
   /* Готові напрямки з зашитими координатами. Сенс не лише в зручності:
      пресет не робить ЖОДНОГО запиту до геокодера, тож найпопулярніші
      маршрути рахуються миттєво й не витрачають ліміт Nominatim. */
+  /* Розвʼязуємо переклад у момент виклику, а не при завантаженні файлу:
+     i18n.js має defer і виконується пізніше за цей скрипт, тож на момент
+     старту window.VZ ще не існує. Раніше через це на сторінку виводились
+     самі ключі («unit.km» замість «км»). */
+  var T = function (k, v) {
+    return window.VZ && window.VZ.t ? window.VZ.t(k, v) : k;
+  };
+  var KYIV_LL = [50.4501, 30.5234];
   var PRESETS = [
-    { label: "Київ → Львів",  a: ["Київ", 50.4501, 30.5234], b: ["Львів", 49.8397, 24.0297] },
-    { label: "Київ → Одеса",  a: ["Київ", 50.4501, 30.5234], b: ["Одеса", 46.4825, 30.7233] },
-    { label: "Київ → Дніпро", a: ["Київ", 50.4501, 30.5234], b: ["Дніпро", 48.4647, 35.0462] },
-    { label: "Київ → Харків", a: ["Київ", 50.4501, 30.5234], b: ["Харків", 49.9935, 36.2304] },
+    { to: "city.lviv",    ll: [49.8397, 24.0297] },
+    { to: "city.odesa",   ll: [46.4825, 30.7233] },
+    { to: "city.dnipro",  ll: [48.4647, 35.0462] },
+    { to: "city.kharkiv", ll: [49.9935, 36.2304] },
   ];
 
   var SERVICE_ORDER = ["bus_taxi", "bus_delivery", "bus_relocation"];
@@ -36,16 +44,16 @@
   function formatKm(meters) {
     var km = (meters || 0) / 1000;
     var txt = km >= 100 ? String(Math.round(km)) : km.toFixed(1).replace(".", ",");
-    return txt.replace(",0", "") + " км";
+    return txt.replace(",0", "") + " " + T("unit.km");
   }
 
   function formatDuration(seconds) {
     var total = Math.round((seconds || 0) / 60);
     var h = Math.floor(total / 60);
     var m = total % 60;
-    if (h && m) return h + " год " + m + " хв";
-    if (h) return h + " год";
-    return m + " хв";
+    if (h && m) return h + " " + T("unit.hour") + " " + m + " " + T("unit.min");
+    if (h) return h + " " + T("unit.hour");
+    return m + " " + T("unit.min");
   }
 
   function clearMapLayers() {
@@ -71,7 +79,7 @@
     btn.classList.toggle("is-busy", !!on);
     if (on) {
       if (!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
-      btn.textContent = "Рахуємо…";
+      btn.textContent = T("calc.busy");
     } else if (btn.getAttribute("data-label")) {
       btn.textContent = btn.getAttribute("data-label");
     }
@@ -116,7 +124,7 @@
       var b = document.createElement("button");
       b.type = "button";
       b.className = "preset";
-      b.textContent = preset.label;
+      b.textContent = T("city.kyiv") + " → " + T(preset.to);
       b.addEventListener("click", function () { applyPreset(preset); });
       host.appendChild(b);
     });
@@ -125,7 +133,11 @@
   function applyPreset(preset) {
     clearRoute();
     var rows = document.querySelectorAll("#points-container .point");
-    [preset.a, preset.b].forEach(function (pt, i) {
+    var points = [
+      [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1]],
+      [T(preset.to), preset.ll[0], preset.ll[1]],
+    ];
+    points.forEach(function (pt, i) {
       var row = rows[i];
       if (!row) return;
       var input = row.querySelector(".point__input");
@@ -197,7 +209,7 @@
     autocompleteDropdown.innerHTML = "";
     if (!results.length) {
       autocompleteDropdown.classList.add("suggest--empty");
-      autocompleteDropdown.innerHTML = '<div class="suggest__item suggest__item--hint">Нічого не знайдено</div>';
+      autocompleteDropdown.innerHTML = '<div class="suggest__item suggest__item--hint">' + T("calc.nothing") + '</div>';
     } else {
       autocompleteDropdown.classList.remove("suggest--empty");
       results.forEach(function (r) {
@@ -305,9 +317,9 @@
     var params = new URLSearchParams({ lat: lat, lon: lng });
     return getJSON(GEO_REVERSE + "?" + params)
       .then(function (data) {
-        return (data && data.display) || "Точка на карті";
+        return (data && data.display) || T("calc.map_point");
       })
-      .catch(function () { return "Точка на карті"; });
+      .catch(function () { return T("calc.map_point"); });
   }
 
   function enableMapClickMode() {
@@ -315,7 +327,7 @@
     if (mapClickHint) mapClickHint.remove();
     mapClickHint = L.popup({ closeButton: true, autoClose: false })
       .setLatLng(map.getCenter())
-      .setContent("<strong>Натисніть на карту</strong>, щоб додати точку маршруту.")
+      .setContent(T("calc.click_hint"))
       .openOn(map);
     if (!map) return;
     map.getContainer().classList.add("map-picking");
@@ -360,12 +372,12 @@
     row.classList.add("point--map");
     var inp = row.querySelector(".point__input");
     if (!inp) return;
-    inp.value = "Точка на карті…";
+    inp.value = T("calc.pending");
     reverseGeocode(lat, lng).then(function (label) {
       inp.value = label;
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
-    marker.bindPopup(inp.value || "Точка на карті");
+    marker.bindPopup(inp.value || T("calc.map_point"));
     row._mapMarker = marker;
   }
 
@@ -380,15 +392,15 @@
     div.setAttribute("data-lng", lng);
     div.innerHTML =
       '<div class="point__pin point__pin--via">•</div>' +
-      '<input type="text" class="point__input" placeholder="Точка на карті" readonly>' +
-      '<button class="point__remove" title="Видалити">✕</button>';
+      '<input type="text" class="point__input" placeholder=T("calc.map_point") readonly>' +
+      '<button class="point__remove" title=T("calc.remove")>✕</button>';
     var inp = div.querySelector(".point__input");
-    inp.value = "Точка на карті…";
+    inp.value = T("calc.pending");
     reverseGeocode(lat, lng).then(function (label) {
       inp.value = label;
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
-    marker.bindPopup(inp.value || "Точка на карті");
+    marker.bindPopup(inp.value || T("calc.map_point"));
     div._mapMarker = marker;
     div.querySelector(".point__remove").addEventListener("click", function () {
       if (div._mapMarker && div._mapMarker.remove) div._mapMarker.remove();
@@ -397,7 +409,7 @@
     container.insertBefore(div, lastRow);
 
     inp.addEventListener("change", function () {
-      marker.getPopup().setContent(inp.value || "Точка на карті");
+      marker.getPopup().setContent(inp.value || T("calc.map_point"));
     });
   }
 
@@ -441,8 +453,8 @@
     div.className = "point";
     div.innerHTML =
       '<div class="point__pin point__pin--via">•</div>' +
-      '<input type="text" class="point__input" placeholder="Проміжна точка (місто або адреса)" autocomplete="off">' +
-      '<button class="point__remove" title="Видалити">✕</button>';
+      '<input type="text" class="point__input" placeholder=T("calc.via_ph") autocomplete="off">' +
+      '<button class="point__remove" title=T("calc.remove")>✕</button>';
     var inp = div.querySelector(".point__input");
     div.querySelector(".point__remove").addEventListener("click", function () {
       div.remove();
@@ -459,7 +471,7 @@
       var input = row.querySelector(".point__input");
       var value = input ? input.value.trim() : "";
       if (lat != null && lng != null) {
-        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng), label: value || "Точка на карті" };
+        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng), label: value || T("calc.map_point") };
       }
       return { type: "address", value: value, label: value };
     });
@@ -483,7 +495,7 @@
     });
 
     if (filled.length < 2) {
-      notice("Вкажіть мінімум дві точки: звідки та куди.");
+      notice(T("calc.need_two"));
       return;
     }
 
@@ -501,8 +513,8 @@
       .then(function (coords) {
         var missing = coords.findIndex(function (c) { return !c; });
         if (missing >= 0) {
-          var label = filled[missing].label || filled[missing].value || "Точка " + (missing + 1);
-          notice('Адресу «' + label + '» не знайдено. Уточніть написання або поставте точку на карті.');
+          var label = filled[missing].label || filled[missing].value || T("calc.map_point");
+          notice(T("calc.not_found", { label: label }));
           aborted = true;
           return;
         }
@@ -519,7 +531,7 @@
       .then(function (route) {
         if (aborted) return;
         if (!route || !route.geometry) {
-          notice("Маршрут не знайдено. Перевірте точки або спробуйте інші адреси.");
+          notice(T("calc.no_route"));
           return;
         }
 
@@ -539,15 +551,15 @@
         var legs = route.legs || [];
         var legsHtml = legs
           .map(function (leg, i) {
-            var a = (labels[i] || "Точка " + (i + 1)).split(",")[0].trim();
-            var b = (labels[i + 1] || "Точка " + (i + 2)).split(",")[0].trim();
+            var a = (labels[i] || T("calc.map_point")).split(",")[0].trim();
+            var b = (labels[i + 1] || T("calc.map_point")).split(",")[0].trim();
             var dist = formatKm(leg.distance);
             return '<div class="result__leg"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + "</strong></div>";
           })
           .join("");
 
         var resVehicle = document.getElementById("res-vehicle");
-        if (resVehicle) resVehicle.textContent = "Бус до 3,5 т";
+        if (resVehicle) resVehicle.textContent = T("calc.vehicle");
         document.getElementById("res-distance").textContent = distKm;
         document.getElementById("res-duration").textContent = timeStr;
         document.getElementById("legs-details").innerHTML = legsHtml || "";
@@ -558,7 +570,7 @@
       })
       .catch(function (err) {
         console.error(err);
-        notice("Не вдалося побудувати маршрут. Перевірте адреси або спробуйте за хвилину.");
+        notice(T("calc.failed"));
       })
       .then(function () { setBusy(false); });
   }
@@ -590,15 +602,15 @@
 
       var price = document.createElement("span");
       price.className = "svc__price";
-      price.textContent = item.res.total + " грн";
+      price.textContent = item.res.total + " " + T("unit.uah");
 
       var rate = document.createElement("span");
       rate.className = "svc__rate";
-      rate.textContent = item.rate ? item.rate + " грн/год" : "";
+      rate.textContent = item.rate ? item.rate + " " + T("unit.uah_hour") : "";
       if (item.id === cheapest) {
         var tag = document.createElement("b");
         tag.className = "svc__tag";
-        tag.textContent = "найдешевше";
+        tag.textContent = T("calc.cheapest");
         rate.appendChild(document.createTextNode(" "));
         rate.appendChild(tag);
       }

@@ -1,0 +1,12 @@
+{# Перемикач мов. Кожне посилання веде на ТУ САМУ сторінку іншою мовою,
+   а не на головну — інакше людина втрачає місце, де була. #}
+<div class="langs" role="group" aria-label="{{ t('common.lang_label') }}">
+  {% for l in LOCALES %}
+    <a class="langs__item{% if l == LOCALE %} is-current{% endif %}"
+       href="{{ locale_url(l) }}"
+       hreflang="{{ HREFLANG[l] }}"
+       lang="{{ HREFLANG[l] }}"
+       {% if l == LOCALE %}aria-current="true"{% endif %}
+       title="{{ LOCALE_NAMES[l] }}">{{ LOCALE_SHORT[l] }}</a>
+  {% endfor %}
+</div>

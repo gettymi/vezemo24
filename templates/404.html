@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Сторінку не знайдено | Веземо24{% endblock %}
-{% block description %}Такої сторінки немає. Поверніться на головну або зателефонуйте — підкажемо все голосом.{% endblock %}
+{% block title %}{{ t('meta.404.title') }}{% endblock %}
+{% block description %}{{ t('meta.404.desc') }}{% endblock %}
 {% block head %}<meta name="robots" content="noindex, follow">{% endblock %}
 {% block content %}
 <section class="section">
   <div class="container container--narrow outcome">
     <p class="outcome__code">404</p>
-    <h1>Такої сторінки немає</h1>
-    <p class="outcome__text">Можливо, адреса змінилась або в посиланні є помилка. Ось куди варто заглянути:</p>
+    <h1>{{ t('e404.h1') }}</h1>
+    <p class="outcome__text">{{ t('e404.text') }}</p>
     <div class="cluster cluster--center">
-      <a class="btn btn--primary" href="{{ url_for('main.index') }}">На головну</a>
-      <a class="btn btn--ghost" href="{{ url_for('main.services') }}">Послуги</a>
-      <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a>
+      <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ t('common.home_link') }}</a>
+      <a class="btn btn--ghost" href="{{ url_for('main.services') }}">{{ t('nav.services') }}</a>
+      <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
       <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-404">📞 {{ PHONE_DISPLAY }}</a>
     </div>
   </div>

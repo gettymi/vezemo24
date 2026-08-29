@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="{{ HREFLANG[LOCALE] }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0ea5e9">
 
-  <title>{% block title %}Вантажні перевезення Київ та по Україні | Веземо24{% endblock %}</title>
-  <meta name="description" content="{% block description %}Вантажні перевезення Київ, область та по Україні: розвіз товару для бізнесу, міжміські рейси, вантажне таксі, переїзд. Бус до 3,5 т.{% endblock %}">
+  <title>{% block title %}{{ t('meta.home.title') }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ t('meta.home.desc') }}{% endblock %}">
 
   <link rel="canonical" href="{{ SITE_URL }}{{ request.path }}">
+
+  {# Кажемо Google, що це одна сторінка трьома мовами, а не три схожі
+     сторінки, які конкурують між собою. x-default веде на українську. #}
+  {% for code, href in alternates() %}
+  <link rel="alternate" hreflang="{{ code }}" href="{{ SITE_URL }}{{ href }}">
+  {% endfor %}
+  <link rel="alternate" hreflang="x-default" href="{{ SITE_URL }}{{ locale_url(DEFAULT_LOCALE) }}">
 
   <link rel="icon" type="image/x-icon" href="{{ static_url('images/favicon.ico') }}">
   <link rel="apple-touch-icon" href="{{ static_url('images/favicon.ico') }}">
@@ -20,7 +27,10 @@
   <meta property="og:image" content="{{ SITE_URL }}{{ url_for('static', filename='images/og-image.jpg') }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="uk_UA">
+  <meta property="og:locale" content="{{ OG_LOCALE[LOCALE] }}">
+  {% for l in LOCALES if l != LOCALE %}
+  <meta property="og:locale:alternate" content="{{ OG_LOCALE[l] }}">
+  {% endfor %}
   <meta property="og:site_name" content="Веземо24">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -33,7 +43,7 @@
   {% include 'partials/_analytics.html' %}
 </head>
 <body>
-  <a class="visually-hidden" href="#main">Перейти до вмісту</a>
+  <a class="visually-hidden" href="#main">{{ t('common.skip') }}</a>
 
   {% include 'partials/_header.html' %}
 
@@ -56,6 +66,8 @@
   {% include 'partials/_footer.html' %}
   {% include 'partials/_mobilebar.html' %}
 
+  {# Має йти перед рештою скриптів: вони беруть із нього рядки. #}
+  <script src="{{ static_url('js/i18n.js') }}" defer></script>
   <script src="{{ static_url('js/site.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>

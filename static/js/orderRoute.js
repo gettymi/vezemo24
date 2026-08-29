@@ -3,6 +3,8 @@
 (function () {
   "use strict";
 
+  var VZT = function (k) { return window.VZ && window.VZ.t ? window.VZ.t(k) : k; };
+
   var link = document.getElementById("order-this-route");
   if (!link) return;
 
@@ -17,16 +19,16 @@
     document.querySelectorAll("#points-container .point__input").forEach(function (i) {
       if (i.value.trim()) points.push(i.value.trim());
     });
-    if (points.length) parts.push("Маршрут: " + points.join(" → "));
+    if (points.length) parts.push(VZT("route.label") + ": " + points.join(" → "));
 
-    var dist = textOf("res-distance"); if (dist) parts.push("Відстань: " + dist);
-    var dur  = textOf("res-duration"); if (dur)  parts.push("Час у дорозі: " + dur);
-    var svc  = textOf("res-service");  if (svc && svc !== "—") parts.push("Послуга: " + svc);
+    var dist = textOf("res-distance"); if (dist) parts.push(VZT("route.distance") + ": " + dist);
+    var dur  = textOf("res-duration"); if (dur)  parts.push(VZT("route.duration") + ": " + dur);
+    var svc  = textOf("res-service");  if (svc && svc !== "—") parts.push(VZT("route.service") + ": " + svc);
 
     // Ціна тепер живе в обраній картці послуги, а не в окремому рядку підсумку.
     var selected = document.querySelector("#res-services .svc.is-selected .svc__price");
     var price = selected ? selected.textContent.trim() : "";
-    if (price) parts.push("Орієнтовна вартість: " + price);
+    if (price) parts.push(VZT("route.price") + ": " + price);
     if (!parts.length) return;
 
     var msg = parts.join("\n");

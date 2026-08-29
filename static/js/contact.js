@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", function () {
   var form = document.getElementById("contactForm");
   if (!form) return;
 
+  // Переклад дістаємо в момент виклику: i18n.js має defer.
+  var VZT = function (k) { return window.VZ && window.VZ.t ? window.VZ.t(k) : k; };
+
   var submitBtn = document.getElementById("submitBtn");
   var alertBox = document.getElementById("formAlert");
   var phoneInput = document.getElementById("phone");
@@ -44,14 +47,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!valid) {
       phoneInput.classList.add("is-error");
       phoneInput.focus();
-      showAlert("Введіть коректний номер телефону — 9 цифр після +380.");
+      showAlert(VZT("form.bad_phone"));
       return;
     }
 
     submitBtn.disabled = true;
     var btnLabel = submitBtn.querySelector("span");
     var original = btnLabel ? btnLabel.textContent : "";
-    if (btnLabel) btnLabel.textContent = "Надсилаємо…";
+    if (btnLabel) btnLabel.textContent = VZT("form.sending");
 
     var data = new FormData(form);            // csrf_token їде разом із формою
     if (phone) data.set("phone", phone.getNumber());
@@ -68,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(function (r) {
         if (!r.ok) {
-          showAlert(r.body.error || "Не вдалося надіслати. Спробуйте ще раз або зателефонуйте.");
+          showAlert(r.body.error || VZT("form.send_failed"));
           return;
         }
         window.dataLayer = window.dataLayer || [];
@@ -77,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "/thank-you";
       })
       .catch(function () {
-        showAlert("Немає звʼязку з сервером. Спробуйте пізніше або зателефонуйте нам.");
+        showAlert(VZT("form.no_connection"));
       })
       .finally(function () {
         submitBtn.disabled = false;

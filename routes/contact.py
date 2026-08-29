@@ -8,6 +8,8 @@ import phonenumbers
 import requests
 from flask import Blueprint, current_app, jsonify, render_template, request
 
+from i18n import DEFAULT
+
 from extensions import limiter
 
 contact_bp = Blueprint("contact", __name__)
@@ -107,11 +109,13 @@ def send_telegram(text):
     return True
 
 
-@contact_bp.route("/contact", methods=["GET"])
-def contact():
+@contact_bp.route("/contact", methods=["GET"], defaults={"lang": DEFAULT})
+@contact_bp.route("/<any(ru,en):lang>/contact", methods=["GET"])
+def contact(lang=DEFAULT):
     return render_template("contact.html")
 
 
+# POST лишається одним, спільним для всіх мов: форма шле дані, а не сторінку.
 @contact_bp.route("/contact", methods=["POST"])
 @limiter.limit("5 per hour")   # реальний ліміт: 5 заявок/год з одного IP
 def contact_submit():

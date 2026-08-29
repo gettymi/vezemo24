@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Послуги — розвіз товару, міжміські, вантажне таксі, переїзд | Веземо24{% endblock %}
-{% block description %}Послуги вантажних перевезень: розвіз товару для бізнесу, міжміські рейси по Україні, вантажне таксі, квартирний та офісний переїзд, вантажники. Бус до 3,5 т. Київ та область.{% endblock %}
+{% block title %}{{ t('meta.services.title') }}{% endblock %}
+{% block description %}{{ t('meta.services.desc') }}{% endblock %}
 
 {% block content %}
 <script type="application/ld+json">
@@ -9,129 +9,122 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Головна", "item": "{{ SITE_URL }}/" },
-    { "@type": "ListItem", "position": 2, "name": "Послуги", "item": "{{ SITE_URL }}{{ url_for('main.services') }}" }
+    { "@type": "ListItem", "position": 1, "name": "{{ t('nav.home') }}", "item": "{{ SITE_URL }}{{ url_for('main.index') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ t('nav.services') }}", "item": "{{ SITE_URL }}{{ url_for('main.services') }}" }
   ]
 }
 </script>
 
 <section class="section">
   <div class="container">
-    <nav class="crumbs" aria-label="Навігація">
-      <a href="{{ url_for('main.index') }}">Головна</a> <span aria-hidden="true">→</span> <span>Послуги</span>
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a> <span aria-hidden="true">→</span> <span>{{ t('nav.services') }}</span>
     </nav>
 
     <div class="section-head">
-      <span class="section-head__eyebrow">Що ми робимо</span>
-      <h1>Наші послуги</h1>
+      <span class="section-head__eyebrow">{{ t('svc.eyebrow') }}</span>
+      <h1>{{ t('svc.h1') }}</h1>
       <p class="section-head__lead">
-        Працюємо власним бусом до 3,5 тонн по Києву, області та всій Україні.
-        Один водій — один контакт: ви одразу говорите з тим, хто везе ваш вантаж.
-        Ціна фіксується до старту.
+        {{ t('svc.lead') }}
       </p>
       <div class="cluster" style="margin-top: var(--sp-5)">
         <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-services">📞 {{ PHONE_DISPLAY }}</a>
-        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">Розрахувати вартість</a>
+        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
       </div>
     </div>
 
     <ul class="grid grid--2">
       <li class="card card--feature">
         <div class="card__media card__media--contain">
-          {{ picture('busik.png', alt='Бус до 3,5 тонн для розвозу товару',
+          {{ picture('busik.png', alt=t('home.img.van'),
                      sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
         </div>
-        <span class="badge">Основний напрямок</span>
-        <h2 class="card__title">Розвіз товару для бізнесу</h2>
+        <span class="badge">{{ t('home.what.badge') }}</span>
+        <h2 class="card__title">{{ t('svc.b2b.title') }}</h2>
         <p class="card__text">
-          Регулярна доставка товару по точках: магазини, кафе, склади, пункти видачі.
-          Працюємо за вашим графіком — щодня, кілька разів на тиждень або в конкретні дні.
+          {{ t('svc.b2b.text') }}
         </p>
         <ul class="checks">
-          <li>Постійний маршрут за фіксованою домовленістю</li>
-          <li>Один і той самий водій — знає ваші точки</li>
-          <li>Тариф під обсяг і графік, вигідніше за погодинний</li>
+          <li>{{ t('svc.b2b.c1') }}</li>
+          <li>{{ t('svc.b2b.c2') }}</li>
+          <li>{{ t('svc.b2b.c3') }}</li>
         </ul>
         <div class="card__foot">
-          <a class="btn btn--primary btn--block" href="{{ url_for('contact.contact') }}">Обговорити графік</a>
+          <a class="btn btn--primary btn--block" href="{{ url_for('contact.contact') }}">{{ t('svc.b2b.cta') }}</a>
         </div>
       </li>
 
       <li class="card">
         <div class="card__media">
-          {{ picture('road-card.jpg', alt='Траса — міжміські перевезення з Києва',
+          {{ picture('road-card.jpg', alt=t('home.img.road'),
                      sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
         </div>
-        <h2 class="card__title">Міжміські перевезення</h2>
+        <h2 class="card__title">{{ t('svc.mizh.title') }}</h2>
         <p class="card__text">
-          Київ – Львів, Одеса, Дніпро, Харків та будь-який інший напрямок по Україні.
-          Ваш вантаж їде окремим рейсом, без перевантажень і складів.
+          {{ t('svc.mizh.text') }}
         </p>
         <ul class="checks">
-          <li>Один вантаж — один рейс</li>
-          <li>Здебільшого один день у дорозі</li>
-          <li>Розрахунок за маршрутом</li>
+          <li>{{ t('svc.mizh.c1') }}</li>
+          <li>{{ t('svc.mizh.c2') }}</li>
+          <li>{{ t('svc.mizh.c3') }}</li>
         </ul>
         <div class="card__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">Детальніше</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('common.more') }}</a>
         </div>
       </li>
 
       <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">📦</div>
-        <h2 class="card__title">Вантажне таксі (бус до 3,5 т)</h2>
+        <h2 class="card__title">{{ t('svc.taxi.title') }}</h2>
         <p class="card__text">
-          Меблі, побутова техніка, коробки, будматеріали в упаковці. Швидкий виїзд по Києву
-          та області, мінімум формальностей.
+          {{ t('svc.taxi.text') }}
         </p>
         <ul class="checks">
-          <li>Виїзд у день звернення</li>
-          <li>Київ та Київська область</li>
-          <li>від 799 грн/год, мінімум 2 години + подача</li>
+          <li>{{ t('svc.taxi.c1') }}</li>
+          <li>{{ t('svc.taxi.c2') }}</li>
+          <li>{{ t('svc.taxi.c3') }}</li>
         </ul>
         <div class="card__foot">
-          <a class="btn btn--ghost btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-service-taxi">Подзвонити</a>
+          <a class="btn btn--ghost btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-service-taxi">{{ t('common.call') }}</a>
         </div>
       </li>
 
       <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">🏠</div>
-        <h2 class="card__title">Квартирний та офісний переїзд</h2>
+        <h2 class="card__title">{{ t('svc.move.title') }}</h2>
         <p class="card__text">
-          Авто плюс вантажники: завантажуємо, веземо, розвантажуємо та заносимо на місце.
-          За потреби допоможемо з пакувальними матеріалами.
+          {{ t('svc.move.text') }}
         </p>
         <ul class="checks">
-          <li>Повний цикл — від завантаження до розстановки</li>
-          <li>Підйом на поверх</li>
-          <li>від 1099 грн/год</li>
+          <li>{{ t('svc.move.c1') }}</li>
+          <li>{{ t('svc.move.c2') }}</li>
+          <li>{{ t('svc.move.c3') }}</li>
         </ul>
         <div class="card__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">Замовити</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('common.order') }}</a>
         </div>
       </li>
 
       <li class="card card--accent">
         <div class="card__icon" aria-hidden="true">👷</div>
-        <h2 class="card__title">Вантажники</h2>
+        <h2 class="card__title">{{ t('svc.load.title') }}</h2>
         <p class="card__text">
-          Допомога із завантаженням і розвантаженням — разом з нашим авто або окремо.
-          Підйом на поверх, перестановка меблів у межах приміщення.
+          {{ t('svc.load.text') }}
         </p>
         <ul class="checks">
-          <li>Завантаження та розвантаження</li>
-          <li>Підйом на поверх без ліфта</li>
-          <li>Тариф від години</li>
+          <li>{{ t('svc.load.c1') }}</li>
+          <li>{{ t('svc.load.c2') }}</li>
+          <li>{{ t('svc.load.c3') }}</li>
         </ul>
         <div class="card__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">Замовити</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('common.order') }}</a>
         </div>
       </li>
     </ul>
   </div>
 </section>
 
-{% with cta_title = 'Не знайшли потрібне?', cta_text = 'Опишіть задачу — скажемо одразу, чи беремось і скільки це коштує.', cta_source = 'services' %}
+{% with cta_title = t('svc.cta.title'), cta_text = t('svc.cta.text'), cta_source = 'services' %}
   {% include 'partials/_cta.html' %}
 {% endwith %}
 {% endblock %}

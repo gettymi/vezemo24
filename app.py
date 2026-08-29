@@ -2,6 +2,7 @@ from datetime import date
 
 from flask import Flask, jsonify, render_template, request
 
+import i18n
 from assets import assets
 from config import Config
 from extensions import csrf, limiter
@@ -20,6 +21,7 @@ def create_app():
     csrf.init_app(app)
     limiter.init_app(app)
     assets.init_app(app)
+    i18n.init_app(app)
 
     app.register_blueprint(contact_bp)
     app.register_blueprint(geo_bp)

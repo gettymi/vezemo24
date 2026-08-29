@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Розрахувати вартість перевезення — калькулятор маршруту | Веземо24{% endblock %}
-{% block description %}Порахуйте відстань, час у дорозі та орієнтовну вартість перевезення по Києву, області та Україні. Вкажіть адреси — і одразу побачите ціну. Бус до 3,5 т.{% endblock %}
+{% block title %}{{ t('meta.calc.title') }}{% endblock %}
+{% block description %}{{ t('meta.calc.desc') }}{% endblock %}
 
 {% block head %}
 <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
@@ -24,8 +24,8 @@
     <div class="panel">
 
       <div class="panel__head">
-        <h1>Розрахувати вартість</h1>
-        <p>Вкажіть адреси або оберіть готовий напрямок — побачите відстань, час у дорозі та ціну за кожною послугою.</p>
+        <h1>{{ t('calc.h1') }}</h1>
+        <p>{{ t('calc.lead') }}</p>
       </div>
 
       {# Повідомлення в самій панелі. Раніше тут були alert(): вони блокують
@@ -35,53 +35,53 @@
       {# Готові напрямки. Координати зашиті, тож пресет не робить жодного
          запиту до геокодера — найчастіші маршрути рахуються миттєво. #}
       <div class="presets">
-        <span class="presets__label">Часті напрямки</span>
+        <span class="presets__label">{{ t('calc.presets') }}</span>
         <div class="presets__row" id="presets"></div>
       </div>
 
       <div class="points" id="points-container">
         <div class="point" data-index="0">
           <div class="point__pin point__pin--start">A</div>
-          <input type="text" class="input point__input" placeholder="Звідки (місто або адреса)"
-                 autocomplete="off" aria-label="Звідки">
+          <input type="text" class="input point__input" placeholder="{{ t('calc.from_ph') }}"
+                 autocomplete="off" aria-label="{{ t('calc.from') }}">
         </div>
         <div class="point" data-index="1">
           <div class="point__pin point__pin--end">B</div>
-          <input type="text" class="input point__input" placeholder="Куди (місто або адреса)"
-                 autocomplete="off" aria-label="Куди">
+          <input type="text" class="input point__input" placeholder="{{ t('calc.to_ph') }}"
+                 autocomplete="off" aria-label="{{ t('calc.to') }}">
         </div>
       </div>
 
       <div class="panel__actions">
         <div class="panel__actions-row">
-          <button type="button" id="add-point" class="btn btn--text">+ Додати точку</button>
-          <button type="button" id="add-point-map" class="btn btn--text">+ Точка на карті</button>
+          <button type="button" id="add-point" class="btn btn--text">{{ t('calc.add_point') }}</button>
+          <button type="button" id="add-point-map" class="btn btn--text">{{ t('calc.add_map') }}</button>
         </div>
         <div class="panel__actions-row">
-          <button type="button" id="build-route" class="btn btn--primary">Розрахувати</button>
-          <button type="button" id="clear-route" class="btn btn--ghost">Очистити</button>
+          <button type="button" id="build-route" class="btn btn--primary">{{ t('calc.build') }}</button>
+          <button type="button" id="clear-route" class="btn btn--ghost">{{ t('calc.clear') }}</button>
         </div>
       </div>
 
       <div class="result" id="route-result">
         <div class="result__facts">
           <div class="fact">
-            <span class="fact__label">Відстань</span>
-            <strong class="fact__value" id="res-distance">0 км</strong>
+            <span class="fact__label">{{ t('calc.distance') }}</span>
+            <strong class="fact__value" id="res-distance">—</strong>
           </div>
           <div class="fact">
-            <span class="fact__label">Час у дорозі</span>
-            <strong class="fact__value" id="res-duration">0 год</strong>
+            <span class="fact__label">{{ t('calc.duration') }}</span>
+            <strong class="fact__value" id="res-duration">—</strong>
           </div>
           <div class="fact">
-            <span class="fact__label">Транспорт</span>
-            <strong class="fact__value" id="res-vehicle">Бус до 3,5 т</strong>
+            <span class="fact__label">{{ t('calc.vehicle') }}</span>
+            <strong class="fact__value" id="res-vehicle">{{ t('calc.vehicle_val') }}</strong>
           </div>
         </div>
 
         {# Три ціни одразу, а не «спершу оберіть послугу». Вибір без цифр —
            це рішення наосліп; тепер людина порівнює й обирає свідомо. #}
-        <div class="svc-list" id="res-services" role="group" aria-label="Послуги та ціни"></div>
+        <div class="svc-list" id="res-services" role="group" aria-label="{{ t('calc.services_aria') }}"></div>
 
         {# Читає orderRoute.js, коли переносить розрахунок у форму заявки. #}
         <span id="res-service" hidden></span>
@@ -91,20 +91,20 @@
 
         <div class="result__cta">
           <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
-            📞 Замовити за цією ціною
+            📞 {{ t('calc.order_at_price') }}
           </a>
           <a class="btn btn--ghost btn--block" id="order-this-route"
              href="{{ url_for('contact.contact') }}" data-cta="form-calculator">
-            Передзвоніть мені
+            {{ t('common.callback') }}
           </a>
         </div>
 
         <p class="result__disclaimer">
-          Відстань, час і вартість — орієнтовні. Точну ціну підтвердимо після короткої розмови.
+          {{ t('calc.disclaimer') }}
         </p>
       </div>
 
-      <p class="panel__note">Мінімальне замовлення — 2 години + подача. Розрахунок орієнтовний.</p>
+      <p class="panel__note">{{ t('calc.note') }}</p>
     </div>
   </aside>
 
@@ -113,8 +113,8 @@
     {# Якщо Leaflet або тайли не завантажились, тут раніше лишався просто
        сірий прямокутник без пояснень. #}
     <div class="map-fallback" id="map-fallback" hidden>
-      <p class="map-fallback__title">Карта зараз недоступна</p>
-      <p class="map-fallback__text">Розрахунок за адресами працює й без неї — впишіть міста та натисніть «Розрахувати».</p>
+      <p class="map-fallback__title">{{ t('calc.map_off.title') }}</p>
+      <p class="map-fallback__text">{{ t('calc.map_off.text') }}</p>
     </div>
   </div>
 </div>

@@ -7,6 +7,10 @@
 (function (global) {
   "use strict";
 
+  var T = function (k, v) {
+    return global.VZ && global.VZ.t ? global.VZ.t(k, v) : k;
+  };
+
   /** Виїзд (подача), грн. */
   var BUS_FEED_UAH = 799;
   /** Пальне на довгих маршрутах, грн/км. */
@@ -15,10 +19,12 @@
   var BUS_MIN_HOURS = 2;
 
   /** Тариф за годину для кожної послуги, грн. */
+  /* Підписи більше не зашиті: беруться з i18n.js за поточною мовою.
+     Тарифи однакові для всіх мов — ціна від мови не залежить. */
   var BUS_SERVICE_CONFIG = {
-    bus_taxi:       { hourlyRate: 799,  label: "Вантажне таксі" },
-    bus_relocation: { hourlyRate: 1099, label: "Переїзд під ключ" },
-    bus_delivery:   { hourlyRate: 859,  label: "Доставка меблів / техніки" },
+    bus_taxi:       { hourlyRate: 799,  labelKey: "svc.bus_taxi" },
+    bus_relocation: { hourlyRate: 1099, labelKey: "svc.bus_relocation" },
+    bus_delivery:   { hourlyRate: 859,  labelKey: "svc.bus_delivery" },
   };
 
   var METERS_PER_KM = 1000;
@@ -52,15 +58,17 @@
     var minTotal = feed + minH * hourly;
 
     var roundedHours = Math.round(billableHours * 100) / 100;
+    var uah = T("unit.uah");
     var breakdown =
-      "Виїзд " + feed + " грн + " + roundedHours + " год × " + hourly +
-      " грн + " + distanceKm.toFixed(1) + " км × " + perKm + " грн";
+      T("price.feed") + " " + feed + " " + uah + " + " +
+      roundedHours + " " + T("unit.hour") + " × " + hourly + " " + uah + " + " +
+      distanceKm.toFixed(1).replace(/\.0$/, "") + " " + T("unit.km") + " × " + perKm + " " + uah;
 
     if (total < minTotal) {
       total = minTotal;
-      breakdown += " = " + total + " грн (мін. замовлення)";
+      breakdown += " = " + total + " " + uah + " (" + T("price.min_order") + ")";
     } else {
-      breakdown += " = " + Math.round(total) + " грн";
+      breakdown += " = " + Math.round(total) + " " + uah;
     }
 
     return {
@@ -85,7 +93,16 @@
     calculate: calculate,
     serviceTypeFromVehicle: serviceTypeFromVehicle,
     getHourlyRate: getHourlyRate,
-    getBusServiceConfig: function () { return BUS_SERVICE_CONFIG; },
+    /* Підписи підставляються в момент виклику, а не при завантаженні файлу:
+       так вони точно збігаються з мовою сторінки. */
+    getBusServiceConfig: function () {
+      var out = {};
+      Object.keys(BUS_SERVICE_CONFIG).forEach(function (id) {
+        var c = BUS_SERVICE_CONFIG[id];
+        out[id] = { hourlyRate: c.hourlyRate, label: T(c.labelKey) };
+      });
+      return out;
+    },
     constants: {
       BUS_FEED_UAH: BUS_FEED_UAH,
       BUS_MIN_HOURS: BUS_MIN_HOURS,

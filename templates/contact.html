@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Замовити перевезення — залишити заявку | Веземо24{% endblock %}
-{% block description %}Залиште номер — передзвонимо і назвемо точну ціну. Або подзвоніть самі: {{ PHONE_DISPLAY }}. Київ, область та вся Україна.{% endblock %}
+{% block title %}{{ t('meta.contact.title') }}{% endblock %}
+{% block description %}{{ t('meta.contact.desc', phone=PHONE_DISPLAY) }}{% endblock %}
 
 {% block content %}
 <section class="section">
   <div class="container">
     <div class="formcard">
       <div class="formcard__head">
-        <h1>Залишити заявку</h1>
-        <p>Достатньо номера телефону — передзвонимо і назвемо точну ціну.</p>
+        <h1>{{ t('contact.h1') }}</h1>
+        <p>{{ t('contact.lead') }}</p>
       </div>
 
       {# Дзвінок стоїть перед формою: у цій ніші це головний канал. #}
@@ -17,11 +17,11 @@
         <span aria-hidden="true" style="font-size:1.6rem">📞</span>
         <span>
           <span class="callbox__num">{{ PHONE_DISPLAY }}</span>
-          <span class="callbox__hours">{{ HOURS_LABEL }}</span>
+          <span class="callbox__hours">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }}</span>
         </span>
       </a>
 
-      <div class="divider"><span>або залиште номер</span></div>
+      <div class="divider"><span>{{ t('contact.or') }}</span></div>
 
       {% include 'partials/_lead_form.html' %}
     </div>

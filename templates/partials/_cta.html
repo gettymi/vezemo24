@@ -2,15 +2,15 @@
 <section class="section">
   <div class="container">
     <div class="cta">
-      <h2 class="cta__title">{{ cta_title | default('Потрібно щось перевезти?') }}</h2>
-      <p class="cta__text">{{ cta_text | default('Подзвоніть — назвемо ціну за одну хвилину. Або залиште номер, і ми передзвонимо.') }}</p>
+      <h2 class="cta__title">{{ cta_title | default(t('cta.title'), true) }}</h2>
+      <p class="cta__text">{{ cta_text | default(t('cta.text'), true) }}</p>
       <div class="cluster cluster--center">
         <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}"
            data-cta="phone-{{ cta_source | default('cta') }}">📞 {{ PHONE_DISPLAY }}</a>
         <a class="btn btn--ghost btn--lg" href="{{ url_for('contact.contact') }}"
-           data-cta="form-{{ cta_source | default('cta') }}">Передзвоніть мені</a>
+           data-cta="form-{{ cta_source | default('cta') }}">{{ t('common.callback') }}</a>
       </div>
-      <p class="cta__note">{{ HOURS_LABEL }} · {{ HOURS_NOTE }}</p>
+      <p class="cta__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }} · {{ t('hours.note') }}</p>
     </div>
   </div>
 </section>
