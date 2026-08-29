@@ -6,9 +6,17 @@
   "use strict";
 
   var KYIV = [50.4501, 30.5234];
-  var NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-  var NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
-  var OSRM_URL = "https://router.project-osrm.org/route/v1/driving";
+  /* Геосервіси більше не викликаються з браузера напряму: усе йде через
+     власні /api/geo/*, де є кеш, коректний User-Agent і дотримання
+     інтервалу між запитами (див. routes/geo.py). */
+  var GEO_SEARCH = "/api/geo/search";
+  var GEO_REVERSE = "/api/geo/reverse";
+  var GEO_ROUTE = "/api/geo/route";
+
+  function getJSON(url) {
+    return fetch(url, { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : null; });
+  }
 
   var map = null;
   var routeLayer = null;
@@ -65,26 +73,10 @@
 
   function searchAddresses(query) {
     if (!query || query.length < 2) return Promise.resolve([]);
-    var params = new URLSearchParams({
-      q: query,
-      format: "json",
-      limit: 6,
-      countrycodes: "ua",
-      "accept-language": "uk",   // без цього Nominatim віддає назви не українською
-    });
-    return fetch(NOMINATIM_URL + "?" + params, {
-      headers: { Accept: "application/json" },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ q: query, limit: 6 });
+    return getJSON(GEO_SEARCH + "?" + params)
       .then(function (data) {
-        if (!Array.isArray(data)) return [];
-        return data.map(function (d) {
-          return {
-            lat: parseFloat(d.lat),
-            lng: parseFloat(d.lon),
-            display: d.display_name,
-          };
-        });
+        return data && Array.isArray(data.results) ? data.results : [];
       })
       .catch(function () { return []; });
   }
@@ -156,7 +148,7 @@
         searchAddresses(value).then(function (results) {
           showAutocomplete(input, results);
         });
-      }, 400);
+      }, 600);
     });
 
     input.addEventListener("focus", function () {
@@ -174,41 +166,20 @@
   }
 
   function geocode(query) {
-    var params = new URLSearchParams({
-      q: query,
-      format: "json",
-      limit: 1,
-      countrycodes: "ua",
-      "accept-language": "uk",
-    });
-    return fetch(NOMINATIM_URL + "?" + params, {
-      headers: {
-        Accept: "application/json",
-      },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ q: query, limit: 1 });
+    return getJSON(GEO_SEARCH + "?" + params)
       .then(function (data) {
-        if (!data || !data[0]) return null;
-        var d = data[0];
-        return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), display: d.display_name };
-      });
+        var hit = data && data.results && data.results[0];
+        return hit || null;
+      })
+      .catch(function () { return null; });
   }
 
   function reverseGeocode(lat, lng) {
-    var params = new URLSearchParams({
-      lat: lat,
-      lon: lng,
-      format: "json",
-      "accept-language": "uk",
-    });
-    return fetch(NOMINATIM_REVERSE + "?" + params, {
-      headers: {
-        Accept: "application/json",
-      },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ lat: lat, lon: lng });
+    return getJSON(GEO_REVERSE + "?" + params)
       .then(function (data) {
-        return data && data.display_name ? data.display_name : "Точка на карті";
+        return (data && data.display) || "Точка на карті";
       })
       .catch(function () { return "Точка на карті"; });
   }
@@ -395,12 +366,17 @@
     markersLayer.clearLayers();
     routeLayer.clearLayers();
 
+    // Без цього прапорця не знайдена точка давала два alert поспіль:
+    // спершу «точку не знайдено», а потім ще й «маршрут не знайдено».
+    var aborted = false;
+
     resolvePoints(filled)
       .then(function (coords) {
         var missing = coords.findIndex(function (c) { return !c; });
         if (missing >= 0) {
           var label = filled[missing].label || filled[missing].value || "Точка " + (missing + 1);
           alert('Точку "' + label + '" не знайдено. Уточніть написання або поставте точку на карті.');
+          aborted = true;
           return;
         }
 
@@ -411,17 +387,15 @@
         });
 
         var coordsStr = coords.map(function (c) { return c.lng + "," + c.lat; }).join(";");
-        return fetch(OSRM_URL + "/" + coordsStr + "?overview=full&geometries=geojson", {
-          headers: { Accept: "application/json" },
-        }).then(function (r) { return r.json(); });
+        return getJSON(GEO_ROUTE + "?coords=" + encodeURIComponent(coordsStr));
       })
-      .then(function (osrm) {
-        if (!osrm || osrm.code !== "Ok") {
+      .then(function (route) {
+        if (aborted) return;
+        if (!route || !route.geometry) {
           alert("Маршрут не знайдено. Перевірте точки або спробуйте інші адреси.");
           return;
         }
 
-        var route = osrm.routes[0];
         var geometry = route.geometry;
         var line = L.geoJSON(
           { type: "LineString", coordinates: geometry.coordinates },

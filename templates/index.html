@@ -3,6 +3,12 @@
 {% block title %}Вантажні перевезення Київ та по Україні — розвіз товару, міжміські | Веземо24{% endblock %}
 {% block description %}Вантажні перевезення Київ, область та по Україні: розвіз товару для бізнесу, міжміські рейси (Київ–Львів, Київ–Одеса), вантажне таксі, квартирний переїзд. Бус до 3,5 т. Ціна фіксується до старту.{% endblock %}
 
+{% block preload %}
+{# Постер героя — найбільший елемент першого екрана. Без цього браузер
+   знайде його лише після розбору CSS, бо це фон. #}
+{{ preload_image('video-poster.jpg', sizes='100vw') }}
+{% endblock %}
+
 {% block content %}
 <script type="application/ld+json">
 {
@@ -44,9 +50,12 @@
 
 <!-- ГЕРОЙ -->
 <section class="hero">
-  <video id="js-hero-video" class="hero__media" muted loop playsinline preload="none"
-         poster="{{ url_for('static', filename='images/video-poster.jpg') }}"
-         data-src="{{ url_for('static', filename='videos/hero.mp4') }}"
+  {# Постер винесено з атрибута poster= в окремий <img>: poster не вміє
+     srcset, тому на телефон їхало те саме зображення на 1920px. #}
+  {{ picture('video-poster.jpg', alt='', sizes='100vw', loading='eager',
+             fetchpriority='high', img_class='hero__media') }}
+  <video id="js-hero-video" class="hero__media hero__media--video" muted loop playsinline
+         preload="none" data-src="{{ static_url('videos/derived/hero-720.mp4') }}"
          disablePictureInPicture aria-hidden="true"></video>
   <div class="hero__scrim"></div>
   <div class="container hero__inner">
@@ -71,22 +80,22 @@
   <div class="container">
     <ul class="grid grid--4">
       <li class="card card--icon">
-        <div class="card__icon"><img src="{{ url_for('static', filename='icons/truck.svg') }}" alt="" width="28" height="28"></div>
+        <div class="card__icon"><img src="{{ static_url('icons/truck.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">Виїзд у день звернення</h2>
         <p class="card__text">Працюємо з 07:00 — раніше за більшість перевізників. Терміновий виїзд по Києву.</p>
       </li>
       <li class="card card--icon">
-        <div class="card__icon"><img src="{{ url_for('static', filename='icons/card.svg') }}" alt="" width="28" height="28"></div>
+        <div class="card__icon"><img src="{{ static_url('icons/card.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">Бус до 3,5 тонн</h2>
         <p class="card__text">Меблі, техніка, коробки, довгі речі. Не впевнені, чи влізе? Опишіть вантаж — скажемо одразу.</p>
       </li>
       <li class="card card--icon">
-        <div class="card__icon"><img src="{{ url_for('static', filename='icons/globe.svg') }}" alt="" width="28" height="28"></div>
+        <div class="card__icon"><img src="{{ static_url('icons/globe.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">Київ, область і вся Україна</h2>
         <p class="card__text">Міські рейси, доставка по області та міжміські маршрути — Львів, Одеса, Дніпро, Харків.</p>
       </li>
       <li class="card card--icon">
-        <div class="card__icon"><img src="{{ url_for('static', filename='icons/chat.svg') }}" alt="" width="28" height="28"></div>
+        <div class="card__icon"><img src="{{ static_url('icons/chat.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">Вартість — до дзвінка</h2>
         <p class="card__text">Порахуйте орієнтовну ціну на сайті за хвилину, ще до того, як наберете нас.</p>
       </li>
@@ -104,8 +113,8 @@
     <ul class="grid grid--3">
       <li class="card card--feature card--link">
         <div class="card__media card__media--contain">
-          <img src="{{ url_for('static', filename='images/busik.png') }}"
-               alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
+          {{ picture('busik.png', alt='Бус до 3,5 тонн для розвозу товару',
+                     sizes='(min-width: 1100px) 360px, (min-width: 700px) 33vw, 100vw') }}
         </div>
         <span class="badge">Основний напрямок</span>
         <h3 class="card__title">Розвіз товару для бізнесу</h3>
@@ -119,8 +128,8 @@
       </li>
       <li class="card card--link">
         <div class="card__media">
-          <img src="{{ url_for('static', filename='images/road-card.jpg') }}"
-               alt="Траса — міжміські перевезення по Україні" width="800" height="520" loading="lazy">
+          {{ picture('road-card.jpg', alt='Траса — міжміські перевезення по Україні',
+                     sizes='(min-width: 1100px) 360px, (min-width: 700px) 33vw, 100vw') }}
         </div>
         <h3 class="card__title">Міжміські рейси</h3>
         <p class="card__text">
@@ -237,9 +246,8 @@
   <div class="container">
     <div class="split">
       <div class="split__media">
-        <img src="{{ url_for('static', filename='images/road-wide.jpg') }}"
-             alt="Міжміські вантажні перевезення з Києва по Україні"
-             width="1040" height="720" loading="lazy">
+        {{ picture('road-wide.jpg', alt='Міжміські вантажні перевезення з Києва по Україні',
+                   sizes='(min-width: 1100px) 510px, (min-width: 900px) 46vw, 100vw') }}
         <span class="split__tag">Київ → вся Україна</span>
       </div>
       <div class="split__body">
@@ -264,5 +272,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
+<script src="{{ static_url('js/home.js') }}" defer></script>
 {% endblock %}

@@ -38,8 +38,8 @@
     <ul class="grid grid--2">
       <li class="card card--feature">
         <div class="card__media card__media--contain">
-          <img src="{{ url_for('static', filename='images/busik.png') }}"
-               alt="Бус до 3,5 тонн для розвозу товару" width="400" height="260" loading="lazy">
+          {{ picture('busik.png', alt='Бус до 3,5 тонн для розвозу товару',
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
         </div>
         <span class="badge">Основний напрямок</span>
         <h2 class="card__title">Розвіз товару для бізнесу</h2>
@@ -59,8 +59,8 @@
 
       <li class="card">
         <div class="card__media">
-          <img src="{{ url_for('static', filename='images/road-card.jpg') }}"
-               alt="Траса — міжміські перевезення з Києва" width="800" height="520" loading="lazy">
+          {{ picture('road-card.jpg', alt='Траса — міжміські перевезення з Києва',
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
         </div>
         <h2 class="card__title">Міжміські перевезення</h2>
         <p class="card__text">

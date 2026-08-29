@@ -1,0 +1,47 @@
+{
+  "busik.png": {
+    "fallback": "png",
+    "h": 549,
+    "stem": "busik",
+    "w": 798,
+    "widths": [
+      400,
+      600,
+      798
+    ]
+  },
+  "road-card.jpg": {
+    "fallback": "jpg",
+    "h": 520,
+    "stem": "road-card",
+    "w": 800,
+    "widths": [
+      400,
+      600,
+      800
+    ]
+  },
+  "road-wide.jpg": {
+    "fallback": "jpg",
+    "h": 720,
+    "stem": "road-wide",
+    "w": 1040,
+    "widths": [
+      480,
+      720,
+      1040
+    ]
+  },
+  "video-poster.jpg": {
+    "fallback": "jpg",
+    "h": 1079,
+    "stem": "video-poster",
+    "w": 1920,
+    "widths": [
+      640,
+      960,
+      1280,
+      1920
+    ]
+  }
+}

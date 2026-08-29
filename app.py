@@ -2,9 +2,11 @@ from datetime import date
 
 from flask import Flask, jsonify, render_template, request
 
+from assets import assets
 from config import Config
 from extensions import csrf, limiter
 from routes.contact import contact_bp
+from routes.geo import geo_bp
 from routes.main import main_bp
 from utils import setup_logger
 
@@ -17,8 +19,10 @@ def create_app():
 
     csrf.init_app(app)
     limiter.init_app(app)
+    assets.init_app(app)
 
     app.register_blueprint(contact_bp)
+    app.register_blueprint(geo_bp)
     app.register_blueprint(main_bp)
 
     # ─── Контакти доступні в кожному шаблоні ────────────────────────────────
@@ -57,6 +61,15 @@ def create_app():
             resp.headers.setdefault(
                 "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
             )
+
+        # Статика з відбитком вмісту (?v=...) ніколи не змінюється за тією
+        # самою адресою, тому її можна кешувати назавжди. Без відбитка —
+        # година, щоб випадкове пряме звернення не залипло зі старим файлом.
+        if request.path.startswith("/static/") and resp.status_code == 200:
+            if request.args.get("v"):
+                resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            else:
+                resp.headers["Cache-Control"] = "public, max-age=3600"
         return resp
 
     # ─── Сторінки помилок ───────────────────────────────────────────────────
@@ -67,7 +80,11 @@ def create_app():
     @app.errorhandler(429)
     def too_many_requests(e):
         msg = "Забагато заявок. Спробуйте пізніше або зателефонуйте нам."
-        if request.path.startswith("/contact") or request.accept_mimetypes.best == "application/json":
+        if (
+            request.path.startswith("/contact")
+            or request.path.startswith("/api/")
+            or request.accept_mimetypes.best == "application/json"
+        ):
             return jsonify({"error": msg}), 429
         return render_template("500.html"), 429
 

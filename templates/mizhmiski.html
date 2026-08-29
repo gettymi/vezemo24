@@ -52,9 +52,8 @@
     </div>
 
     <div class="split__media" style="aspect-ratio: 21/9; margin-top: var(--sp-6)">
-      <img src="{{ url_for('static', filename='images/road-wide.jpg') }}"
-           alt="Міжміські вантажні перевезення з Києва по Україні"
-           width="1040" height="720" loading="lazy">
+      {{ picture('road-wide.jpg', alt='Міжміські вантажні перевезення з Києва по Україні',
+                 sizes='(min-width: 1140px) 1092px, 100vw') }}
       <span class="split__tag">Київ → вся Україна</span>
     </div>
   </div>

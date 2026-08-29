@@ -4,11 +4,18 @@
 {% block description %}Порахуйте відстань, час у дорозі та орієнтовну вартість перевезення по Києву, області та Україні. Вкажіть адреси — і одразу побачите ціну. Бус до 3,5 т.{% endblock %}
 
 {% block head %}
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+{# Leaflet береться локально, щойно він зʼявиться в static/vendor/
+   (див. scripts/vendor_leaflet.sh). Доки його там немає — працює CDN,
+   тож сторінка не ламається ні до, ні після запуску скрипта. #}
+{% if has_static('vendor/leaflet/leaflet.css') %}
+<link rel="stylesheet" href="{{ static_url('vendor/leaflet/leaflet.css') }}">
+{% else %}
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+{% endif %}
+<link rel="stylesheet" href="{{ static_url('css/map.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -117,9 +124,13 @@
 {% endblock %}
 
 {% block scripts %}
+{% if has_static('vendor/leaflet/leaflet.js') %}
+<script src="{{ static_url('vendor/leaflet/leaflet.js') }}"></script>
+{% else %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="{{ url_for('static', filename='js/priceCalculator.js') }}"></script>
-<script src="{{ url_for('static', filename='js/map.js') }}"></script>
-<script src="{{ url_for('static', filename='js/orderRoute.js') }}" defer></script>
+{% endif %}
+<script src="{{ static_url('js/priceCalculator.js') }}"></script>
+<script src="{{ static_url('js/map.js') }}"></script>
+<script src="{{ static_url('js/orderRoute.js') }}" defer></script>
 {% endblock %}

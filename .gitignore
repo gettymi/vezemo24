@@ -32,3 +32,11 @@ credentials.json
 # Заявки (Phase 0)
 leads.db
 leads-fallback.jsonl
+
+# Кеш геокодера (Phase 2) — відтворюється сам, у репозиторії не потрібен
+geocache.db
+geocache.db-wal
+geocache.db-shm
+
+# Тимчасова тека для файлів, які треба видалити вручну
+_to_delete/
