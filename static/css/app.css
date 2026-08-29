@@ -941,6 +941,19 @@
     line-height: var(--lh-snug);
   }
 
+  /* Ціна напрямку — найважливіша цифра на сторінці. */
+  .routeprice { display: flex; align-items: baseline; gap: var(--sp-2); }
+  .routeprice__from { font-size: var(--fs-sm); color: var(--text-muted); }
+  .routeprice__value {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* ── Розділена секція: фото + текст ──────────────────────────────────────
      Замінила темну смугу «міжміські», яка зливалася з темним підвалом. */
   .split {

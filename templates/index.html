@@ -159,22 +159,24 @@
       <h2>{{ t('home.price.h2') }}</h2>
       <p class="section-head__lead">{{ t('home.price.lead') }}</p>
     </div>
-    <ul class="grid grid--4">
+    <ul class="grid grid--3">
       <li class="price price--feature">
-        <span class="badge">{{ t('home.price.badge') }}</span>
+        <span class="badge">{{ t('home.what.badge') }}</span>
         <h3 class="price__name">{{ t('home.price.p1.name') }}</h3>
         <p class="price__desc">{{ t('home.price.p1.desc') }}</p>
-        <p class="price__value">{{ t('home.price.from') }} 799 <span class="price__unit">{{ t('home.price.unit') }}</span></p>
+        <p class="price__value">{{ t('home.price.from') }} {{ PRICING.INTERCITY_PER_KM }}
+          <span class="price__unit">{{ t('home.price.unit_km') }}</span></p>
         <div class="price__foot">
-          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-price">{{ t('common.call') }}</a>
+          <a class="btn btn--primary btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
         </div>
       </li>
       <li class="price">
         <h3 class="price__name">{{ t('home.price.p2.name') }}</h3>
         <p class="price__desc">{{ t('home.price.p2.desc') }}</p>
-        <p class="price__value">{{ t('home.price.from') }} 1099 <span class="price__unit">{{ t('home.price.unit') }}</span></p>
+        <p class="price__value">{{ t('home.price.from') }} {{ PRICING.LOCAL_HOURLY }}
+          <span class="price__unit">{{ t('home.price.unit') }}</span></p>
         <div class="price__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('common.order') }}</a>
+          <a class="btn btn--ghost btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-price">{{ t('common.call') }}</a>
         </div>
       </li>
       <li class="price">
@@ -182,15 +184,7 @@
         <p class="price__desc">{{ t('home.price.p3.desc') }}</p>
         <p class="price__value price__value--soft">{{ t('home.price.p3.value') }}</p>
         <div class="price__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('home.price.calc') }}</a>
-        </div>
-      </li>
-      <li class="price">
-        <h3 class="price__name">{{ t('home.price.p4.name') }}</h3>
-        <p class="price__desc">{{ t('home.price.p4.desc') }}</p>
-        <p class="price__value price__value--soft">{{ t('home.price.p4.value') }}</p>
-        <div class="price__foot">
-          <a class="btn btn--ghost btn--block" href="{{ url_for('main.calculate_km') }}">{{ t('home.price.count') }}</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('home.what.c1.cta') }}</a>
         </div>
       </li>
     </ul>

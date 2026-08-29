@@ -79,12 +79,13 @@
           </div>
         </div>
 
-        {# Три ціни одразу, а не «спершу оберіть послугу». Вибір без цифр —
-           це рішення наосліп; тепер людина порівнює й обирає свідомо. #}
-        <div class="svc-list" id="res-services" role="group" aria-label="{{ t('calc.services_aria') }}"></div>
+        {# Одна ціна за тією моделлю, яка застосовна до цієї відстані:
+           по Києву й області — за годинами, міжмісто — за кілометрами. #}
+        <div class="quote" id="res-quote" role="status" aria-live="polite"></div>
 
         {# Читає orderRoute.js, коли переносить розрахунок у форму заявки. #}
         <span id="res-service" hidden></span>
+        <span id="res-quote-value" hidden></span>
 
         <p class="result__breakdown" id="res-price-breakdown" hidden></p>
         <div class="result__legs" id="legs-details"></div>

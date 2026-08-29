@@ -25,9 +25,9 @@
     var dur  = textOf("res-duration"); if (dur)  parts.push(VZT("route.duration") + ": " + dur);
     var svc  = textOf("res-service");  if (svc && svc !== "—") parts.push(VZT("route.service") + ": " + svc);
 
-    // Ціна тепер живе в обраній картці послуги, а не в окремому рядку підсумку.
-    var selected = document.querySelector("#res-services .svc.is-selected .svc__price");
-    var price = selected ? selected.textContent.trim() : "";
+    // Ціна живе в блоці розрахунку; для погодинної моделі це ставка,
+    // а не підсумок — саме так її й треба перенести у заявку.
+    var price = textOf("res-quote-value");
     if (price) parts.push(VZT("route.price") + ": " + price);
     if (!parts.length) return;
 

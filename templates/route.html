@@ -96,7 +96,20 @@
 
       <article class="card card--accent">
         <h2 class="card__title">{{ t('route.price.h2') }}</h2>
-        <p class="card__text">{{ t('route.price.text') }}</p>
+        {# Цифру показуємо прямо: це головне, по що людина прийшла на
+           сторінку напрямку, і ховати її за дзвінком — втрачати заявку. #}
+        <p class="routeprice">
+          <span class="routeprice__from">{{ t('home.price.from') }}</span>
+          <strong class="routeprice__value">{{ '{:,}'.format(price).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
+        </p>
+        <p class="card__text">
+          {% if price_min_applied %}
+            {{ t('route.price.min', min=pricing.INTERCITY_MIN, from_km=pricing.INTERCITY_MIN_FROM_KM) }}
+          {% else %}
+            {{ t('route.price.perkm', rate=pricing.INTERCITY_PER_KM, km=route.km) }}
+          {% endif %}
+        </p>
+        <p class="field__hint">{{ t('route.price.text') }}</p>
         <div class="card__foot">
           <a class="btn btn--primary btn--block" href="{{ calc_url }}"
              data-cta="calc-route-{{ route.slug }}">{{ t('route.price.cta', city=city) }}</a>

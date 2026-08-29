@@ -158,50 +158,43 @@
   }
   .preset:hover { border-color: var(--brand-300); background: var(--brand-50); color: var(--brand-800); }
 
-  /* ── Послуги з цінами ──────────────────────────────────────────────── */
-  .svc-list { display: flex; flex-direction: column; gap: var(--sp-2); }
-  .svc {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 2px var(--sp-3);
-    width: 100%;
-    padding: var(--sp-3) var(--sp-4);
-    border: 2px solid var(--line);
-    border-radius: var(--r-md);
-    background: var(--surface);
-    text-align: left;
-    cursor: pointer;
-    transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  /* ── Блок вартості ──────────────────────────────────────────────────
+     Одна цифра замість трьох карток: моделі різні, порівнювати нема що. */
+  .quote {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-4) var(--sp-5);
+    border: 2px solid var(--brand-200);
+    border-radius: var(--r-lg);
+    background: linear-gradient(160deg, var(--brand-50) 0%, var(--white) 70%);
   }
-  .svc:hover { border-color: var(--brand-300); }
-  .svc.is-selected { border-color: var(--brand-500); background: var(--brand-50); }
-  .svc__name { font-size: var(--fs-sm); font-weight: 700; color: var(--text-strong); }
-  .svc__rate { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
-  .svc__price {
-    grid-row: span 2;
-    align-self: center;
+  .quote:empty { display: none; }
+  .quote__label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--brand-700);
+  }
+  .quote__value {
     font-family: var(--font-display);
-    font-size: var(--fs-lg);
+    font-size: var(--fs-2xl);
     font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.02em;
     color: var(--brand-700);
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
   }
-  .svc__rate { font-size: var(--fs-xs); color: var(--text-muted); }
-  /* Значок стоїть біля тарифу, а не біля назви: поруч із назвою він
-     розривав її на два рядки й ламав вирівнювання ціни. */
-  .svc__tag {
-    display: inline-block;
-    margin-left: 2px;
-    padding: 1px 7px;
-    border-radius: var(--r-full);
-    background: var(--ok-50);
-    color: var(--ok-600);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+  .quote__note {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    line-height: var(--lh-snug);
   }
+  /* Погодинна модель — не підсумок, а ставка. Прибираємо акцент, щоб
+     цифру не читали як «стільки й заплачу». */
+  .quote--hourly { border-color: var(--line); background: var(--surface-sunk); }
+  .quote--hourly .quote__value { font-size: var(--fs-xl); color: var(--text-strong); }
 
   /* ── Ключові цифри маршруту ────────────────────────────────────────── */
   .result__facts {

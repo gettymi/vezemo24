@@ -1,8 +1,18 @@
 /**
- * Розрахунок орієнтовної вартості перевезення.
- * Один транспорт — бус до 3,5 т. Логіку самоскида видалено: такої машини немає.
- * Формула бусу збережена без змін:
- *   виїзд + max(години, мінімум) × тариф/год + км × тариф/км
+ * Розрахунок вартості. Дві моделі, бо це справді дві різні послуги.
+ *
+ * ПО КИЄВУ Й ОБЛАСТІ машина не стільки їде, скільки СТОЇТЬ: чекає, поки
+ * завантажать і розвантажать. Тому рахунок за годинами. Скільки триватиме
+ * завантаження, сайт знати не може — тому підсумок тут НЕ вигадується.
+ * Показуємо ставку й мінімум, точну суму називають у розмові. Раніше
+ * калькулятор брав час у дорозі з OSRM і видавав його за тривалість
+ * роботи — для переїзду це просто неправда.
+ *
+ * МІЖМІСЬКИЙ РЕЙС — це кілометри: машина їде, а не чекає. Відстань відома,
+ * тому підсумок рахується чесно й показується цифрою.
+ *
+ * Ціна міжміського — за відстань В ОДИН БІК. Порожній зворотний пробіг уже
+ * закладений у ставку, окремо він не додається.
  */
 (function (global) {
   "use strict";
@@ -11,102 +21,90 @@
     return global.VZ && global.VZ.t ? global.VZ.t(k, v) : k;
   };
 
-  /** Виїзд (подача), грн. */
-  var BUS_FEED_UAH = 799;
-  /** Пальне на довгих маршрутах, грн/км. */
-  var BUS_PRICE_PER_KM_UAH = 3;
-  /** Мінімальна оплачувана кількість годин. */
-  var BUS_MIN_HOURS = 2;
-
-  /** Тариф за годину для кожної послуги, грн. */
-  /* Підписи більше не зашиті: беруться з i18n.js за поточною мовою.
-     Тарифи однакові для всіх мов — ціна від мови не залежить. */
-  var BUS_SERVICE_CONFIG = {
-    bus_taxi:       { hourlyRate: 799,  labelKey: "svc.bus_taxi" },
-    bus_relocation: { hourlyRate: 1099, labelKey: "svc.bus_relocation" },
-    bus_delivery:   { hourlyRate: 859,  labelKey: "svc.bus_delivery" },
+  /** Погодинно: Київ і область. */
+  var LOCAL = {
+    hourly: 799,      // грн/год
+    feed: 799,        // подача, грн
+    minHours: 2,      // мінімальна оплачувана кількість годин
   };
 
-  var METERS_PER_KM = 1000;
-  var SECONDS_PER_HOUR = 3600;
+  /** Покілометрово: міжміські рейси. */
+  var INTERCITY = {
+    perKm: 45,        // грн/км
+    min: 20000,       // мінімум замовлення, грн
+    minFromKm: 400,   // …діє від цієї відстані; ближче мінімуму немає
+  };
 
   /**
-   * @param {number} distanceInMeters   Довжина маршруту (з OSRM).
-   * @param {number} durationInSeconds  Час у дорозі.
-   * @param {string} [serviceType]      Лишений для сумісності — завжди "BUS".
-   * @param {{ busServiceId?: string }} [options]
-   * @returns {{total:number, breakdown:string, distanceKm:number, durationHours:number}}
+   * Межа між «область» і «міжмісто». Київська область закінчується
+   * приблизно тут, тож далі погодинна модель втрачає сенс: ніхто не
+   * наймає бус погодинно, щоб поїхати за 300 км.
    */
-  function calculate(distanceInMeters, durationInSeconds, serviceType, options) {
-    var distanceKm = (distanceInMeters || 0) / METERS_PER_KM;
-    var durationHours = (durationInSeconds || 0) / SECONDS_PER_HOUR;
-    var serviceId = (options && options.busServiceId) || "bus_taxi";
-    return calculateBusByService(serviceId, distanceKm, durationHours);
-  }
+  var INTERCITY_FROM_KM = 120;
 
-  function calculateBusByService(serviceId, distanceKm, durationHours) {
-    var config = BUS_SERVICE_CONFIG[serviceId] || BUS_SERVICE_CONFIG.bus_taxi;
-    var feed = BUS_FEED_UAH;
-    var hourly = config.hourlyRate;
-    var minH = BUS_MIN_HOURS;
-    var perKm = BUS_PRICE_PER_KM_UAH;
+  var METERS_PER_KM = 1000;
 
-    var billableHours = Math.max(durationHours, minH);
-    var hoursPart = billableHours * hourly;
-    var kmPart = distanceKm * perKm;
-    var total = feed + hoursPart + kmPart;
-    var minTotal = feed + minH * hourly;
+  /**
+   * @param {number} distanceInMeters відстань в один бік (з OSRM)
+   * @returns {{mode:string, distanceKm:number, ...}}
+   */
+  function quote(distanceInMeters) {
+    var km = (distanceInMeters || 0) / METERS_PER_KM;
 
-    var roundedHours = Math.round(billableHours * 100) / 100;
-    var uah = T("unit.uah");
-    var breakdown =
-      T("price.feed") + " " + feed + " " + uah + " + " +
-      roundedHours + " " + T("unit.hour") + " × " + hourly + " " + uah + " + " +
-      distanceKm.toFixed(1).replace(/\.0$/, "") + " " + T("unit.km") + " × " + perKm + " " + uah;
-
-    if (total < minTotal) {
-      total = minTotal;
-      breakdown += " = " + total + " " + uah + " (" + T("price.min_order") + ")";
-    } else {
-      breakdown += " = " + Math.round(total) + " " + uah;
+    if (km < INTERCITY_FROM_KM) {
+      return {
+        mode: "hourly",
+        distanceKm: km,
+        hourly: LOCAL.hourly,
+        feed: LOCAL.feed,
+        minHours: LOCAL.minHours,
+        // Найменше, що взагалі може вийти: подача + мінімальні години.
+        floor: LOCAL.feed + LOCAL.minHours * LOCAL.hourly,
+      };
     }
 
+    var total = km * INTERCITY.perKm;
+    var minApplied = false;
+    if (km >= INTERCITY.minFromKm && total < INTERCITY.min) {
+      total = INTERCITY.min;
+      minApplied = true;
+    }
     return {
+      mode: "intercity",
+      distanceKm: km,
+      perKm: INTERCITY.perKm,
       total: Math.round(total),
-      breakdown: breakdown,
-      distanceKm: distanceKm,
-      durationHours: durationHours,
+      minApplied: minApplied,
+      min: INTERCITY.min,
     };
   }
 
-  /** Лишено для сумісності з map.js: транспорт тепер один. */
-  function serviceTypeFromVehicle() {
-    return "BUS";
-  }
-
-  function getHourlyRate(serviceType, serviceId) {
-    var config = BUS_SERVICE_CONFIG[serviceId];
-    return config ? config.hourlyRate : null;
+  /** Рядок-пояснення, звідки взялася сума. */
+  function explain(q) {
+    if (q.mode === "intercity") {
+      var uah = T("unit.uah");
+      var money = function (n) {
+        return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+      };
+      var base = Math.round(q.distanceKm) + " " + T("unit.km") + " × " +
+                 q.perKm + " " + uah;
+      if (q.minApplied) {
+        return base + " → " + money(q.min) + " " + uah + " (" + T("price.min_order") + ")";
+      }
+      return base + " = " + money(q.total) + " " + uah;
+    }
+    return T("price.hourly_note", {
+      feed: q.feed, hours: q.minHours, rate: q.hourly,
+    });
   }
 
   global.PriceCalculator = {
-    calculate: calculate,
-    serviceTypeFromVehicle: serviceTypeFromVehicle,
-    getHourlyRate: getHourlyRate,
-    /* Підписи підставляються в момент виклику, а не при завантаженні файлу:
-       так вони точно збігаються з мовою сторінки. */
-    getBusServiceConfig: function () {
-      var out = {};
-      Object.keys(BUS_SERVICE_CONFIG).forEach(function (id) {
-        var c = BUS_SERVICE_CONFIG[id];
-        out[id] = { hourlyRate: c.hourlyRate, label: T(c.labelKey) };
-      });
-      return out;
-    },
+    quote: quote,
+    explain: explain,
     constants: {
-      BUS_FEED_UAH: BUS_FEED_UAH,
-      BUS_MIN_HOURS: BUS_MIN_HOURS,
-      BUS_PRICE_PER_KM_UAH: BUS_PRICE_PER_KM_UAH,
+      LOCAL: LOCAL,
+      INTERCITY: INTERCITY,
+      INTERCITY_FROM_KM: INTERCITY_FROM_KM,
     },
   };
 })(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this);

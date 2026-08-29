@@ -7,6 +7,7 @@ from flask import (
 )
 
 import content.routes as route_data
+from content import pricing
 from i18n import DEFAULT, LOCALES
 
 main_bp = Blueprint("main", __name__)
@@ -92,9 +93,17 @@ def route_page(slug, lang=DEFAULT):
     # відбувається миттєво й не витрачає ліміт геокодера.
     calc_url = url_for("main.calculate_km") + "?" + urlencode({"route": slug})
 
+    # Ціну міжміського рейсу можна назвати чесно: вона залежить від
+    # відстані, а відстань відома. Погодинну — ні, бо ніхто наперед не
+    # знає, скільки триватиме завантаження.
+    price, min_applied = pricing.quote_intercity(route["km"])
+
     return render_template(
         "route.html",
         route=route,
+        price=price,
+        price_min_applied=min_applied,
+        pricing=pricing,
         copy=route_data.copy_for(route, locale),
         via_names=[_t(k) for k in route.get("via", [])],
         # Показуємо не всі напрямки, а п'ять найближчих за відстанню. Дві

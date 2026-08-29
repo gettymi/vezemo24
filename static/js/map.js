@@ -40,8 +40,6 @@
      Решта доступні з відповідних сторінок напрямків. */
   var PRESET_SLUGS = ["kyiv-lviv", "kyiv-odesa", "kyiv-dnipro", "kyiv-kharkiv"];
 
-  var SERVICE_ORDER = ["bus_taxi", "bus_delivery", "bus_relocation"];
-  var selectedService = "bus_taxi";
   /* Геосервіси більше не викликаються з браузера напряму: усе йде через
      власні /api/geo/*, де є кеш, коректний User-Agent і дотримання
      інтервалу між запитами (див. routes/geo.py). */
@@ -56,6 +54,12 @@
      і разом із нею вмирала вся форма. */
   /* «540.0 км» і «6 год 0 хв» виглядають як вивід налагодження.
      В українській десятковий роздільник — кома, а нульові хвилини зайві. */
+  /* 24300 -> «24 300». Без розділювача велика сума читається як
+     набір цифр, і її легко сприйняти неправильно. */
+  function formatMoney(n) {
+    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+  }
+
   function formatKm(meters) {
     var km = (meters || 0) / 1000;
     var txt = km >= 100 ? String(Math.round(km)) : km.toFixed(1).replace(".", ",");
@@ -581,7 +585,7 @@
         document.getElementById("res-duration").textContent = timeStr;
         document.getElementById("legs-details").innerHTML = legsHtml || "";
 
-        renderServicePrices(route.distance, route.duration);
+        renderQuote(route.distance);
 
         resCard.classList.add("is-shown");
       })
@@ -592,80 +596,57 @@
       .then(function () { setBusy(false); });
   }
 
-  /* Рахуємо ціну одразу за всіма послугами. Раніше треба було спершу
-     обрати послугу й лише потім побачити цифру — тобто вибирати наосліп. */
-  function renderServicePrices(distanceMeters, durationSeconds) {
-    var host = document.getElementById("res-services");
+  /* Показуємо ціну за тією моделлю, яка справді застосовна до цієї
+     відстані. Три однакові погодинні картки тут більше не підходять:
+     по місту рахунок іде за годинами (машина чекає), а міжмісто — за
+     кілометрами (машина їде). */
+  function renderQuote(distanceMeters) {
+    var host = document.getElementById("res-quote");
     if (!host || typeof PriceCalculator === "undefined") return;
 
-    var cfg = PriceCalculator.getBusServiceConfig();
-    var priced = SERVICE_ORDER.map(function (id) {
-      var r = PriceCalculator.calculate(distanceMeters, durationSeconds, "BUS", { busServiceId: id });
-      return { id: id, label: (cfg[id] || {}).label || id, rate: (cfg[id] || {}).hourlyRate, res: r };
-    });
-    var cheapest = priced.reduce(function (a, b) { return b.res.total < a.res.total ? b : a; }).id;
-
+    var q = PriceCalculator.quote(distanceMeters);
     host.innerHTML = "";
-    priced.forEach(function (item) {
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "svc" + (item.id === cheapest ? " is-cheapest" : "");
-      btn.setAttribute("data-service", item.id);
-      btn.setAttribute("aria-pressed", "false");
+    host.className = "quote quote--" + q.mode;
 
-      var name = document.createElement("span");
-      name.className = "svc__name";
-      name.textContent = item.label;
+    var label = document.createElement("span");
+    label.className = "quote__label";
+    var value = document.createElement("strong");
+    value.className = "quote__value";
+    var note = document.createElement("span");
+    note.className = "quote__note";
 
-      var price = document.createElement("span");
-      price.className = "svc__price";
-      price.textContent = item.res.total + " " + T("unit.uah");
+    if (q.mode === "intercity") {
+      label.textContent = T("quote.intercity");
+      value.textContent = formatMoney(q.total) + " " + T("unit.uah");
+      note.textContent = q.minApplied
+        ? T("quote.min_note", { from: PriceCalculator.constants.INTERCITY.minFromKm,
+                                min: q.min })
+        : T("quote.intercity_note", { rate: q.perKm });
+    } else {
+      label.textContent = T("quote.local");
+      value.textContent = T("quote.local_value", { rate: q.hourly });
+      note.textContent = T("quote.local_note", { hours: q.minHours, feed: q.feed });
+    }
 
-      var rate = document.createElement("span");
-      rate.className = "svc__rate";
-      rate.textContent = item.rate ? item.rate + " " + T("unit.uah_hour") : "";
-      if (item.id === cheapest) {
-        var tag = document.createElement("b");
-        tag.className = "svc__tag";
-        tag.textContent = T("calc.cheapest");
-        rate.appendChild(document.createTextNode(" "));
-        rate.appendChild(tag);
-      }
-
-      btn.appendChild(name);
-      btn.appendChild(price);
-      btn.appendChild(rate);
-      btn.addEventListener("click", function () { selectService(item.id, priced); });
-      host.appendChild(btn);
-    });
-
-    selectService(selectedService, priced);
-  }
-
-  function selectService(id, priced) {
-    selectedService = id;
-    var chosen = null;
-    (priced || []).forEach(function (p) { if (p.id === id) chosen = p; });
-
-    document.querySelectorAll("#res-services .svc").forEach(function (el) {
-      var on = el.getAttribute("data-service") === id;
-      el.classList.toggle("is-selected", on);
-      el.setAttribute("aria-pressed", on ? "true" : "false");
-    });
+    host.appendChild(label);
+    host.appendChild(value);
+    host.appendChild(note);
 
     var breakdown = document.getElementById("res-price-breakdown");
-    if (breakdown && chosen) {
-      breakdown.textContent = chosen.res.breakdown;
+    if (breakdown) {
+      breakdown.textContent = PriceCalculator.explain(q);
       breakdown.hidden = false;
     }
-    // orderRoute.js бере звідси назву послуги для форми заявки.
+    // orderRoute.js бере звідси, що переносити у форму заявки.
     var hidden = document.getElementById("res-service");
-    if (hidden && chosen) hidden.textContent = chosen.label;
+    if (hidden) hidden.textContent = label.textContent;
+    var hiddenPrice = document.getElementById("res-quote-value");
+    if (hiddenPrice) hiddenPrice.textContent = value.textContent;
   }
 
-  /* Зі сторінки напрямку сюди приходять із ?route=kyiv-lviv. Беремо готовий
-     пресет за слагом: маршрут рахується миттєво й без жодного запиту до
-     геокодера — людина не переписує те, що вже прочитала в заголовку. */
+  /* Зі сторінки напрямку сюди приходять із ?route=kyiv-lviv. Беремо готові
+     координати за слагом: маршрут рахується миттєво й без жодного запиту
+     до геокодера — людина не переписує те, що вже прочитала в заголовку. */
   function applyRouteFromQuery() {
     var slug = new URLSearchParams(window.location.search).get("route");
     if (slug && ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);

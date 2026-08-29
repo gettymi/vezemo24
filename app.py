@@ -5,6 +5,7 @@ from flask import Flask, jsonify, render_template, request
 import i18n
 from assets import assets
 from config import Config
+from content import pricing
 from extensions import csrf, limiter
 from routes.contact import contact_bp
 from routes.geo import geo_bp
@@ -48,6 +49,9 @@ def create_app():
             "GA4_MEASUREMENT_ID": c["GA4_MEASUREMENT_ID"],
             "GTM_CONTAINER_ID": c["GTM_CONTAINER_ID"],
             "YEAR": date.today().year,
+            # Тарифи — з одного модуля, щоб цифра на головній не розійшлася
+            # з тією, яку рахує калькулятор.
+            "PRICING": pricing,
         }
 
     # ─── Заголовки безпеки ──────────────────────────────────────────────────
