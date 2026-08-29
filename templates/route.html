@@ -109,6 +109,8 @@
             {{ t('route.price.perkm', rate=pricing.INTERCITY_PER_KM, km=route.km) }}
           {% endif %}
         </p>
+        <p class="routeprice__return">{{ t('route.price.return',
+              price=('{:,}'.format(price_return).replace(',', ' '))) }}</p>
         <p class="field__hint">{{ t('route.price.text') }}</p>
         <div class="card__foot">
           <a class="btn btn--primary btn--block" href="{{ calc_url }}"

@@ -604,10 +604,21 @@
   .header__phone:hover { background: var(--brand-500); color: var(--white); transform: translateY(-1px); }
 
   /* ── Перемикач мов ──────────────────────────────────────────────────── */
-  .langs { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-full);
+  /* Шапка ширша за контент: це навігація, а не текст, і обмежувати її
+     мірою рядка немає сенсу. Дає ~140px, яких бракувало після появи
+     шостого пункту меню. */
+  @media (min-width: 1200px) {
+    .header__inner { max-width: 1280px; }
+  }
+
+  /* Ці два не можна ламати на два рядки: телефон і головна кнопка — це
+     конверсія, і перенос робить шапку вищою за токен --header-h. */
+  .header__phone, .nav .btn--solid-dark { white-space: nowrap; }
+
+  .langs { display: inline-flex; gap: 1px; padding: 2px; border-radius: var(--r-full);
            background: var(--surface-sunk); border: 1px solid var(--line); }
   .langs__item {
-    padding: 4px 9px;
+    padding: 4px 7px;
     border-radius: var(--r-full);
     font-size: var(--fs-xs);
     font-weight: 700;
@@ -652,12 +663,12 @@
      кнопка — це конверсія, їх ховати не можна. Нижче 900px усе одно
      вмикається бургер, і перемикач повертається всередину меню, тому
      нижню межу діапазону задано явно. */
-  @media (min-width: 1061px) and (max-width: 1180px) {
-    .header .langs { display: none; }
-    .nav { gap: var(--sp-3); }
   }
 
-  @media (max-width: 1060px) {
+  /* Шість пунктів меню + перемикач + телефон + кнопка не вміщаються в
+     один рядок вужче за 1200px. Нижче цієї межі вмикається бургер —
+     разом із нижньою панеллю, щоб телефон нікуди не зникав. */
+  @media (max-width: 1199px) {
     .burger { display: flex; }
     .nav {
       position: fixed;
@@ -744,7 +755,7 @@
 
   /* ── Нижня панель дій (мобільні) ────────────────────────────────────── */
   .mobilebar { display: none; }
-  @media (max-width: 1060px) {
+  @media (max-width: 1199px) {
     .mobilebar {
       position: fixed;
       inset: auto 0 0 0;
@@ -951,6 +962,14 @@
     line-height: 1.1;
     letter-spacing: -.02em;
     color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .routeprice__return {
+    margin-top: -.35rem;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--text-strong);
     font-variant-numeric: tabular-nums;
   }
 

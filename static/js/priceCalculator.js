@@ -28,11 +28,23 @@
     minHours: 2,      // мінімальна оплачувана кількість годин
   };
 
-  /** Покілометрово: міжміські рейси. */
+  /** Покілометрово: міжміські рейси по Україні. */
   var INTERCITY = {
-    perKm: 45,        // грн/км
+    perKm: 37,        // грн/км, за відстань в один бік
     min: 20000,       // мінімум замовлення, грн
     minFromKm: 400,   // …діє від цієї відстані; ближче мінімуму немає
+  };
+
+  /* Зворотний рейс із вантажем — чверть від ціни «туди»: машина однаково
+     їде цим шляхом, платити повну ціну двічі не за що. */
+  var RETURN_SHARE = 0.25;
+
+  /* Закордон: євро за кілометр ПОВНОГО пробігу (туди й назад). Через
+     кордон порожній зворотний рейс не окупається нічим, тому платним є
+     весь пробіг. Захід Європи дорожчий: пальне й платні автобани. */
+  var ABROAD = {
+    east: { perTotalKm: 0.60 },   // Польща, Чехія, Словаччина
+    west: { perTotalKm: 0.70 },   // Німеччина, Франція, Італія, Іспанія
   };
 
   /**
@@ -48,7 +60,8 @@
    * @param {number} distanceInMeters відстань в один бік (з OSRM)
    * @returns {{mode:string, distanceKm:number, ...}}
    */
-  function quote(distanceInMeters) {
+  function quote(distanceInMeters, zone) {
+    if (zone) return quoteAbroad(distanceInMeters, zone);
     var km = (distanceInMeters || 0) / METERS_PER_KM;
 
     if (km < INTERCITY_FROM_KM) {
@@ -69,18 +82,46 @@
       total = INTERCITY.min;
       minApplied = true;
     }
+    total = Math.round(total);
     return {
       mode: "intercity",
       distanceKm: km,
       perKm: INTERCITY.perKm,
-      total: Math.round(total),
+      total: total,
+      totalReturn: Math.round(total * (1 + RETURN_SHARE)),
+      returnShare: RETURN_SHARE,
       minApplied: minApplied,
       min: INTERCITY.min,
     };
   }
 
+  /**
+   * Закордонний рейс. km — відстань В ОДИН БІК; платним є подвійний
+   * пробіг, бо машина повертається.
+   */
+  function quoteAbroad(distanceInMeters, zone) {
+    var km = (distanceInMeters || 0) / METERS_PER_KM;
+    var z = ABROAD[zone] || ABROAD.east;
+    var totalKm = km * 2;
+    return {
+      mode: "abroad",
+      distanceKm: km,
+      totalKm: Math.round(totalKm),
+      perTotalKm: z.perTotalKm,
+      perOneWayKm: Math.round(z.perTotalKm * 200) / 100,
+      eur: Math.round(totalKm * z.perTotalKm),
+      zone: zone || "east",
+    };
+  }
+
   /** Рядок-пояснення, звідки взялася сума. */
   function explain(q) {
+    if (q.mode === "abroad") {
+      return T("price.abroad_note", {
+        km: q.totalKm, rate: q.perTotalKm.toFixed(2).replace(".", ","),
+        oneway: q.perOneWayKm.toFixed(2).replace(".", ","),
+      });
+    }
     if (q.mode === "intercity") {
       var uah = T("unit.uah");
       var money = function (n) {
@@ -101,10 +142,13 @@
   global.PriceCalculator = {
     quote: quote,
     explain: explain,
+    quoteAbroad: quoteAbroad,
     constants: {
       LOCAL: LOCAL,
       INTERCITY: INTERCITY,
       INTERCITY_FROM_KM: INTERCITY_FROM_KM,
+      RETURN_SHARE: RETURN_SHARE,
+      ABROAD: ABROAD,
     },
   };
 })(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : this);

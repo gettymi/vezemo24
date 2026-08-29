@@ -103,6 +103,10 @@ def init_app(app):
         if app.url_map.is_endpoint_expecting(endpoint, "lang"):
             values["lang"] = getattr(g, "locale", DEFAULT)
 
+    # Дозволяє перекладати список ключів прямо в шаблоні:
+    #   {{ ['country.pl','country.cz'] | map('t_pass') | join(' · ') }}
+    app.jinja_env.filters["t_pass"] = t
+
     @app.context_processor
     def _inject():
         lang = current_locale()

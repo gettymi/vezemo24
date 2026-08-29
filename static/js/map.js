@@ -35,6 +35,20 @@
     "kyiv-chernivtsi":  { to: "city.chernivtsi",  ll: [48.2917, 25.9352] },
   };
 
+  /* Європейські напрямки. Відстань рахує OSRM за реальним маршрутом —
+     точних кілометражів до Європи ми не зашиваємо, щоб не назвати
+     неправильну ціну. zone визначає тарифну зону (схід/захід). */
+  var ABROAD_COORDS = {
+    "kyiv-warszawa":   { to: "city.warszawa",   zone: "east", ll: [52.2297, 21.0122] },
+    "kyiv-krakow":     { to: "city.krakow",     zone: "east", ll: [50.0647, 19.9450] },
+    "kyiv-praha":      { to: "city.praha",      zone: "east", ll: [50.0755, 14.4378] },
+    "kyiv-bratislava": { to: "city.bratislava", zone: "east", ll: [48.1486, 17.1077] },
+    "kyiv-berlin":     { to: "city.berlin",     zone: "west", ll: [52.5200, 13.4050] },
+  };
+
+  /* Зона поточного маршруту: null — Україна, інакше закордонний тариф. */
+  var activeZone = null;
+
   /* У панелі показуємо лише найчастіші напрямки: одинадцять кнопок
      перетворили б блок на стіну й відсунули б самі поля вводу вниз.
      Решта доступні з відповідних сторінок напрямків. */
@@ -153,6 +167,7 @@
 
   function applyPreset(preset) {
     clearRoute();
+    activeZone = preset.zone || null;
     var rows = document.querySelectorAll("#points-container .point");
     var points = [
       [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1]],
@@ -604,7 +619,7 @@
     var host = document.getElementById("res-quote");
     if (!host || typeof PriceCalculator === "undefined") return;
 
-    var q = PriceCalculator.quote(distanceMeters);
+    var q = PriceCalculator.quote(distanceMeters, activeZone);
     host.innerHTML = "";
     host.className = "quote quote--" + q.mode;
 
@@ -615,12 +630,20 @@
     var note = document.createElement("span");
     note.className = "quote__note";
 
-    if (q.mode === "intercity") {
+    if (q.mode === "abroad") {
+      label.textContent = T("quote.abroad");
+      value.textContent = formatMoney(q.eur) + " €";
+      note.textContent = T("quote.abroad_note", {
+        km: formatMoney(q.totalKm),
+        rate: q.perTotalKm.toFixed(2).replace(".", ","),
+        oneway: q.perOneWayKm.toFixed(2).replace(".", ","),
+      });
+    } else if (q.mode === "intercity") {
       label.textContent = T("quote.intercity");
       value.textContent = formatMoney(q.total) + " " + T("unit.uah");
       note.textContent = q.minApplied
         ? T("quote.min_note", { from: PriceCalculator.constants.INTERCITY.minFromKm,
-                                min: q.min })
+                                min: formatMoney(q.min) })
         : T("quote.intercity_note", { rate: q.perKm });
     } else {
       label.textContent = T("quote.local");
@@ -631,6 +654,20 @@
     host.appendChild(label);
     host.appendChild(value);
     host.appendChild(note);
+
+    /* Зворотний рейс показуємо окремим рядком, а не другою ціною поруч:
+       це доплата до вже названої суми, а не альтернатива їй. */
+    if (q.mode === "intercity") {
+      var ret = document.createElement("span");
+      ret.className = "quote__return";
+      ret.textContent = T("quote.return") + " — " +
+        formatMoney(q.totalReturn) + " " + T("unit.uah");
+      var retNote = document.createElement("span");
+      retNote.className = "quote__note";
+      retNote.textContent = T("quote.return_note");
+      host.appendChild(ret);
+      host.appendChild(retNote);
+    }
 
     var breakdown = document.getElementById("res-price-breakdown");
     if (breakdown) {
@@ -649,7 +686,9 @@
      до геокодера — людина не переписує те, що вже прочитала в заголовку. */
   function applyRouteFromQuery() {
     var slug = new URLSearchParams(window.location.search).get("route");
-    if (slug && ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
+    if (!slug) return;
+    if (ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
+    else if (ABROAD_COORDS[slug]) applyPreset(ABROAD_COORDS[slug]);
   }
 
   function boot() {

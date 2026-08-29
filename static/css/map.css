@@ -193,6 +193,17 @@
   }
   /* Погодинна модель — не підсумок, а ставка. Прибираємо акцент, щоб
      цифру не читали як «стільки й заплачу». */
+  /* Зворотний рейс — доплата до названої суми, тому дрібніше за головну
+     цифру, але помітніше за виноску. */
+  .quote__return {
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    border-top: 1px dashed var(--brand-200);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
   .quote--hourly { border-color: var(--line); background: var(--surface-sunk); }
   .quote--hourly .quote__value { font-size: var(--fs-xl); color: var(--text-strong); }
 

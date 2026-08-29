@@ -6,6 +6,7 @@ from flask import (
     Blueprint, abort, render_template, url_for, Response, redirect, current_app
 )
 
+import content.abroad as abroad_data
 import content.routes as route_data
 from content import pricing
 from i18n import DEFAULT, LOCALES
@@ -31,6 +32,7 @@ SITEMAP_PAGES = [
     {"endpoint": "main.services",     "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "main.mizhmiski",    "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "main.calculate_km", "priority": "0.85", "priority_alt": "0.65", "changefreq": "weekly"},
+    {"endpoint": "main.abroad",       "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "contact.contact",   "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
 ]
 
@@ -97,12 +99,14 @@ def route_page(slug, lang=DEFAULT):
     # відстані, а відстань відома. Погодинну — ні, бо ніхто наперед не
     # знає, скільки триватиме завантаження.
     price, min_applied = pricing.quote_intercity(route["km"])
+    price_return = pricing.quote_intercity_return(route["km"])
 
     return render_template(
         "route.html",
         route=route,
         price=price,
         price_min_applied=min_applied,
+        price_return=price_return,
         pricing=pricing,
         copy=route_data.copy_for(route, locale),
         via_names=[_t(k) for k in route.get("via", [])],
@@ -127,13 +131,21 @@ def mizhmiski(lang=DEFAULT):
     return render_template("mizhmiski.html", routes=route_data.ROUTES)
 
 
+@main_bp.route("/perevezennya-za-kordon", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya-za-kordon")
+def abroad(lang=DEFAULT):
+    """Міжнародні перевезення. Ціна — ставка за км, суму рахує калькулятор."""
+    return render_template("abroad.html", destinations=abroad_data.DESTINATIONS)
+
+
 # ─── 301 зі старих URL ───────────────────────────────────────────────────────
 # Стара адреса містила літеру з наголосом (/zakordón -> /zakord%C3%B3n),
 # що псувало вигляд у видачі та в поширених посиланнях.
 @main_bp.route("/zakordón")
 @main_bp.route("/zakordon")
 def zakordon_legacy():
-    return redirect(url_for("main.mizhmiski"), code=301)
+    # Раніше вела на міжміські, бо закордонної послуги не було. Тепер є.
+    return redirect(url_for("main.abroad"), code=301)
 
 
 
