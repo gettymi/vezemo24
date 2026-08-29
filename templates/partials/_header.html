@@ -1,16 +1,18 @@
 <header class="header" id="js-header">
   <div class="container header__inner">
-    <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ t('nav.logo_aria') }}">
+    {# Логотип і є посиланням на головну, тому окремого пункту «Головна»
+       в меню немає: він лише додавав кнопку, нічого не даючи. #}
+    <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ t('nav.logo_aria') }}"
+       {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}>
       <span class="logo__word">{{ t('brand.word') }}</span>
       <span class="logo__badge">24</span>
     </a>
 
     <nav class="nav" id="js-nav" aria-label="{{ t('nav.aria') }}">
       {% set nav_items = [
-        ('main.index',        'nav.home'),
         ('main.services',     'nav.services'),
-        ('main.mizhmiski',   'nav.mizh'),
-        ('main.abroad',      'nav.abroad'),
+        ('main.mizhmiski',    'nav.mizh'),
+        ('main.abroad',       'nav.abroad'),
         ('main.calculate_km', 'nav.calc_short'),
       ] %}
       {% for endpoint, key in nav_items %}

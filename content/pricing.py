@@ -30,9 +30,9 @@ LOCAL_FEED = 799          # подача, грн
 LOCAL_MIN_HOURS = 2
 
 # ── 2. Покілометрово: міжміські по Україні ──────────────────────────────
+# Єдина ставка на будь-яку відстань. Мінімального замовлення НЕМАЄ:
+# і 140 км до Житомира, і 540 км до Львова рахуються тим самим множенням.
 INTERCITY_PER_KM = 37     # грн/км, за відстань в один бік
-INTERCITY_MIN = 20000     # мінімум замовлення, грн
-INTERCITY_MIN_FROM_KM = 400   # …діє від цієї відстані; ближче мінімуму немає
 
 # Зворотний рейс із вантажем — чверть від ціни «туди».
 RETURN_SHARE = 0.25
@@ -58,18 +58,13 @@ ABROAD_CURRENCY = "EUR"
 
 
 def quote_intercity(km):
-    """Вартість міжміського рейсу в один бік і чи спрацював мінімум."""
-    total = km * INTERCITY_PER_KM
-    min_applied = False
-    if km >= INTERCITY_MIN_FROM_KM and total < INTERCITY_MIN:
-        total = INTERCITY_MIN
-        min_applied = True
-    return round(total), min_applied
+    """Вартість міжміського рейсу в один бік. Без мінімумів і порогів."""
+    return round(km * INTERCITY_PER_KM)
 
 
 def quote_intercity_return(km):
     """Ціна рейсу туди й назад: «туди» + чверть від нього."""
-    one_way, _ = quote_intercity(km)
+    one_way = quote_intercity(km)
     return round(one_way * (1 + RETURN_SHARE))
 
 

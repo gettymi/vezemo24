@@ -98,14 +98,13 @@ def route_page(slug, lang=DEFAULT):
     # Ціну міжміського рейсу можна назвати чесно: вона залежить від
     # відстані, а відстань відома. Погодинну — ні, бо ніхто наперед не
     # знає, скільки триватиме завантаження.
-    price, min_applied = pricing.quote_intercity(route["km"])
+    price = pricing.quote_intercity(route["km"])
     price_return = pricing.quote_intercity_return(route["km"])
 
     return render_template(
         "route.html",
         route=route,
         price=price,
-        price_min_applied=min_applied,
         price_return=price_return,
         pricing=pricing,
         copy=route_data.copy_for(route, locale),

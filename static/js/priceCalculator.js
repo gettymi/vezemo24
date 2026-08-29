@@ -30,9 +30,8 @@
 
   /** Покілометрово: міжміські рейси по Україні. */
   var INTERCITY = {
+    // Єдина ставка на будь-яку відстань. Мінімального замовлення НЕМАЄ.
     perKm: 37,        // грн/км, за відстань в один бік
-    min: 20000,       // мінімум замовлення, грн
-    minFromKm: 400,   // …діє від цієї відстані; ближче мінімуму немає
   };
 
   /* Зворотний рейс із вантажем — чверть від ціни «туди»: машина однаково
@@ -76,13 +75,7 @@
       };
     }
 
-    var total = km * INTERCITY.perKm;
-    var minApplied = false;
-    if (km >= INTERCITY.minFromKm && total < INTERCITY.min) {
-      total = INTERCITY.min;
-      minApplied = true;
-    }
-    total = Math.round(total);
+    var total = Math.round(km * INTERCITY.perKm);
     return {
       mode: "intercity",
       distanceKm: km,
@@ -90,8 +83,6 @@
       total: total,
       totalReturn: Math.round(total * (1 + RETURN_SHARE)),
       returnShare: RETURN_SHARE,
-      minApplied: minApplied,
-      min: INTERCITY.min,
     };
   }
 
@@ -129,9 +120,6 @@
       };
       var base = Math.round(q.distanceKm) + " " + T("unit.km") + " × " +
                  q.perKm + " " + uah;
-      if (q.minApplied) {
-        return base + " → " + money(q.min) + " " + uah + " (" + T("price.min_order") + ")";
-      }
       return base + " = " + money(q.total) + " " + uah;
     }
     return T("price.hourly_note", {

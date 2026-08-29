@@ -66,7 +66,7 @@
         <ul class="checks">
           <li>{{ t('svc.mizh.c1') }}</li>
           <li>{{ t('svc.mizh.c2') }}</li>
-          <li>{{ t('svc.mizh.c3') }}</li>
+          <li>{{ t('svc.mizh.c3', rate=PRICING.INTERCITY_PER_KM) }}</li>
         </ul>
         <div class="card__foot">
           <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('common.more') }}</a>

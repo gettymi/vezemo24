@@ -20,7 +20,7 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "{{ t('mizh.faq.q1') }}",
-      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a1') }}" } },
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a1', rate=PRICING.INTERCITY_PER_KM) }}" } },
     { "@type": "Question", "name": "{{ t('mizh.faq.q2') }}",
       "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a2') }}" } },
     { "@type": "Question", "name": "{{ t('mizh.faq.q3') }}",
@@ -116,7 +116,7 @@
     <div class="faq">
       <details class="faq__item">
         <summary class="faq__q">{{ t('mizh.faq.q1') }}</summary>
-        <p class="faq__a">{{ t('mizh.faq.a1') }}</p>
+        <p class="faq__a">{{ t('mizh.faq.a1', rate=PRICING.INTERCITY_PER_KM) }}</p>
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('mizh.faq.q2') }}</summary>

@@ -34,7 +34,7 @@
     { "@type": "Question", "name": {{ t('route.faq.q1', city=city) | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a1', city=city) | tojson }} } },
     { "@type": "Question", "name": {{ t('route.faq.q2', city=city) | tojson }},
-      "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a2', city=city) | tojson }} } },
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a2', city=city, rate=pricing.INTERCITY_PER_KM) | tojson }} } },
     { "@type": "Question", "name": {{ t('route.faq.q3') | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a3') | tojson }} } }
   ]
@@ -103,11 +103,7 @@
           <strong class="routeprice__value">{{ '{:,}'.format(price).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
         </p>
         <p class="card__text">
-          {% if price_min_applied %}
-            {{ t('route.price.min', min=pricing.INTERCITY_MIN, from_km=pricing.INTERCITY_MIN_FROM_KM) }}
-          {% else %}
-            {{ t('route.price.perkm', rate=pricing.INTERCITY_PER_KM, km=route.km) }}
-          {% endif %}
+          {{ t('route.price.perkm', rate=pricing.INTERCITY_PER_KM, km=route.km) }}
         </p>
         <p class="routeprice__return">{{ t('route.price.return',
               price=('{:,}'.format(price_return).replace(',', ' '))) }}</p>
@@ -133,7 +129,7 @@
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('route.faq.q2', city=city) }}</summary>
-        <p class="faq__a">{{ t('route.faq.a2', city=city) }}</p>
+        <p class="faq__a">{{ t('route.faq.a2', city=city, rate=pricing.INTERCITY_PER_KM) }}</p>
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('route.faq.q3') }}</summary>

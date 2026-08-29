@@ -615,21 +615,36 @@
      конверсія, і перенос робить шапку вищою за токен --header-h. */
   .header__phone, .nav .btn--solid-dark { white-space: nowrap; }
 
-  .langs { display: inline-flex; gap: 1px; padding: 2px; border-radius: var(--r-full);
-           background: var(--surface-sunk); border: 1px solid var(--line); }
+  /* У шапці перемикач — це НЕ три кнопки, а один дрібний напис «UA · RU · EN».
+     Пігулки навколо кожної мови читались як ще три кнопки поруч із меню,
+     телефоном і головною дією, і шапка виглядала перевантаженою. У підвалі
+     місця вдосталь, там пігулки лишаються. */
+  .langs { display: inline-flex; align-items: center; gap: 0; margin-inline: var(--sp-2); }
   .langs__item {
-    padding: 4px 7px;
-    border-radius: var(--r-full);
+    padding: 4px 3px;
+    border-radius: var(--r-sm);
     font-size: var(--fs-xs);
     font-weight: 700;
     letter-spacing: .03em;
     color: var(--text-muted);
     line-height: 1.4;
   }
-  .langs__item:hover { color: var(--brand-700); background: var(--white); }
-  .langs__item.is-current { background: var(--brand-500); color: var(--white); }
-  .footer .langs { margin-top: var(--sp-4); background: rgba(255,255,255,.06);
-                   border-color: rgba(255,255,255,.16); }
+  /* Роздільники малюємо псевдоелементом, щоб не чіпати розмітку. */
+  .langs__item + .langs__item::before {
+    content: "/";
+    margin-right: 4px;
+    color: var(--text-muted);
+    opacity: .45;
+    font-weight: 400;
+  }
+  .langs__item:hover { color: var(--brand-700); }
+  .langs__item.is-current { color: var(--text-strong); }
+  .footer .langs { margin-top: var(--sp-4); gap: 1px; padding: 2px;
+                   border-radius: var(--r-full);
+                   background: rgba(255,255,255,.06);
+                   border: 1px solid rgba(255,255,255,.16); }
+  .footer .langs__item { padding: 4px 7px; border-radius: var(--r-full); }
+  .footer .langs__item + .langs__item::before { content: none; }
   .footer .langs__item { color: var(--ink-300); }
   .footer .langs__item:hover { background: rgba(255,255,255,.12); color: var(--white); }
   .footer .langs__item.is-current { background: var(--white); color: var(--brand-700); }
@@ -657,18 +672,11 @@
   .burger[aria-expanded="true"] .burger__line:nth-child(2) { opacity: 0; }
   .burger[aria-expanded="true"] .burger__line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-  /* Між 901 і 1180px повна навігація + перемикач + телефон + кнопка вже не
-     вміщаються в один рядок, і кнопка «Залишити заявку» ламається на два.
-     Ховаємо саме перемикач: він дублюється в підвалі, а телефон і головна
-     кнопка — це конверсія, їх ховати не можна. Нижче 900px усе одно
-     вмикається бургер, і перемикач повертається всередину меню, тому
-     нижню межу діапазону задано явно. */
-  }
-
-  /* Шість пунктів меню + перемикач + телефон + кнопка не вміщаються в
-     один рядок вужче за 1200px. Нижче цієї межі вмикається бургер —
-     разом із нижньою панеллю, щоб телефон нікуди не зникав. */
-  @media (max-width: 1199px) {
+  /* Після того як пункт «Головна» пішов у логотип, а перемикач мов став
+     дрібним написом, повна шапка тепер вміщається аж до 1130px — раніше
+     бургер вмикався на 1199px. Число виміряне, не вгадане: вужче за це
+     рядок переноситься і шапка стає вищою за --header-h. */
+  @media (max-width: 1129px) {
     .burger { display: flex; }
     .nav {
       position: fixed;
@@ -679,8 +687,10 @@
       gap: var(--sp-2);
       margin-left: 0;
       padding: var(--sp-5);
-      background: rgba(255,255,255,.98);
-      backdrop-filter: blur(14px);
+      /* Суцільний фон, без backdrop-filter: панель і так була майже
+         непрозорою, а розмиття лише коштувало кадрів і в частині
+         рушіїв давало напівпрозоре меню з текстом сторінки крізь нього. */
+      background: var(--surface);
       border-bottom: 1px solid var(--line);
       box-shadow: var(--sh-3);
       visibility: hidden;
@@ -691,6 +701,9 @@
     .nav.is-open { visibility: visible; opacity: 1; translate: 0 0; }
     .nav__link { padding: 14px; text-align: center; }
     .nav .header__phone { justify-content: center; }
+    /* Усередині бургер-меню все вирівняне по центру — перемикач теж,
+       інакше він висить окремим уламком біля лівого краю. */
+    .nav .langs { justify-content: center; margin-inline: 0; padding-block: var(--sp-2); }
   }
   /* ── Підвал ─────────────────────────────────────────────────────────── */
   .footer {
@@ -755,7 +768,7 @@
 
   /* ── Нижня панель дій (мобільні) ────────────────────────────────────── */
   .mobilebar { display: none; }
-  @media (max-width: 1199px) {
+  @media (max-width: 1129px) {
     .mobilebar {
       position: fixed;
       inset: auto 0 0 0;

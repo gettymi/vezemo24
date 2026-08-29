@@ -641,10 +641,7 @@
     } else if (q.mode === "intercity") {
       label.textContent = T("quote.intercity");
       value.textContent = formatMoney(q.total) + " " + T("unit.uah");
-      note.textContent = q.minApplied
-        ? T("quote.min_note", { from: PriceCalculator.constants.INTERCITY.minFromKm,
-                                min: formatMoney(q.min) })
-        : T("quote.intercity_note", { rate: q.perKm });
+      note.textContent = T("quote.intercity_note", { rate: q.perKm });
     } else {
       label.textContent = T("quote.local");
       value.textContent = T("quote.local_value", { rate: q.hourly });
