@@ -25,25 +25,18 @@
 
       <div class="panel__head">
         <h1>Розрахувати вартість</h1>
-        <p>Вкажіть адреси або поставте точки на карті — побачите відстань, час у дорозі та орієнтовну ціну.</p>
+        <p>Вкажіть адреси або оберіть готовий напрямок — побачите відстань, час у дорозі та ціну за кожною послугою.</p>
       </div>
 
-      <div class="choice">
-        <span class="choice__label" id="service-label">Що потрібно</span>
-        <div class="choice__options" id="services-bus" role="radiogroup" aria-labelledby="service-label">
-          <label>
-            <input type="radio" name="service" value="bus_taxi" data-service-id="bus_taxi" checked>
-            <span class="choice__opt">Вантажне таксі</span>
-          </label>
-          <label>
-            <input type="radio" name="service" value="bus_delivery" data-service-id="bus_delivery">
-            <span class="choice__opt">Доставка меблів / техніки</span>
-          </label>
-          <label>
-            <input type="radio" name="service" value="bus_relocation" data-service-id="bus_relocation">
-            <span class="choice__opt">Переїзд під ключ</span>
-          </label>
-        </div>
+      {# Повідомлення в самій панелі. Раніше тут були alert(): вони блокують
+         сторінку, виглядають як помилка браузера і не показують контексту. #}
+      <p class="notice notice--error" id="map-notice" role="status" aria-live="polite"></p>
+
+      {# Готові напрямки. Координати зашиті, тож пресет не робить жодного
+         запиту до геокодера — найчастіші маршрути рахуються миттєво. #}
+      <div class="presets">
+        <span class="presets__label">Часті напрямки</span>
+        <div class="presets__row" id="presets"></div>
       </div>
 
       <div class="points" id="points-container">
@@ -70,36 +63,32 @@
         </div>
       </div>
 
-      <dl class="result" id="route-result">
-        <div class="result__row">
-          <dt>Транспорт</dt>
-          <dd id="res-vehicle">Бус до 3,5 т</dd>
-        </div>
-        <div class="result__row">
-          <dt>Послуга</dt>
-          <dd id="res-service">—</dd>
-        </div>
-        <div class="result__row">
-          <dt>Відстань</dt>
-          <dd id="res-distance">0 км</dd>
-        </div>
-        <div class="result__row">
-          <dt>Час у дорозі</dt>
-          <dd id="res-duration">0 год</dd>
-        </div>
-        <div class="result__row" id="hourly-rate-item" style="display:none">
-          <dt>Тариф за годину</dt>
-          <dd id="res-hourly-rate">—</dd>
-        </div>
-        <div class="result__row result__row--total">
-          <dt>Орієнтовна вартість</dt>
-          <dd id="res-price">—</dd>
+      <div class="result" id="route-result">
+        <div class="result__facts">
+          <div class="fact">
+            <span class="fact__label">Відстань</span>
+            <strong class="fact__value" id="res-distance">0 км</strong>
+          </div>
+          <div class="fact">
+            <span class="fact__label">Час у дорозі</span>
+            <strong class="fact__value" id="res-duration">0 год</strong>
+          </div>
+          <div class="fact">
+            <span class="fact__label">Транспорт</span>
+            <strong class="fact__value" id="res-vehicle">Бус до 3,5 т</strong>
+          </div>
         </div>
 
-        <p class="result__breakdown" id="res-price-breakdown" style="display:none"></p>
+        {# Три ціни одразу, а не «спершу оберіть послугу». Вибір без цифр —
+           це рішення наосліп; тепер людина порівнює й обирає свідомо. #}
+        <div class="svc-list" id="res-services" role="group" aria-label="Послуги та ціни"></div>
+
+        {# Читає orderRoute.js, коли переносить розрахунок у форму заявки. #}
+        <span id="res-service" hidden></span>
+
+        <p class="result__breakdown" id="res-price-breakdown" hidden></p>
         <div class="result__legs" id="legs-details"></div>
 
-        {# Дія в момент найвищого наміру. Раніше тут не було жодної кнопки. #}
         <div class="result__cta">
           <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
             📞 Замовити за цією ціною
@@ -113,13 +102,21 @@
         <p class="result__disclaimer">
           Відстань, час і вартість — орієнтовні. Точну ціну підтвердимо після короткої розмови.
         </p>
-      </dl>
+      </div>
 
-      <p class="panel__note">Розрахунок орієнтовний. Точну вартість підкажемо індивідуально.</p>
+      <p class="panel__note">Мінімальне замовлення — 2 години + подача. Розрахунок орієнтовний.</p>
     </div>
   </aside>
 
-  <div class="mapview__canvas" id="map"></div>
+  <div class="mapview__canvas">
+    <div id="map"></div>
+    {# Якщо Leaflet або тайли не завантажились, тут раніше лишався просто
+       сірий прямокутник без пояснень. #}
+    <div class="map-fallback" id="map-fallback" hidden>
+      <p class="map-fallback__title">Карта зараз недоступна</p>
+      <p class="map-fallback__text">Розрахунок за адресами працює й без неї — впишіть міста та натисніть «Розрахувати».</p>
+    </div>
+  </div>
 </div>
 {% endblock %}
 

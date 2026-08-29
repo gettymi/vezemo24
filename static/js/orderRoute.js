@@ -19,10 +19,14 @@
     });
     if (points.length) parts.push("Маршрут: " + points.join(" → "));
 
-    var dist  = textOf("res-distance"); if (dist) parts.push("Відстань: " + dist);
-    var dur   = textOf("res-duration"); if (dur)  parts.push("Час у дорозі: " + dur);
-    var svc   = textOf("res-service");  if (svc && svc !== "—") parts.push("Послуга: " + svc);
-    var price = textOf("res-price");    if (price && price !== "—") parts.push("Орієнтовна вартість: " + price);
+    var dist = textOf("res-distance"); if (dist) parts.push("Відстань: " + dist);
+    var dur  = textOf("res-duration"); if (dur)  parts.push("Час у дорозі: " + dur);
+    var svc  = textOf("res-service");  if (svc && svc !== "—") parts.push("Послуга: " + svc);
+
+    // Ціна тепер живе в обраній картці послуги, а не в окремому рядку підсумку.
+    var selected = document.querySelector("#res-services .svc.is-selected .svc__price");
+    var price = selected ? selected.textContent.trim() : "";
+    if (price) parts.push("Орієнтовна вартість: " + price);
     if (!parts.length) return;
 
     var msg = parts.join("\n");

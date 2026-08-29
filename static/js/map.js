@@ -6,12 +6,76 @@
   "use strict";
 
   var KYIV = [50.4501, 30.5234];
+
+  /* Готові напрямки з зашитими координатами. Сенс не лише в зручності:
+     пресет не робить ЖОДНОГО запиту до геокодера, тож найпопулярніші
+     маршрути рахуються миттєво й не витрачають ліміт Nominatim. */
+  var PRESETS = [
+    { label: "Київ → Львів",  a: ["Київ", 50.4501, 30.5234], b: ["Львів", 49.8397, 24.0297] },
+    { label: "Київ → Одеса",  a: ["Київ", 50.4501, 30.5234], b: ["Одеса", 46.4825, 30.7233] },
+    { label: "Київ → Дніпро", a: ["Київ", 50.4501, 30.5234], b: ["Дніпро", 48.4647, 35.0462] },
+    { label: "Київ → Харків", a: ["Київ", 50.4501, 30.5234], b: ["Харків", 49.9935, 36.2304] },
+  ];
+
+  var SERVICE_ORDER = ["bus_taxi", "bus_delivery", "bus_relocation"];
+  var selectedService = "bus_taxi";
   /* Геосервіси більше не викликаються з браузера напряму: усе йде через
      власні /api/geo/*, де є кеш, коректний User-Agent і дотримання
      інтервалу між запитами (див. routes/geo.py). */
   var GEO_SEARCH = "/api/geo/search";
   var GEO_REVERSE = "/api/geo/reverse";
   var GEO_ROUTE = "/api/geo/route";
+
+  /* alert() блокує сторінку, виглядає як помилка браузера і не показує
+     контексту. Тепер повідомлення живе в самій панелі. */
+  /* Шари існують лише разом із картою. Без цієї перевірки будь-яка дія,
+     що чистить маршрут, падала з TypeError, коли Leaflet не завантажився —
+     і разом із нею вмирала вся форма. */
+  /* «540.0 км» і «6 год 0 хв» виглядають як вивід налагодження.
+     В українській десятковий роздільник — кома, а нульові хвилини зайві. */
+  function formatKm(meters) {
+    var km = (meters || 0) / 1000;
+    var txt = km >= 100 ? String(Math.round(km)) : km.toFixed(1).replace(".", ",");
+    return txt.replace(",0", "") + " км";
+  }
+
+  function formatDuration(seconds) {
+    var total = Math.round((seconds || 0) / 60);
+    var h = Math.floor(total / 60);
+    var m = total % 60;
+    if (h && m) return h + " год " + m + " хв";
+    if (h) return h + " год";
+    return m + " хв";
+  }
+
+  function clearMapLayers() {
+    if (markersLayer) markersLayer.clearLayers();
+    if (routeLayer) routeLayer.clearLayers();
+  }
+
+  function notice(msg, kind) {
+    var box = document.getElementById("map-notice");
+    if (!box) return;
+    if (!msg) { box.classList.remove("is-shown"); box.textContent = ""; return; }
+    box.textContent = msg;
+    box.className = "notice notice--" + (kind || "error") + " is-shown";
+  }
+
+  /* Через серверний геокодер із витримкою в секунду маршрут може рахуватись
+     кілька секунд. Без цього стану сторінка виглядала так, ніби нічого не
+     сталось, і люди тиснули кнопку повторно. */
+  function setBusy(on) {
+    var btn = document.getElementById("build-route");
+    if (!btn) return;
+    btn.disabled = !!on;
+    btn.classList.toggle("is-busy", !!on);
+    if (on) {
+      if (!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
+      btn.textContent = "Рахуємо…";
+    } else if (btn.getAttribute("data-label")) {
+      btn.textContent = btn.getAttribute("data-label");
+    }
+  }
 
   function getJSON(url) {
     return fetch(url, { headers: { Accept: "application/json" } })
@@ -28,10 +92,68 @@
   var lastSearchAbort = null;
   var currentRouteData = null; // { distance: meters, duration: seconds }
 
+  /* Раніше все — і карта, і кнопки — піднімалось в одній функції, яка
+     починалась із L.map(). Якщо Leaflet не завантажився, кидався
+     ReferenceError і разом із картою вмирали «Розрахувати», «Очистити»
+     та підказки адрес. Тепер контроли не залежать від карти. */
+  function wireControls() {
+    renderPresets();
+
+    document.getElementById("add-point")?.addEventListener("click", addWayPoint);
+    document.getElementById("build-route")?.addEventListener("click", buildRoute);
+    document.getElementById("clear-route")?.addEventListener("click", clearRoute);
+
+    createAutocompleteDropdown();
+    document.querySelectorAll("#points-container .point__input").forEach(function (inp) {
+      if (!inp.readOnly) setupAutocomplete(inp);
+    });
+  }
+
+  function renderPresets() {
+    var host = document.getElementById("presets");
+    if (!host) return;
+    PRESETS.forEach(function (preset) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "preset";
+      b.textContent = preset.label;
+      b.addEventListener("click", function () { applyPreset(preset); });
+      host.appendChild(b);
+    });
+  }
+
+  function applyPreset(preset) {
+    clearRoute();
+    var rows = document.querySelectorAll("#points-container .point");
+    [preset.a, preset.b].forEach(function (pt, i) {
+      var row = rows[i];
+      if (!row) return;
+      var input = row.querySelector(".point__input");
+      input.value = pt[0];
+      row.setAttribute("data-lat", pt[1]);
+      row.setAttribute("data-lng", pt[2]);
+    });
+    buildRoute();
+  }
+
+  function showMapFallback() {
+    var fb = document.getElementById("map-fallback");
+    if (fb) fb.hidden = false;
+    var btn = document.getElementById("add-point-map");
+    if (btn) btn.hidden = true;   // без карти в цій кнопці немає сенсу
+  }
+
   function initMap() {
     if (map) return;
     var el = document.getElementById("map");
     if (!el) return;
+
+    if (typeof L === "undefined") {
+      showMapFallback();
+      return;   // форма далі працює — карта тут не обов'язкова
+    }
+
+    document.getElementById("add-point-map")?.addEventListener("click", enableMapClickMode);
 
     map = L.map("map", {
       center: KYIV,
@@ -45,22 +167,7 @@
     markersLayer = L.layerGroup().addTo(map);
     routeLayer = L.layerGroup().addTo(map);
 
-    document.getElementById("add-point")?.addEventListener("click", addWayPoint);
-    document.getElementById("add-point-map")?.addEventListener("click", enableMapClickMode);
-    document.getElementById("build-route")?.addEventListener("click", buildRoute);
-    document.getElementById("clear-route")?.addEventListener("click", clearRoute);
-
-    // Один тип транспорту — бус до 3,5 т. Вибору «бус / самосвал» більше немає.
-    document.querySelectorAll('#services-bus input[name="service"]').forEach(function (radio) {
-      radio.addEventListener("change", recalculatePrice);
-    });
-
     map.on("click", onMapClick);
-
-    createAutocompleteDropdown();
-    document.querySelectorAll("#points-container .point__input").forEach(function (inp) {
-      if (!inp.readOnly) setupAutocomplete(inp);
-    });
   }
 
   function createAutocompleteDropdown() {
@@ -161,7 +268,26 @@
     });
 
     input.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") hideAutocomplete();
+      if (e.key === "Escape") { hideAutocomplete(); return; }
+      if (!autocompleteDropdown || autocompleteDropdown.style.display !== "block") return;
+
+      var items = autocompleteDropdown.querySelectorAll(".suggest__item:not(.suggest__item--hint)");
+      if (!items.length) return;
+      var current = -1;
+      items.forEach(function (el, i) { if (el.classList.contains("is-active")) current = i; });
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var next = e.key === "ArrowDown" ? current + 1 : current - 1;
+        if (next < 0) next = items.length - 1;
+        if (next >= items.length) next = 0;
+        items.forEach(function (el) { el.classList.remove("is-active"); });
+        items[next].classList.add("is-active");
+        items[next].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter" && current >= 0) {
+        e.preventDefault();
+        items[current].click();
+      }
     });
   }
 
@@ -191,6 +317,7 @@
       .setLatLng(map.getCenter())
       .setContent("<strong>Натисніть на карту</strong>, щоб додати точку маршруту.")
       .openOn(map);
+    if (!map) return;
     map.getContainer().classList.add("map-picking");
   }
 
@@ -299,8 +426,7 @@
       second.removeAttribute("data-lng");
       second.classList.remove("point--map");
     }
-    markersLayer.clearLayers();
-    routeLayer.clearLayers();
+    clearMapLayers();
     currentRouteData = null;
     var resCard = document.getElementById("route-result");
     if (resCard) resCard.classList.remove("is-shown");
@@ -357,14 +483,15 @@
     });
 
     if (filled.length < 2) {
-      alert("Вкажіть мінімум дві точки: звідки та куди. Можна вписати місто/адресу або додати точку на карті.");
+      notice("Вкажіть мінімум дві точки: звідки та куди.");
       return;
     }
 
+    notice("");
+    setBusy(true);
     var resCard = document.getElementById("route-result");
     resCard.classList.remove("is-shown");
-    markersLayer.clearLayers();
-    routeLayer.clearLayers();
+    clearMapLayers();
 
     // Без цього прапорця не знайдена точка давала два alert поспіль:
     // спершу «точку не знайдено», а потім ще й «маршрут не знайдено».
@@ -375,16 +502,16 @@
         var missing = coords.findIndex(function (c) { return !c; });
         if (missing >= 0) {
           var label = filled[missing].label || filled[missing].value || "Точка " + (missing + 1);
-          alert('Точку "' + label + '" не знайдено. Уточніть написання або поставте точку на карті.');
+          notice('Адресу «' + label + '» не знайдено. Уточніть написання або поставте точку на карті.');
           aborted = true;
           return;
         }
 
-        coords.forEach(function (c) {
-          L.marker([c.lat, c.lng])
-            .addTo(markersLayer)
-            .bindPopup(c.display);
-        });
+        if (map) {
+          coords.forEach(function (c) {
+            L.marker([c.lat, c.lng]).addTo(markersLayer).bindPopup(c.display);
+          });
+        }
 
         var coordsStr = coords.map(function (c) { return c.lng + "," + c.lat; }).join(";");
         return getJSON(GEO_ROUTE + "?coords=" + encodeURIComponent(coordsStr));
@@ -392,30 +519,21 @@
       .then(function (route) {
         if (aborted) return;
         if (!route || !route.geometry) {
-          alert("Маршрут не знайдено. Перевірте точки або спробуйте інші адреси.");
+          notice("Маршрут не знайдено. Перевірте точки або спробуйте інші адреси.");
           return;
         }
 
-        var geometry = route.geometry;
-        var line = L.geoJSON(
-          { type: "LineString", coordinates: geometry.coordinates },
-          {
-            style: {
-              color: "#0ea5e9",
-              weight: 5,
-              opacity: 0.8,
-            },
-          }
-        ).addTo(routeLayer);
-
-        map.fitBounds(line.getBounds(), { padding: [40, 40] });
+        if (map) {
+          var line = L.geoJSON(
+            { type: "LineString", coordinates: route.geometry.coordinates },
+            { style: { color: "#0ea5e9", weight: 5, opacity: 0.8 } }
+          ).addTo(routeLayer);
+          map.fitBounds(line.getBounds(), { padding: [40, 40] });
+        }
 
         currentRouteData = { distance: route.distance, duration: route.duration };
-        var distKm = (route.distance / 1000).toFixed(1);
-        var durationSec = route.duration;
-        var hours = Math.floor(durationSec / 3600);
-        var minutes = Math.floor((durationSec % 3600) / 60);
-        var timeStr = hours > 0 ? hours + " год " + minutes + " хв" : minutes + " хв";
+        var distKm = formatKm(route.distance);
+        var timeStr = formatDuration(route.duration);
 
         var labels = filled.map(function (p) { return p.label || p.value || ""; });
         var legs = route.legs || [];
@@ -423,119 +541,104 @@
           .map(function (leg, i) {
             var a = (labels[i] || "Точка " + (i + 1)).split(",")[0].trim();
             var b = (labels[i + 1] || "Точка " + (i + 2)).split(",")[0].trim();
-            var dist = ((leg.distance || 0) / 1000).toFixed(1);
-            return '<div class="result__leg"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + " км</strong></div>";
+            var dist = formatKm(leg.distance);
+            return '<div class="result__leg"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + "</strong></div>";
           })
           .join("");
 
-        var vehicleValue = "bus";
-        var vehicleLabel = "Бус до 3,5 т";
         var resVehicle = document.getElementById("res-vehicle");
-        if (resVehicle) resVehicle.textContent = vehicleLabel;
-        var serviceRadio = document.querySelector('input[name="service"]:checked');
-        var serviceLabel = "";
-        if (serviceRadio) {
-          var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".choice__opt");
-          if (opt) serviceLabel = opt.textContent.trim();
-        }
-        var resService = document.getElementById("res-service");
-        if (resService) resService.textContent = serviceLabel || "—";
-        document.getElementById("res-distance").textContent = distKm + " км";
+        if (resVehicle) resVehicle.textContent = "Бус до 3,5 т";
+        document.getElementById("res-distance").textContent = distKm;
         document.getElementById("res-duration").textContent = timeStr;
         document.getElementById("legs-details").innerHTML = legsHtml || "";
 
-        if (typeof PriceCalculator !== "undefined") {
-          var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
-          var options;
-            var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
-            var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
-            options = { busServiceId: busServiceId };
-          var priceResult = PriceCalculator.calculate(route.distance, route.duration, serviceType, options);
-          var resPrice = document.getElementById("res-price");
-          if (resPrice) resPrice.textContent = priceResult.total + " грн";
-          var resBreakdown = document.getElementById("res-price-breakdown");
-          if (resBreakdown) {
-            resBreakdown.textContent = priceResult.breakdown;
-            resBreakdown.style.display = "block";
-          }
-          var hourlyRateItem = document.getElementById("hourly-rate-item");
-          var resHourlyRate = document.getElementById("res-hourly-rate");
-          if (hourlyRateItem && resHourlyRate) {
-            var serviceId = (options && options.busServiceId) || "bus_taxi";
-            var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
-            if (hourlyRate) {
-              resHourlyRate.textContent = hourlyRate + " грн/год";
-              hourlyRateItem.style.display = "flex";
-            } else {
-              hourlyRateItem.style.display = "none";
-            }
-          }
-        } else {
-          var resPrice = document.getElementById("res-price");
-          if (resPrice) resPrice.textContent = "—";
-          var resBreakdown = document.getElementById("res-price-breakdown");
-          if (resBreakdown) resBreakdown.style.display = "none";
-        }
+        renderServicePrices(route.distance, route.duration);
 
         resCard.classList.add("is-shown");
       })
       .catch(function (err) {
         console.error(err);
-        alert("Помилка побудови маршруту. Спробуйте пізніше або перевірте адреси.");
-      });
+        notice("Не вдалося побудувати маршрут. Перевірте адреси або спробуйте за хвилину.");
+      })
+      .then(function () { setBusy(false); });
   }
 
-  function recalculatePrice() {
-    if (!currentRouteData) return;
-    var resCard = document.getElementById("route-result");
-    if (!resCard || !resCard.classList.contains("is-shown")) return;
+  /* Рахуємо ціну одразу за всіма послугами. Раніше треба було спершу
+     обрати послугу й лише потім побачити цифру — тобто вибирати наосліп. */
+  function renderServicePrices(distanceMeters, durationSeconds) {
+    var host = document.getElementById("res-services");
+    if (!host || typeof PriceCalculator === "undefined") return;
 
-    var vehicleValue = "bus";
-    var vehicleLabel = "Бус до 3,5 т";
-    var resVehicle = document.getElementById("res-vehicle");
-    if (resVehicle) resVehicle.textContent = vehicleLabel;
+    var cfg = PriceCalculator.getBusServiceConfig();
+    var priced = SERVICE_ORDER.map(function (id) {
+      var r = PriceCalculator.calculate(distanceMeters, durationSeconds, "BUS", { busServiceId: id });
+      return { id: id, label: (cfg[id] || {}).label || id, rate: (cfg[id] || {}).hourlyRate, res: r };
+    });
+    var cheapest = priced.reduce(function (a, b) { return b.res.total < a.res.total ? b : a; }).id;
 
-    var serviceRadio = document.querySelector('input[name="service"]:checked');
-    var serviceLabel = "";
-    if (serviceRadio) {
-      var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".choice__opt");
-      if (opt) serviceLabel = opt.textContent.trim();
-    }
-    var resService = document.getElementById("res-service");
-    if (resService) resService.textContent = serviceLabel || "—";
+    host.innerHTML = "";
+    priced.forEach(function (item) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "svc" + (item.id === cheapest ? " is-cheapest" : "");
+      btn.setAttribute("data-service", item.id);
+      btn.setAttribute("aria-pressed", "false");
 
-    if (typeof PriceCalculator !== "undefined") {
-      var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
-      var options;
-        var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
-        var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
-        options = { busServiceId: busServiceId };
-      var priceResult = PriceCalculator.calculate(currentRouteData.distance, currentRouteData.duration, serviceType, options);
-      var resPrice = document.getElementById("res-price");
-      if (resPrice) resPrice.textContent = priceResult.total + " грн";
-      var resBreakdown = document.getElementById("res-price-breakdown");
-      if (resBreakdown) {
-        resBreakdown.textContent = priceResult.breakdown;
-        resBreakdown.style.display = "block";
+      var name = document.createElement("span");
+      name.className = "svc__name";
+      name.textContent = item.label;
+
+      var price = document.createElement("span");
+      price.className = "svc__price";
+      price.textContent = item.res.total + " грн";
+
+      var rate = document.createElement("span");
+      rate.className = "svc__rate";
+      rate.textContent = item.rate ? item.rate + " грн/год" : "";
+      if (item.id === cheapest) {
+        var tag = document.createElement("b");
+        tag.className = "svc__tag";
+        tag.textContent = "найдешевше";
+        rate.appendChild(document.createTextNode(" "));
+        rate.appendChild(tag);
       }
-      var hourlyRateItem = document.getElementById("hourly-rate-item");
-      var resHourlyRate = document.getElementById("res-hourly-rate");
-      if (hourlyRateItem && resHourlyRate) {
-        var serviceId = (options && options.busServiceId) || "bus_taxi";
-        var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
-        if (hourlyRate) {
-          resHourlyRate.textContent = hourlyRate + " грн/год";
-          hourlyRateItem.style.display = "flex";
-        } else {
-          hourlyRateItem.style.display = "none";
-        }
-      }
-    }
+
+      btn.appendChild(name);
+      btn.appendChild(price);
+      btn.appendChild(rate);
+      btn.addEventListener("click", function () { selectService(item.id, priced); });
+      host.appendChild(btn);
+    });
+
+    selectService(selectedService, priced);
   }
+
+  function selectService(id, priced) {
+    selectedService = id;
+    var chosen = null;
+    (priced || []).forEach(function (p) { if (p.id === id) chosen = p; });
+
+    document.querySelectorAll("#res-services .svc").forEach(function (el) {
+      var on = el.getAttribute("data-service") === id;
+      el.classList.toggle("is-selected", on);
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    var breakdown = document.getElementById("res-price-breakdown");
+    if (breakdown && chosen) {
+      breakdown.textContent = chosen.res.breakdown;
+      breakdown.hidden = false;
+    }
+    // orderRoute.js бере звідси назву послуги для форми заявки.
+    var hidden = document.getElementById("res-service");
+    if (hidden && chosen) hidden.textContent = chosen.label;
+  }
+
+  function boot() { wireControls(); initMap(); }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMap);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    initMap();
+    boot();
   }
 })();
