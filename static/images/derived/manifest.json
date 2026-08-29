@@ -10,6 +10,52 @@
       798
     ]
   },
+  "fleet-1.png": {
+    "fallback": "png",
+    "h": 679,
+    "stem": "fleet-1",
+    "w": 905,
+    "widths": [
+      400,
+      600,
+      800,
+      905
+    ]
+  },
+  "fleet-2.png": {
+    "fallback": "png",
+    "h": 633,
+    "stem": "fleet-2",
+    "w": 844,
+    "widths": [
+      400,
+      600,
+      800,
+      844
+    ]
+  },
+  "fleet-3.png": {
+    "fallback": "png",
+    "h": 368,
+    "stem": "fleet-3",
+    "w": 491,
+    "widths": [
+      400,
+      491
+    ]
+  },
+  "fleet-4.png": {
+    "fallback": "png",
+    "h": 816,
+    "stem": "fleet-4",
+    "w": 1088,
+    "widths": [
+      400,
+      600,
+      800,
+      1088
+    ]
+  },
   "road-card.jpg": {
     "fallback": "jpg",
     "h": 520,
@@ -42,6 +88,16 @@
       960,
       1280,
       1920
+    ]
+  },
+  "zad.png": {
+    "fallback": "jpg",
+    "h": 960,
+    "stem": "zad",
+    "w": 720,
+    "widths": [
+      480,
+      720
     ]
   }
 }

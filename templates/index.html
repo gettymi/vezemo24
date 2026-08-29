@@ -195,6 +195,39 @@
   </div>
 </section>
 
+<!-- АВТОПАРК -->
+{# Три машини з чотирьох. Показувати всі чотири на головній — це вже
+   каталог, а головна має вести далі, а не замінювати сторінку. #}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="section-head__eyebrow">{{ t('home.fleet.eyebrow') }}</span>
+      <h2>{{ t('home.fleet.h2') }}</h2>
+      <p class="section-head__lead">{{ t('home.fleet.lead') }}</p>
+    </div>
+    <ul class="fleet fleet--home" role="list">
+      {% for v in FLEET.home_vehicles() %}
+        <li class="fleet__item">
+          <div class="fleet__media">
+            {{ picture(v.image,
+                       alt=t('fleet.alt', color=t(v.color)),
+                       sizes='(min-width: 900px) 360px, (min-width: 640px) 45vw, 92vw',
+                       img_class='fleet__img') }}
+          </div>
+          <div class="fleet__body">
+            <h3 class="fleet__name">{{ v.name }}</h3>
+            <p class="fleet__meta">{{ t(v.color) | capitalize }} · {{ t(v.body) }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="cluster cluster--center" style="margin-top: var(--sp-6)">
+      <a class="btn btn--ghost" href="{{ url_for('main.fleet') }}"
+         data-cta="fleet-home">{{ t('home.fleet.cta') }}</a>
+    </div>
+  </div>
+</section>
+
 <!-- ДОВІРА -->
 <section class="section section--dark trust" id="trust">
   <div class="container">

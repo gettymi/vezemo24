@@ -7,6 +7,7 @@ from flask import (
 )
 
 import content.abroad as abroad_data
+import content.fleet as fleet_data
 import content.routes as route_data
 from content import pricing
 from i18n import DEFAULT, LOCALES
@@ -33,6 +34,7 @@ SITEMAP_PAGES = [
     {"endpoint": "main.mizhmiski",    "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "main.calculate_km", "priority": "0.85", "priority_alt": "0.65", "changefreq": "weekly"},
     {"endpoint": "main.abroad",       "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
+    {"endpoint": "main.fleet",        "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
     {"endpoint": "contact.contact",   "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
 ]
 
@@ -135,6 +137,15 @@ def mizhmiski(lang=DEFAULT):
 def abroad(lang=DEFAULT):
     """Міжнародні перевезення. Ціна — ставка за км, суму рахує калькулятор."""
     return render_template("abroad.html", destinations=abroad_data.DESTINATIONS)
+
+
+@main_bp.route("/avtopark", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/avtopark")
+def fleet(lang=DEFAULT):
+    """Автопарк. Показуємо машини, якими справді їздимо."""
+    return render_template("fleet.html",
+                           vehicles=fleet_data.VEHICLES,
+                           interior=fleet_data.INTERIOR)
 
 
 # ─── 301 зі старих URL ───────────────────────────────────────────────────────

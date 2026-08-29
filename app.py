@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request
 import i18n
 from assets import assets
 from config import Config
-from content import pricing
+from content import fleet, pricing
 from extensions import csrf, limiter
 from routes.contact import contact_bp
 from routes.geo import geo_bp
@@ -52,6 +52,8 @@ def create_app():
             # Тарифи — з одного модуля, щоб цифра на головній не розійшлася
             # з тією, яку рахує калькулятор.
             "PRICING": pricing,
+            # Автопарк потрібен і на головній, і на своїй сторінці.
+            "FLEET": fleet,
         }
 
     # ─── Заголовки безпеки ──────────────────────────────────────────────────
