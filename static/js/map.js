@@ -19,10 +19,10 @@
   };
   var KYIV_LL = [50.4501, 30.5234];
   var PRESETS = [
-    { to: "city.lviv",    ll: [49.8397, 24.0297] },
-    { to: "city.odesa",   ll: [46.4825, 30.7233] },
-    { to: "city.dnipro",  ll: [48.4647, 35.0462] },
-    { to: "city.kharkiv", ll: [49.9935, 36.2304] },
+    { slug: "kyiv-lviv",    to: "city.lviv",    ll: [49.8397, 24.0297] },
+    { slug: "kyiv-odesa",   to: "city.odesa",   ll: [46.4825, 30.7233] },
+    { slug: "kyiv-dnipro",  to: "city.dnipro",  ll: [48.4647, 35.0462] },
+    { slug: "kyiv-kharkiv", to: "city.kharkiv", ll: [49.9935, 36.2304] },
   ];
 
   var SERVICE_ORDER = ["bus_taxi", "bus_delivery", "bus_relocation"];
@@ -646,7 +646,22 @@
     if (hidden && chosen) hidden.textContent = chosen.label;
   }
 
-  function boot() { wireControls(); initMap(); }
+  /* Зі сторінки напрямку сюди приходять із ?route=kyiv-lviv. Беремо готовий
+     пресет за слагом: маршрут рахується миттєво й без жодного запиту до
+     геокодера — людина не переписує те, що вже прочитала в заголовку. */
+  function applyRouteFromQuery() {
+    var slug = new URLSearchParams(window.location.search).get("route");
+    if (!slug) return;
+    for (var i = 0; i < PRESETS.length; i++) {
+      if (PRESETS[i].slug === slug) { applyPreset(PRESETS[i]); return; }
+    }
+  }
+
+  function boot() {
+    wireControls();
+    initMap();
+    applyRouteFromQuery();
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

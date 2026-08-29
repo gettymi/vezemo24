@@ -646,7 +646,18 @@
   .burger[aria-expanded="true"] .burger__line:nth-child(2) { opacity: 0; }
   .burger[aria-expanded="true"] .burger__line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-  @media (max-width: 900px) {
+  /* Між 901 і 1180px повна навігація + перемикач + телефон + кнопка вже не
+     вміщаються в один рядок, і кнопка «Залишити заявку» ламається на два.
+     Ховаємо саме перемикач: він дублюється в підвалі, а телефон і головна
+     кнопка — це конверсія, їх ховати не можна. Нижче 900px усе одно
+     вмикається бургер, і перемикач повертається всередину меню, тому
+     нижню межу діапазону задано явно. */
+  @media (min-width: 1061px) and (max-width: 1180px) {
+    .header .langs { display: none; }
+    .nav { gap: var(--sp-3); }
+  }
+
+  @media (max-width: 1060px) {
     .burger { display: flex; }
     .nav {
       position: fixed;
@@ -733,7 +744,7 @@
 
   /* ── Нижня панель дій (мобільні) ────────────────────────────────────── */
   .mobilebar { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 1060px) {
     .mobilebar {
       position: fixed;
       inset: auto 0 0 0;
@@ -903,6 +914,31 @@
   .trust.is-visible .trust__card:nth-child(3) { transition-delay: .2s; }
   @media (prefers-reduced-motion: reduce) {
     .trust.is-armed:not(.is-visible) .trust__card { opacity: 1; translate: 0 0; }
+  }
+
+  /* Напрямок як посилання: розтягуємо на всю картку, щоб працювала будь-яка
+     точка рядка, а не лише текст. */
+  .route__link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    width: 100%;
+    color: inherit;
+  }
+  .route:has(.route__link):hover {
+    border-color: var(--brand-300);
+    background: var(--brand-50);
+  }
+  .route__link:hover .route__name { color: var(--brand-700); }
+
+  /* Ключові цифри маршруту — компактні картки без іконок. */
+  .routefacts .card { gap: var(--sp-1); padding: var(--sp-4); }
+  .routefacts__value {
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    color: var(--text-strong);
+    line-height: var(--lh-snug);
   }
 
   /* ── Розділена секція: фото + текст ──────────────────────────────────────

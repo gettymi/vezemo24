@@ -1,9 +1,12 @@
 from datetime import date
 
+from urllib.parse import urlencode
+
 from flask import (
-    Blueprint, render_template, url_for, Response, redirect, current_app
+    Blueprint, abort, render_template, url_for, Response, redirect, current_app
 )
 
+import content.routes as route_data
 from i18n import DEFAULT, LOCALES
 
 main_bp = Blueprint("main", __name__)
@@ -31,10 +34,17 @@ SITEMAP_PAGES = [
 ]
 
 
-def _abs_url(endpoint, lang=None):
+def _t(key):
+    """t() з i18n, але доступний і поза шаблоном."""
+    from i18n import t
+    return t(key)
+
+
+def _abs_url(endpoint, lang=None, **values):
     """Абсолютний URL на канонічному домені (а не на тому, з якого прийшов запит)."""
     base = current_app.config["SITE_URL"].rstrip("/")
-    return base + (url_for(endpoint, lang=lang) if lang else url_for(endpoint))
+    return base + (url_for(endpoint, lang=lang, **values) if lang
+                   else url_for(endpoint, **values))
 
 
 @main_bp.route("/", defaults={"lang": DEFAULT})
@@ -62,11 +72,43 @@ def services(lang=DEFAULT):
     return render_template("services.html")
 
 
+# Сторінка на кожен напрямок. Людина шукає «перевезення Київ Львів», а не
+# «вантажні перевезення» — загальна сторінка на такий запит не відповідає.
+# Слаг латиницею і однаковий для всіх мов: адреса лишається стабільною,
+# навіть якщо назва міста різна в кожній локалі.
+@main_bp.route("/perevezennya/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya/<slug>")
+def route_page(slug, lang=DEFAULT):
+    route = route_data.get(slug)
+    if route is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+    city = _t(route["city"])
+
+    # Калькулятор відкривається вже заповненим. Передаємо слаг, а не назви
+    # міст: у map.js для цих напрямків є готові координати, тож розрахунок
+    # відбувається миттєво й не витрачає ліміт геокодера.
+    calc_url = url_for("main.calculate_km") + "?" + urlencode({"route": slug})
+
+    return render_template(
+        "route.html",
+        route=route,
+        copy=route_data.copy_for(route, locale),
+        via_names=[_t(k) for k in route.get("via", [])],
+        others=[r for r in route_data.ROUTES if r["slug"] != slug],
+        calc_url=calc_url,
+    )
+
+
 @main_bp.route("/mizhmiski-perevezennya", defaults={"lang": DEFAULT})
 @main_bp.route(LANG_RULE + "/mizhmiski-perevezennya")
 def mizhmiski(lang=DEFAULT):
     """Міжміські перевезення по Україні."""
-    return render_template("mizhmiski.html")
+    # Напрямки з власними сторінками показуємо посиланнями, решту — просто
+    # рядком. Так список не бреше: клікабельне те, що справді існує.
+    return render_template("mizhmiski.html", routes=route_data.ROUTES)
 
 
 # ─── 301 зі старих URL ───────────────────────────────────────────────────────
@@ -107,6 +149,15 @@ def sitemap():
             "priority": item["priority"] if lang == DEFAULT else item["priority_alt"],
         }
         for item in SITEMAP_PAGES
+        for lang in LOCALES
+    ] + [
+        {
+            "loc": _abs_url("main.route_page", lang, slug=r["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.8" if lang == DEFAULT else "0.6",
+        }
+        for r in route_data.ROUTES
         for lang in LOCALES
     ]
     xml = render_template("sitemap_template.xml", pages=pages)

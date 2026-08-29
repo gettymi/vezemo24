@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{# Сторінка одного напрямку. Дані й тексти — у content/routes.py,
+   підписи інтерфейсу — у каталогах i18n. #}
+
+{% set city = t(route.city) %}
+{% set kyiv = t('city.kyiv') %}
+
+{% block title %}{{ t('route.meta.title', city=city) }}{% endblock %}
+{% block description %}{{ t('route.meta.desc', city=city, km=route.km) }}{% endblock %}
+
+{% block content %}
+{# tojson екранує лапки й переноси сам — інакше будь-яке «лапкове» слово
+   в перекладі ламало б JSON-LD, і Google просто ігнорував би розмітку. #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": {{ t('nav.home') | tojson }},
+      "item": "{{ SITE_URL }}{{ url_for('main.index') }}" },
+    { "@type": "ListItem", "position": 2, "name": {{ t('foot.mizh_full') | tojson }},
+      "item": "{{ SITE_URL }}{{ url_for('main.mizhmiski') }}" },
+    { "@type": "ListItem", "position": 3, "name": {{ (kyiv ~ ' – ' ~ city) | tojson }},
+      "item": "{{ SITE_URL }}{{ url_for('main.route_page', slug=route.slug) }}" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": {{ t('route.faq.q1', city=city) | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a1', city=city) | tojson }} } },
+    { "@type": "Question", "name": {{ t('route.faq.q2', city=city) | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a2', city=city) | tojson }} } },
+    { "@type": "Question", "name": {{ t('route.faq.q3') | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('route.faq.a3') | tojson }} } }
+  ]
+}
+</script>
+
+<section class="section">
+  <div class="container">
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a>
+      <span aria-hidden="true">→</span>
+      <a href="{{ url_for('main.mizhmiski') }}">{{ t('foot.mizh_full') }}</a>
+      <span aria-hidden="true">→</span>
+      <span>{{ kyiv }} – {{ city }}</span>
+    </nav>
+
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('route.eyebrow') }}</span>
+      <h1>{{ t('route.h1', city=city) }}</h1>
+      {% if copy.intro %}<p class="section-head__lead">{{ copy.intro }}</p>{% endif %}
+      <div class="cluster" style="margin-top: var(--sp-5)">
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}"
+           data-cta="phone-route-{{ route.slug }}">📞 {{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost" href="{{ calc_url }}">{{ t('route.price.cta', city=city) }}</a>
+      </div>
+    </div>
+
+    <ul class="grid grid--4 routefacts">
+      <li class="card card--icon">
+        <span class="fact__label">{{ t('route.distance') }}</span>
+        <strong class="routefacts__value">≈ {{ route.km }} {{ t('common.km') }}</strong>
+      </li>
+      <li class="card card--icon">
+        <span class="fact__label">{{ t('route.time') }}</span>
+        <strong class="routefacts__value">{{ route.hours }} {{ t('unit.hour') }}</strong>
+      </li>
+      <li class="card card--icon">
+        <span class="fact__label">{{ t('route.via') }}</span>
+        <strong class="routefacts__value">{{ via_names | join(', ') }}</strong>
+      </li>
+      <li class="card card--icon">
+        <span class="fact__label">{{ t('route.vehicle') }}</span>
+        <strong class="routefacts__value">{{ t('calc.vehicle_val') }}</strong>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container">
+    <div class="grid grid--2">
+      {% if copy.cargo %}
+      <article class="card">
+        <h2 class="card__title">{{ t('route.cargo.h2') }}</h2>
+        <p class="card__text">{{ copy.cargo }}</p>
+        {% if copy.note %}<p class="field__hint">{{ copy.note }}</p>{% endif %}
+      </article>
+      {% endif %}
+
+      <article class="card card--accent">
+        <h2 class="card__title">{{ t('route.price.h2') }}</h2>
+        <p class="card__text">{{ t('route.price.text') }}</p>
+        <div class="card__foot">
+          <a class="btn btn--primary btn--block" href="{{ calc_url }}"
+             data-cta="calc-route-{{ route.slug }}">{{ t('route.price.cta', city=city) }}</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center">
+      <h2>{{ t('mizh.faq.h2') }}</h2>
+    </div>
+    <div class="faq">
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('route.faq.q1', city=city) }}</summary>
+        <p class="faq__a">{{ t('route.faq.a1', city=city) }}</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('route.faq.q2', city=city) }}</summary>
+        <p class="faq__a">{{ t('route.faq.a2', city=city) }}</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('route.faq.q3') }}</summary>
+        <p class="faq__a">{{ t('route.faq.a3') }}</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+{# Перелінковка між напрямками: і людині є куди піти, і краулер обходить
+   усі сторінки, не покладаючись лише на мапу сайту. #}
+{% if others %}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head">
+      <h2>{{ t('route.other.h2') }}</h2>
+    </div>
+    <ul class="routes">
+      {% for o in others %}
+      <li class="route">
+        <a class="route__link" href="{{ url_for('main.route_page', slug=o.slug) }}">
+          <span class="route__name">{{ kyiv }} → {{ t(o.city) }}</span>
+          <span class="route__km">≈ {{ o.km }} {{ t('common.km') }}</span>
+        </a>
+      </li>
+      {% endfor %}
+      <li class="route route--any">
+        <a class="route__link" href="{{ url_for('main.mizhmiski') }}">
+          <span class="route__name">{{ t('mizh.routes.other') }}</span>
+          <span class="route__km">{{ t('mizh.routes.other_km') }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+{% with cta_title = t('mizh.cta.title'), cta_text = t('mizh.cta.text'), cta_source = 'route' %}
+  {% include 'partials/_cta.html' %}
+{% endwith %}
+{% endblock %}

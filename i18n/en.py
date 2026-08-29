@@ -271,4 +271,29 @@ STRINGS = {
     # ── Години роботи ──
     "hours.label": "Calls {open} – {close}",
     "hours.note": "Online requests around the clock",
+
+    # ── Сторінки напрямків (Phase 4) ──
+    "route.meta.title": "Kyiv to {city} Transport: Price, Distance, Timing | Vezemo24",
+    "route.meta.desc": "Van transport from Kyiv to {city}: {km} km, a dedicated van up to 3.5 t for your load. No transfers, no warehouses. Work out the price for this route online.",
+    "route.eyebrow": "Route from Kyiv",
+    "route.h1": "Kyiv to {city}",
+    "route.distance": "Distance",
+    "route.time": "Driving time",
+    "route.via": "Via",
+    "route.vehicle": "Vehicle",
+    "route.cargo.h2": "What we usually carry on this route",
+    "route.price.h2": "What it costs",
+    "route.price.text": "Intercity work is quoted per route rather than from a price list: it depends on the volume, whether you need loaders, and whether there is a return leg. Work out an estimate yourself — the route is already filled in.",
+    "route.price.cta": "Price Kyiv to {city}",
+    "route.other.h2": "Other routes",
+    "route.faq.q1": "Will my load travel on its own?",
+    "route.faq.a1": "Yes. We take one load per Kyiv–{city} trip: nothing is transferred at a warehouse, and you are not waiting for a shared lorry to fill up.",
+    "route.faq.q2": "How much does Kyiv to {city} cost?",
+    "route.faq.a2": "It depends on the volume, whether you need loaders, and whether there is a return leg. The calculator gives an estimate; we confirm the exact price on the call, and it is fixed before we set off.",
+    "route.faq.q3": "Can you collect from more than one address?",
+    "route.faq.a3": "Yes — add the extra stops in the calculator and the price recalculates automatically.",
+    "unit.hour": "h",
+    # Коротший підпис для шапки: після появи перемикача мов
+    # «Розрахувати вартість» переносилось на два рядки.
+    "nav.calc_short": "Get a price",
 }
