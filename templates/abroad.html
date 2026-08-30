@@ -85,7 +85,7 @@
       <h2>{{ t('abroad.dest.h2') }}</h2>
       <p class="section-head__lead">{{ t('abroad.dest.lead') }}</p>
     </div>
-    <div class="presets presets--abroad">
+    <div class="presets presets--center">
       <div class="presets__row">
         {% for d in destinations %}
           <a class="preset" href="{{ url_for('main.calculate_km') }}?route={{ d.slug }}"

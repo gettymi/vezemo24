@@ -23,7 +23,7 @@
 обраної мови.
 """
 
-from flask import g, request, url_for
+from flask import current_app, g, request, url_for
 
 from . import en, ru, uk
 
@@ -47,6 +47,27 @@ def current_locale():
     return getattr(g, "locale", DEFAULT)
 
 
+def _vehicle_words(lang):
+    """
+    Як називати машини: «власний бус» чи «власний автопарк — чотири буси».
+
+    Керує тим самий прапорець, що ховає сторінку автопарку. Інакше довелося
+    б памʼятати два різні місця й перемикати їх разом — а забутий текст про
+    чотири буси при схованій сторінці означав би заяву, якої ми зараз не
+    підтверджуємо.
+    """
+    try:
+        state = "fleet" if current_app.config.get("FLEET_VISIBLE") else "one"
+    except RuntimeError:
+        state = "one"       # поза контекстом застосунку — обережніший варіант
+    cat = CATALOGS.get(lang) or CATALOGS[DEFAULT]
+    base = CATALOGS[DEFAULT]
+    return {
+        "veh_nom": cat.get("veh.nom." + state) or base["veh.nom." + state],
+        "veh_ins": cat.get("veh.ins." + state) or base["veh.ins." + state],
+    }
+
+
 def t(key, **kwargs):
     """
     Переклад за ключем.
@@ -59,6 +80,11 @@ def t(key, **kwargs):
     value = CATALOGS.get(lang, {}).get(key)
     if value is None:
         value = CATALOGS[DEFAULT].get(key, key)
+    # Формулювання про машини підставляємо самі, а не через kwargs у семи
+    # шаблонах: там його рано чи пізно забули б у восьмому.
+    if "{veh_" in value:
+        for k, v in _vehicle_words(lang).items():
+            kwargs.setdefault(k, v)
     if kwargs:
         try:
             return value.format(**kwargs)

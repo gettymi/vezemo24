@@ -12,6 +12,7 @@ from flask import (
 
 import content.abroad as abroad_data
 import content.fleet as fleet_data
+import content.places as place_data
 import content.routes as route_data
 from content import pricing
 from i18n import DEFAULT, LOCALES
@@ -142,6 +143,42 @@ def route_page(slug, lang=DEFAULT):
     )
 
 
+# Сторінка на кожне місто області. «Вантажне таксі Бровари» — запит із
+# набагато вищим наміром купити, ніж «перевезення Київ Чернівці»: більшість
+# роботи буса локальна, і саме цих сторінок у нас не було жодної.
+#
+# Окремий префікс, а не /perevezennya/<slug>: там живуть міжміські напрямки,
+# і змішувати в одному просторі імен дві різні моделі ціни (за км і за
+# годину) — це шлях до плутанини в адресах і в головах.
+@main_bp.route("/vantazhni-perevezennya/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/vantazhni-perevezennya/<slug>")
+def place_page(slug, lang=DEFAULT):
+    place = place_data.BY_SLUG.get(slug)
+    if place is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+
+    # Калькулятор відкривається заповненим: координати міста передаємо прямо,
+    # бо для області готових пресетів у map.js немає й заводити їх на кожне
+    # село немає сенсу.
+    calc_url = url_for("main.calculate_km") + "?" + urlencode({
+        "to": _t(place["city"]),
+        "lat": place["ll"][0],
+        "lng": place["ll"][1],
+    })
+
+    return render_template(
+        "place.html",
+        place=place,
+        pricing=pricing,
+        copy=place.get("copy", {}).get(locale) or place.get("copy", {}).get(DEFAULT, {}),
+        near=place_data.neighbours(slug),
+        calc_url=calc_url,
+    )
+
+
 @main_bp.route("/mizhmiski-perevezennya", defaults={"lang": DEFAULT})
 @main_bp.route(LANG_RULE + "/mizhmiski-perevezennya")
 def mizhmiski(lang=DEFAULT):
@@ -263,6 +300,17 @@ def sitemap():
             "priority": "0.8" if lang == DEFAULT else "0.6",
         }
         for r in route_data.ROUTES
+        for lang in LOCALES
+    ] + [
+        # Локальні сторінки — вищий пріоритет за міжміські напрямки: намір
+        # купити в запиті «вантажне таксі Бровари» відчутно вищий.
+        {
+            "loc": _abs_url("main.place_page", lang, slug=p["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.85" if lang == DEFAULT else "0.65",
+        }
+        for p in place_data.PLACES
         for lang in LOCALES
     ]
     xml = render_template("sitemap_template.xml", pages=pages)

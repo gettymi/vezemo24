@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request
 import i18n
 from assets import assets
 from config import Config
-from content import fleet, pricing
+from content import fleet, places, pricing
 from extensions import csrf, limiter
 from routes.contact import contact_bp
 from routes.geo import geo_bp
@@ -54,6 +54,8 @@ def create_app():
             "PRICING": pricing,
             # Автопарк потрібен і на головній, і на своїй сторінці.
             "FLEET": fleet,
+            # Список міст області потрібен і на сторінці послуг, і в підвалі.
+            "PLACES": places.PLACES,
             # Поки триває верифікація, машини не показуємо ніде: сторінка,
             # блок на головній і посилання в підвалі вимикаються разом.
             "FLEET_VISIBLE": c["FLEET_VISIBLE"],

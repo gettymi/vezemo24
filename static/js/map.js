@@ -180,9 +180,14 @@
     clearRoute();
     activeZone = preset.zone || null;
     var rows = document.querySelectorAll("#points-container .point");
+    // preset.to — це або ключ перекладу («city.lviv»), або вже готова
+    // назва з адресного рядка. literal розрізняє ці два випадки: інакше
+    // T("Бровари") повернув би сам рядок і все одно спрацювало б, але
+    // мовчазний збіг — погана підстава покладатися на поведінку.
+    var toLabel = preset.literal ? preset.to : T(preset.to);
     var points = [
       [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1], "ua"],
-      [T(preset.to), preset.ll[0], preset.ll[1], preset.cc || ""],
+      [toLabel, preset.ll[0], preset.ll[1], preset.cc || ""],
     ];
     points.forEach(function (pt, i) {
       var row = rows[i];
@@ -720,10 +725,26 @@
      координати за слагом: маршрут рахується миттєво й без жодного запиту
      до геокодера — людина не переписує те, що вже прочитала в заголовку. */
   function applyRouteFromQuery() {
-    var slug = new URLSearchParams(window.location.search).get("route");
-    if (!slug) return;
-    if (ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
-    else if (ABROAD_COORDS[slug]) applyPreset(ABROAD_COORDS[slug]);
+    var q = new URLSearchParams(window.location.search);
+    var slug = q.get("route");
+    if (slug) {
+      if (ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
+      else if (ABROAD_COORDS[slug]) applyPreset(ABROAD_COORDS[slug]);
+      return;
+    }
+
+    /* Зі сторінок міст області приходять із готовими координатами:
+       ?to=Бровари&lat=..&lng=.. Заводити на кожне місто ще й запис у
+       ROUTE_COORDS немає сенсу — їх стане десятки, а назва все одно вже
+       перекладена на сервері. */
+    var lat = parseFloat(q.get("lat"));
+    var lng = parseFloat(q.get("lng"));
+    var to = (q.get("to") || "").trim();
+    if (!to || !isFinite(lat) || !isFinite(lng)) return;
+    // Координати мають бути схожі на координати, а назва — не на розмітку:
+    // усе це приходить із рядка адреси, тобто від кого завгодно.
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180 || to.length > 80) return;
+    applyPreset({ to: to, cc: "ua", ll: [lat, lng], literal: true });
   }
 
   function boot() {

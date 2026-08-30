@@ -21,6 +21,7 @@
           <li><a href="{{ url_for('main.mizhmiski') }}">{{ t('foot.mizh_full') }}</a></li>
           <li><a href="{{ url_for('main.abroad') }}">{{ t('nav.abroad') }}</a></li>
           {% if FLEET_VISIBLE %}<li><a href="{{ url_for('main.fleet') }}">{{ t('nav.fleet') }}</a></li>{% endif %}
+          <li><a href="{{ url_for('main.place_page', slug='brovary') }}">{{ t('places.h2') }}</a></li>
           <li><a href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a></li>
           <li><a href="{{ url_for('contact.contact') }}">{{ t('nav.contact') }}</a></li>
         </ul>

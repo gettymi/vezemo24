@@ -637,6 +637,40 @@
   .langs__item:hover { background: rgba(255,255,255,.12); color: var(--white); }
   .langs__item.is-current { background: var(--white); color: var(--brand-700); }
 
+  /* ── Готові напрямки ─────────────────────────────────────────────────
+     Жили в map.css, який підключається ЛИШЕ на сторінці калькулятора.
+     Відтоді ті самі «пігулки» зʼявились на сторінках закордону й міст
+     області — і там вони показувались голим текстом, бо стилів на цих
+     сторінках просто не було. Місце цього блоку — у спільному файлі.
+
+     Селектори мають працювати і для <button> (калькулятор), і для <a>
+     (посилання на інші сторінки). */
+  .presets { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .presets__label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .presets__row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .presets--center .presets__row { justify-content: center; }
+  .preset {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-full);
+    background: var(--surface-sunk);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  }
+  .preset:hover { border-color: var(--brand-300); background: var(--brand-50); color: var(--brand-800); }
+
   .burger {
     display: none;
     flex-direction: column;

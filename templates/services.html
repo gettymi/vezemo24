@@ -93,6 +93,26 @@
   </div>
 </section>
 
+{# Вхід на сторінки міст області. Без цього блоку вони існують, але до них
+   немає жодного посилання з сайту — а сторінка, на яку ніхто не веде, для
+   Google майже те саме, що сторінки немає. #}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <h2>{{ t('places.h2') }}</h2>
+      <p class="section-head__lead">{{ t('places.lead') }}</p>
+    </div>
+    <div class="presets">
+      <div class="presets__row">
+        {% for p in PLACES %}
+          <a class="preset" href="{{ url_for('main.place_page', slug=p.slug) }}"
+             data-cta="place-{{ p.slug }}">{{ t(p.city) }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
 {% with cta_title = t('svc.cta.title'), cta_text = t('svc.cta.text'), cta_source = 'services' %}
   {% include 'partials/_cta.html' %}
 {% endwith %}
