@@ -8,7 +8,7 @@
 """
 
 STRINGS = {
-    "brand.word": "Vezemo",
+    "brand.word": "Vezemo24",
     "brand.full": "Vezemo24",
     "common.callback": "Перезвоните мне",
     "common.more": "Подробнее",

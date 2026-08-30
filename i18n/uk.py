@@ -3,7 +3,7 @@
 
 STRINGS = {
     # ── Загальне ───────────────────────────────────────────────────────────
-    "brand.word": "Vezemo",
+    "brand.word": "Vezemo24",
     "brand.full": "Vezemo24",
     "common.callback": "Передзвоніть мені",
     "common.more": "Детальніше",

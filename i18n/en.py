@@ -13,7 +13,7 @@ Ukrainian place-name spellings (Kyiv, Odesa, Lviv) are used deliberately.
 """
 
 STRINGS = {
-    "brand.word": "Vezemo",
+    "brand.word": "Vezemo24",
     "brand.full": "Vezemo24",
     "common.callback": "Call me back",
     "common.more": "Learn more",

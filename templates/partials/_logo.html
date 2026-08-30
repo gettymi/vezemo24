@@ -1,0 +1,18 @@
+{# Знак бренду — та сама дорога, що й у фавіконі.
+
+   Малюємо inline-SVG, а не <img>: логотип стоїть у шапці на кожній
+   сторінці, тож окремий запит за 300 байтами не має сенсу, а inline
+   до того ж дає CSS-контроль над кольором.
+
+   Раніше тут був круглий значок «24» поруч зі словом «Веземо». Тепер
+   назва пишеться повністю («Vezemo24»), а знак несе дорогу — той самий
+   малюнок, що у вкладці браузера й у видачі Google. #}
+<svg class="logo__mark" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true" focusable="false">
+  <rect width="64" height="64" rx="12" fill="currentColor"/>
+  <path d="M10 56 L25 12 L39 12 L54 56 Z" fill="var(--logo-road, #ffffff)"/>
+  <g fill="currentColor">
+    <rect x="30.4" y="16" width="3.2" height="8" rx="1.6"/>
+    <rect x="30" y="29" width="4" height="9" rx="2"/>
+    <rect x="29.4" y="43" width="5.2" height="10" rx="2.6"/>
+  </g>
+</svg>

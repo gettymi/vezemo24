@@ -551,9 +551,18 @@
     min-height: var(--header-h);
   }
 
-  /* Назва й значок мають читатися як ОДНЕ слово «Vezemo24», а не як
-     «Vezemo» і окрема цифра поруч, тому проміжок мінімальний. */
-  .logo { display: flex; align-items: center; gap: 3px; flex: none; }
+  /* Знак + назва. Знак — та сама дорога, що у фавіконі: колір веде
+     currentColor, тому в підвалі на темному тлі достатньо змінити color
+     на елементі, а не переписувати SVG. */
+  .logo { display: flex; align-items: center; gap: var(--sp-2); flex: none; }
+  .logo__mark {
+    display: block;
+    width: 40px; height: 40px;
+    flex: none;
+    color: var(--brand-500);
+    border-radius: var(--r-sm);
+    box-shadow: var(--sh-brand);
+  }
   .logo__word {
     font-family: var(--font-display);
     font-weight: 800;
@@ -561,18 +570,6 @@
     line-height: 1;
     letter-spacing: -.04em;
     color: var(--brand-700);
-  }
-  .logo__badge {
-    display: grid;
-    place-items: center;
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: var(--brand-500);
-    color: var(--white);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.15rem;
-    box-shadow: var(--sh-brand);
   }
 
   .nav { display: flex; align-items: center; gap: var(--sp-1); margin-left: auto; }
@@ -664,13 +661,15 @@
   .burger[aria-expanded="true"] .burger__line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
   /* Межа виміряна, не вгадана, і міряти треба НАЙДОВШУ мову. Шапці
-     потрібно: en 927px, uk 1004px, ru 1047px («Междугородние» і «За
-     границу» довші за українські). Беремо російську та трохи запасу.
+     потрібно: en 955px, uk 1032px, ru 1075px («Междугородние» і «За
+     границу» довші за українські). Беремо російську плюс запас: на межі
+     1080px, тобто «рівно скільки треба», рядок усе одно переносився
+     через субпіксельне округлення.
      Висота шапки зафіксована токеном --header-h, тому перенос пункту на
      два рядки її НЕ збільшує — ловити його треба лічильником рядкових
      боксів, а не висотою (перша версія цієї межі саме через це проґавила
      «За / границю» на двох рядках). */
-  @media (max-width: 1079px) {
+  @media (max-width: 1119px) {
     .burger { display: flex; }
     .nav {
       position: fixed;
@@ -722,7 +721,10 @@
   .footer__list { display: flex; flex-direction: column; gap: var(--sp-2); }
   .footer__list a:hover { color: var(--white); text-decoration: underline; }
   .footer .logo__word { color: var(--white); }
-  .footer .logo__badge { background: var(--white); color: var(--brand-700); box-shadow: none; }
+  /* На темному тлі синій квадрат виглядає брудно: міняємо ролі місцями —
+     біла плитка, синя дорога. Обидва кольори беруться з тих самих
+     токенів, окремого SVG не потрібно. */
+  .footer .logo__mark { color: var(--white); --logo-road: var(--brand-600); box-shadow: none; }
   .footer__desc { max-width: 30ch; margin-top: var(--sp-4); }
   .footer__desc strong { color: var(--white); }
   .footer__phone {
@@ -759,7 +761,7 @@
 
   /* ── Нижня панель дій (мобільні) ────────────────────────────────────── */
   .mobilebar { display: none; }
-  @media (max-width: 1079px) {
+  @media (max-width: 1119px) {
     .mobilebar {
       position: fixed;
       inset: auto 0 0 0;

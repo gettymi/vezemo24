@@ -4,8 +4,8 @@
        в меню немає: він лише додавав кнопку, нічого не даючи. #}
     <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ t('nav.logo_aria') }}"
        {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}>
+      {% include 'partials/_logo.html' %}
       <span class="logo__word">{{ t('brand.word') }}</span>
-      <span class="logo__badge">24</span>
     </a>
 
     <nav class="nav" id="js-nav" aria-label="{{ t('nav.aria') }}">
