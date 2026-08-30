@@ -21,7 +21,10 @@
            {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ t(key) }}</a>
       {% endfor %}
 
-      {% include 'partials/_langswitch.html' %}
+      {# Перемикач мов живе лише в підвалі. У шапці він займав місце трьох
+         кнопок поруч із меню, телефоном і головною дією; для Google мови
+         однаково знаходяться через hreflang у <head>, а не через видиму
+         кнопку. #}
 
       <a class="header__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">
         <span aria-hidden="true">📞</span>{{ PHONE_DISPLAY }}
