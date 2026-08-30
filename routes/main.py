@@ -1,11 +1,13 @@
 import json
+import os
 
 from datetime import date
 
 from urllib.parse import urlencode
 
 from flask import (
-    Blueprint, abort, render_template, url_for, Response, redirect, current_app
+    Blueprint, abort, render_template, url_for, Response, redirect,
+    current_app, send_file
 )
 
 import content.abroad as abroad_data
@@ -176,6 +178,30 @@ def zakordon_legacy():
     # Раніше вела на міжміські, бо закордонної послуги не було. Тепер є.
     return redirect(url_for("main.abroad"), code=301)
 
+
+
+# ── Іконки в корені сайту ────────────────────────────────────────────────────
+# Браузери й краулери запитують /favicon.ico і /apple-touch-icon.png самі,
+# незалежно від тегів у <head>. Стара версія сайту не мала тегів іконки
+# взагалі — саме тому в закладках Safari осів значок, узятий із кореня.
+# Якщо не віддати тут нову іконку, старий значок так і залишиться.
+def _root_icon(filename, mimetype):
+    path = os.path.join(current_app.static_folder, "images", filename)
+    resp = send_file(path, mimetype=mimetype)
+    # Доба, а не рік: адреса стала, тож при наступній зміні знака нам
+    # потрібно, щоб кеш сам оновився за розумний час.
+    resp.headers["Cache-Control"] = "public, max-age=86400"
+    return resp
+
+
+@main_bp.route("/favicon.ico")
+def favicon_ico():
+    return _root_icon("favicon.ico", "image/x-icon")
+
+
+@main_bp.route("/apple-touch-icon.png")
+def apple_icon():
+    return _root_icon("apple-touch-icon.png", "image/png")
 
 
 @main_bp.route("/site.webmanifest")

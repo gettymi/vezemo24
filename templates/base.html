@@ -19,14 +19,25 @@
 
   {# Іконки. Google бере фавікон РОЗМІРОМ ВІД 48px, обрізає його в коло й
      підкладає біле тло — тому в static/brand/favicon.svg квадрат на всю
-     площу без прозорих кутів (див. scripts/build_favicon.py). Адреси
-     навмисно без ?v=: Google кешує фавікони довго й за постійним URL,
-     а сучасні браузери все одно візьмуть SVG. #}
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+     площу без прозорих кутів (див. scripts/build_favicon.py).
+
+     Дві різні адреси навмисно:
+
+     SVG іде з ?v=<хеш вмісту> — браузери кешують фавікони дуже вперто
+     (у Safari іконка закладки може жити місяцями), і без зміни адреси
+     нова іконка просто не завантажиться.
+
+     .ico і apple-touch навпаки вказують на КОРІНЬ сайту, без хеша.
+     По-перше, це стала адреса, яку Google любить кешувати. По-друге —
+     і це головне — браузери й краулери лізуть по /favicon.ico самі,
+     не читаючи цей тег узагалі. Стара версія сайту не мала тега іконки
+     взагалі, тому Safari взяв саме /favicon.ico, і в закладках у людей
+     осів старий значок «24». Якщо новий сайт не віддасть щось за тією ж
+     адресою, він там і залишиться. #}
+  <link rel="icon" type="image/svg+xml" href="{{ static_url('images/favicon.svg') }}">
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48"
-        href="{{ url_for('static', filename='images/favicon.ico') }}">
-  <link rel="apple-touch-icon" sizes="180x180"
-        href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+        href="{{ url_for('main.favicon_ico') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('main.apple_icon') }}">
   <link rel="manifest" href="{{ url_for('main.webmanifest') }}">
 
   <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
