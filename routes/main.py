@@ -1,3 +1,5 @@
+import json
+
 from datetime import date
 
 from urllib.parse import urlencode
@@ -34,9 +36,24 @@ SITEMAP_PAGES = [
     {"endpoint": "main.mizhmiski",    "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "main.calculate_km", "priority": "0.85", "priority_alt": "0.65", "changefreq": "weekly"},
     {"endpoint": "main.abroad",       "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
-    {"endpoint": "main.fleet",        "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
+    # Автопарк тримається за прапорцем FLEET_VISIBLE: поки він вимкнений,
+    # сторінка віддає 404, і в мапі сайту їй теж не місце — інакше Google
+    # проіндексує адресу, якої немає.
+    {"endpoint": "main.fleet",        "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly",
+     "flag": "FLEET_VISIBLE"},
     {"endpoint": "contact.contact",   "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
 ]
+
+
+def visible_pages():
+    """Сторінки для мапи сайту, які справді відкриваються.
+
+    Запис із ключем "flag" зникає, поки відповідний прапорець вимкнено:
+    сторінка тоді віддає 404, і рекламувати її в sitemap.xml означало б
+    самому надіслати Google на неіснуючу адресу.
+    """
+    return [p for p in SITEMAP_PAGES
+            if not p.get("flag") or current_app.config.get(p["flag"])]
 
 
 def _t(key):
@@ -143,6 +160,8 @@ def abroad(lang=DEFAULT):
 @main_bp.route(LANG_RULE + "/avtopark")
 def fleet(lang=DEFAULT):
     """Автопарк. Показуємо машини, якими справді їздимо."""
+    if not current_app.config["FLEET_VISIBLE"]:
+        abort(404)
     return render_template("fleet.html",
                            vehicles=fleet_data.VEHICLES,
                            interior=fleet_data.INTERIOR)
@@ -157,6 +176,28 @@ def zakordon_legacy():
     # Раніше вела на міжміські, бо закордонної послуги не було. Тепер є.
     return redirect(url_for("main.abroad"), code=301)
 
+
+
+@main_bp.route("/site.webmanifest")
+def webmanifest():
+    """Маніфест для Android і «додати на головний екран»."""
+    return Response(
+        json.dumps({
+            "name": _t("brand.full"),
+            "short_name": _t("brand.word"),
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#0ea5e9",
+            "icons": [
+                {"src": url_for("static", filename="images/icon-192.png"),
+                 "sizes": "192x192", "type": "image/png"},
+                {"src": url_for("static", filename="images/icon-512.png"),
+                 "sizes": "512x512", "type": "image/png"},
+            ],
+        }, ensure_ascii=False),
+        mimetype="application/manifest+json",
+    )
 
 
 @main_bp.route("/robots.txt")
@@ -186,7 +227,7 @@ def sitemap():
             "changefreq": item["changefreq"],
             "priority": item["priority"] if lang == DEFAULT else item["priority_alt"],
         }
-        for item in SITEMAP_PAGES
+        for item in visible_pages()
         for lang in LOCALES
     ] + [
         {

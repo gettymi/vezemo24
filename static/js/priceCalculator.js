@@ -46,6 +46,44 @@
     west: { perTotalKm: 0.70 },   // Німеччина, Франція, Італія, Іспанія
   };
 
+  /* Коди країн мають збігатися з ABROAD_ZONES[*]["cc"] у content/pricing.py.
+     Тримати їх тут доводиться тому, що калькулятор рахує без звернення до
+     сервера; тест звіряє обидва списки. */
+  var HOME_CC = "ua";
+  var ZONE_CC = {
+    east: ["pl", "cz", "sk", "hu", "ro", "lt", "lv", "ee", "md", "bg"],
+    west: ["de", "fr", "it", "es", "at", "nl", "be", "ch", "dk", "pt",
+           "se", "no", "lu", "si", "hr", "ie", "fi", "gb"],
+  };
+
+  /**
+   * Тарифна зона за кодом країни. null — Україна або країна невідома.
+   */
+  function zoneForCountry(cc) {
+    cc = String(cc || "").toLowerCase();
+    if (!cc || cc === HOME_CC) return null;
+    if (ZONE_CC.east.indexOf(cc) >= 0) return "east";
+    if (ZONE_CC.west.indexOf(cc) >= 0) return "west";
+    // Закордон, якого немає в списках: беремо дорожчу зону. Занизити
+    // ціну тут гірше, ніж завищити — різницю водій везтиме своїм коштом.
+    return "west";
+  }
+
+  /**
+   * Зона для цілого маршруту. Достатньо ОДНІЄЇ точки за кордоном, щоб
+   * рейс став міжнародним: назад із Варшави до Києва — так само перетин
+   * кордону, як і туди. Із двох зон перемагає дорожча.
+   */
+  function zoneForPoints(points) {
+    var zone = null;
+    (points || []).forEach(function (p) {
+      var z = zoneForCountry(p && p.cc);
+      if (z === "west") zone = "west";
+      else if (z === "east" && zone !== "west") zone = "east";
+    });
+    return zone;
+  }
+
   /**
    * Межа між «область» і «міжмісто». Київська область закінчується
    * приблизно тут, тож далі погодинна модель втрачає сенс: ніхто не
@@ -128,6 +166,8 @@
   }
 
   global.PriceCalculator = {
+    zoneForCountry: zoneForCountry,
+    zoneForPoints: zoneForPoints,
     quote: quote,
     explain: explain,
     quoteAbroad: quoteAbroad,

@@ -196,6 +196,7 @@
 </section>
 
 <!-- АВТОПАРК -->
+{% if FLEET_VISIBLE %}
 {# Три машини з чотирьох. Показувати всі чотири на головній — це вже
    каталог, а головна має вести далі, а не замінювати сторінку. #}
 <section class="section section--flush">
@@ -227,6 +228,7 @@
     </div>
   </div>
 </section>
+{% endif %}
 
 <!-- ДОВІРА -->
 <section class="section section--dark trust" id="trust">

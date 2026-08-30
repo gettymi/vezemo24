@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Веземо24">
+  <rect width="64" height="64" rx="14" fill="#0ea5e9"/>
+  <g fill="#ffffff">
+    <!-- Силует фургона з високим дахом: кузов, скошена кабіна, колеса. -->
+    <path d="M11 24h24v18H11z"/>
+    <path d="M35 28h9l7 8v6H35z"/>
+    <rect x="9" y="42" width="46" height="3.4" rx="1.7"/>
+  </g>
+  <g fill="#0ea5e9">
+    <circle cx="21" cy="45" r="5.4"/>
+    <circle cx="45" cy="45" r="5.4"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="21" cy="45" r="2.4"/>
+    <circle cx="45" cy="45" r="2.4"/>
+  </g>
+</svg>

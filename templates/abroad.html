@@ -63,12 +63,36 @@
           {%- if zone == 'west' %} · {{ t('abroad.zone.west.why') }}{% endif %}
         </p>
         <div class="price__foot">
+          {# Кнопка веде в калькулятор ІЗ маршрутом. Без ?route= зона не
+             задавалась, і калькулятор рахував європейський рейс як
+             звичайне міжмісто в гривні. #}
           <a class="btn {{ 'btn--primary' if zone == 'east' else 'btn--ghost' }} btn--block"
-             href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc_short') }}</a>
+             href="{{ url_for('main.calculate_km') }}?route={{ 'kyiv-warszawa' if zone == 'east' else 'kyiv-berlin' }}"
+             data-cta="calc-abroad-{{ zone }}">{{ t('nav.calc_short') }}</a>
         </div>
       </li>
       {% endfor %}
     </ul>
+  </div>
+</section>
+
+{# Напрямки: досі вони приходили в шаблон і ніде не показувались, тому
+   з цієї сторінки не було ЖОДНОГО шляху до євроціни. Кожна кнопка веде
+   в калькулятор із готовим маршрутом — і зона, і кілометраж уже там. #}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <h2>{{ t('abroad.dest.h2') }}</h2>
+      <p class="section-head__lead">{{ t('abroad.dest.lead') }}</p>
+    </div>
+    <div class="presets presets--abroad">
+      <div class="presets__row">
+        {% for d in destinations %}
+          <a class="preset" href="{{ url_for('main.calculate_km') }}?route={{ d.slug }}"
+             data-cta="calc-{{ d.slug }}">{{ t('city.kyiv') }} → {{ t(d.city) }}</a>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </section>
 

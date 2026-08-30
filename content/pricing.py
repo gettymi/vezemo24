@@ -48,13 +48,42 @@ ABROAD_ZONES = {
     "east": {
         "per_total_km": 0.60,   # €/км повного пробігу
         "countries": ["country.pl", "country.cz", "country.sk"],
+        # Коди країн (ISO 3166-1 alpha-2) — за ними калькулятор визначає
+        # зону з адреси, яку людина ввела сама, а не лише з готового
+        # напрямку. Сюди ж потрапляють сусіди, через які реально їдуть.
+        "cc": ["pl", "cz", "sk", "hu", "ro", "lt", "lv", "ee", "md", "bg"],
     },
     "west": {
         "per_total_km": 0.70,   # €/км повного пробігу
         "countries": ["country.de", "country.fr", "country.it", "country.es"],
+        "cc": ["de", "fr", "it", "es", "at", "nl", "be", "ch", "dk", "pt",
+               "se", "no", "lu", "si", "hr", "ie", "fi", "gb"],
     },
 }
 ABROAD_CURRENCY = "EUR"
+
+# Країна, всередині якої діють гривневі тарифи. Усе інше — закордон.
+HOME_CC = "ua"
+
+# Куди взагалі шукаємо адреси в калькуляторі: Україна плюс країни, куди
+# реально їздимо. Без цього Nominatim шукав ЛИШЕ по Україні, і на запит
+# «Варшава» не віддавав нічого — саме тому закордонний розрахунок не
+# працював узагалі, хоча тариф і сторінка вже існували.
+SEARCH_CC = [HOME_CC] + ABROAD_ZONES["east"]["cc"] + ABROAD_ZONES["west"]["cc"]
+
+
+def zone_for_country(cc):
+    """Тарифна зона за кодом країни. None — це Україна або невідома країна."""
+    cc = (cc or "").lower()
+    if not cc or cc == HOME_CC:
+        return None
+    for name, z in ABROAD_ZONES.items():
+        if cc in z["cc"]:
+            return name
+    # Країна за межами України, якої немає в жодній зоні: рахуємо як
+    # дальшу з двох. Занизити ціну тут гірше, ніж завищити — недоплату
+    # водій везтиме власним коштом.
+    return "west"
 
 
 def quote_intercity(km):

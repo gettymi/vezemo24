@@ -32,6 +32,7 @@ import time
 import requests
 from flask import Blueprint, current_app, jsonify, request
 
+from content import pricing
 from extensions import limiter
 
 geo_bp = Blueprint("geo", __name__, url_prefix="/api/geo")
@@ -193,7 +194,10 @@ def search():
     except ValueError:
         limit = 6
 
-    key = "s:%d:%s" % (limit, query.lower())
+    # Префікс "s2" замість "s": відповідь тепер містить країну, і старі
+    # записи в кеші її не мають. Без зміни ключа калькулятор ще місяць
+    # вважав би Варшаву українською.
+    key = "s2:%d:%s" % (limit, query.lower())
     cached = _cache_get(key)
     if cached is not None:
         return jsonify({"results": cached, "cached": True})
@@ -204,7 +208,13 @@ def search():
             "q": query,
             "format": "json",
             "limit": limit,
-            "countrycodes": "ua",
+            # Не лише Україна. Раніше тут стояло "ua", і на «Варшаву»
+            # Nominatim не віддавав НІЧОГО — закордонний тариф існував,
+            # сторінка існувала, а ввести пункт призначення було нікуди.
+            "countrycodes": ",".join(pricing.SEARCH_CC),
+            # Потрібне, щоб знати країну: за нею калькулятор обирає
+            # тарифну зону, а не покладається на готовий напрямок.
+            "addressdetails": 1,
             # Без цього Nominatim віддає назви не українською.
             "accept-language": "uk",
         },
@@ -217,10 +227,14 @@ def search():
             "lat": float(d["lat"]),
             "lng": float(d["lon"]),
             "display": d.get("display_name", ""),
+            "cc": ((d.get("address") or {}).get("country_code") or "").lower(),
         }
         for d in (data or [])
         if d.get("lat") and d.get("lon")
     ]
+    # Українські результати вперед: більшість замовлень усе одно внутрішні,
+    # а countrycodes лише фільтрує й нічого не ранжує.
+    results.sort(key=lambda r: r["cc"] != pricing.HOME_CC)
     _cache_put(key, results)
     return jsonify({"results": results})
 
@@ -236,21 +250,26 @@ def reverse():
 
     # Округлення до ~11 м: без нього кожен піксель кліку по карті давав би
     # власний ключ і кеш ніколи б не спрацьовував.
-    key = "r:%.4f:%.4f" % (lat, lng)
+    key = "r2:%.4f:%.4f" % (lat, lng)
     cached = _cache_get(key)
     if cached is not None:
-        return jsonify({"display": cached, "cached": True})
+        return jsonify(dict(cached, cached=True))
 
     data, err = _upstream_get(
         NOMINATIM_REVERSE,
-        {"lat": lat, "lon": lng, "format": "json", "accept-language": "uk"},
+        {"lat": lat, "lon": lng, "format": "json",
+         "addressdetails": 1, "accept-language": "uk"},
     )
     if err:
         return _fail(err)
 
-    display = (data or {}).get("display_name") or "Точка на карті"
-    _cache_put(key, display)
-    return jsonify({"display": display})
+    payload = {
+        "display": (data or {}).get("display_name") or "Точка на карті",
+        # Точка, поставлена кліком по карті, теж може бути за кордоном.
+        "cc": (((data or {}).get("address") or {}).get("country_code") or "").lower(),
+    }
+    _cache_put(key, payload)
+    return jsonify(payload)
 
 
 @geo_bp.route("/route")

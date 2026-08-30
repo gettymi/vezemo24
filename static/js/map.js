@@ -22,28 +22,28 @@
      за ?route=<slug> будує маршрут миттєво й не витрачає ліміт геокодера.
      Додаючи напрямок у content/routes.py, додайте пару і сюди. */
   var ROUTE_COORDS = {
-    "kyiv-lviv":        { to: "city.lviv",        ll: [49.8397, 24.0297] },
-    "kyiv-odesa":       { to: "city.odesa",       ll: [46.4825, 30.7233] },
-    "kyiv-dnipro":      { to: "city.dnipro",      ll: [48.4647, 35.0462] },
-    "kyiv-kharkiv":     { to: "city.kharkiv",     ll: [49.9935, 36.2304] },
-    "kyiv-zhytomyr":    { to: "city.zhytomyr",    ll: [50.2547, 28.6587] },
-    "kyiv-cherkasy":    { to: "city.cherkasy",    ll: [49.4444, 32.0598] },
-    "kyiv-vinnytsia":   { to: "city.vinnytsia",   ll: [49.2331, 28.4682] },
-    "kyiv-rivne":       { to: "city.rivne",       ll: [50.6199, 26.2516] },
-    "kyiv-poltava":     { to: "city.poltava",     ll: [49.5883, 34.5514] },
-    "kyiv-zaporizhzhia":{ to: "city.zapor",       ll: [47.8388, 35.1396] },
-    "kyiv-chernivtsi":  { to: "city.chernivtsi",  ll: [48.2917, 25.9352] },
+    "kyiv-lviv":        { to: "city.lviv",        cc: "ua", ll: [49.8397, 24.0297] },
+    "kyiv-odesa":       { to: "city.odesa",       cc: "ua", ll: [46.4825, 30.7233] },
+    "kyiv-dnipro":      { to: "city.dnipro",      cc: "ua", ll: [48.4647, 35.0462] },
+    "kyiv-kharkiv":     { to: "city.kharkiv",     cc: "ua", ll: [49.9935, 36.2304] },
+    "kyiv-zhytomyr":    { to: "city.zhytomyr",    cc: "ua", ll: [50.2547, 28.6587] },
+    "kyiv-cherkasy":    { to: "city.cherkasy",    cc: "ua", ll: [49.4444, 32.0598] },
+    "kyiv-vinnytsia":   { to: "city.vinnytsia",   cc: "ua", ll: [49.2331, 28.4682] },
+    "kyiv-rivne":       { to: "city.rivne",       cc: "ua", ll: [50.6199, 26.2516] },
+    "kyiv-poltava":     { to: "city.poltava",     cc: "ua", ll: [49.5883, 34.5514] },
+    "kyiv-zaporizhzhia":{ to: "city.zapor",       cc: "ua", ll: [47.8388, 35.1396] },
+    "kyiv-chernivtsi":  { to: "city.chernivtsi",  cc: "ua", ll: [48.2917, 25.9352] },
   };
 
   /* Європейські напрямки. Відстань рахує OSRM за реальним маршрутом —
      точних кілометражів до Європи ми не зашиваємо, щоб не назвати
      неправильну ціну. zone визначає тарифну зону (схід/захід). */
   var ABROAD_COORDS = {
-    "kyiv-warszawa":   { to: "city.warszawa",   zone: "east", ll: [52.2297, 21.0122] },
-    "kyiv-krakow":     { to: "city.krakow",     zone: "east", ll: [50.0647, 19.9450] },
-    "kyiv-praha":      { to: "city.praha",      zone: "east", ll: [50.0755, 14.4378] },
-    "kyiv-bratislava": { to: "city.bratislava", zone: "east", ll: [48.1486, 17.1077] },
-    "kyiv-berlin":     { to: "city.berlin",     zone: "west", ll: [52.5200, 13.4050] },
+    "kyiv-warszawa":   { to: "city.warszawa",   zone: "east", cc: "pl", ll: [52.2297, 21.0122] },
+    "kyiv-krakow":     { to: "city.krakow",     zone: "east", cc: "pl", ll: [50.0647, 19.9450] },
+    "kyiv-praha":      { to: "city.praha",      zone: "east", cc: "cz", ll: [50.0755, 14.4378] },
+    "kyiv-bratislava": { to: "city.bratislava", zone: "east", cc: "sk", ll: [48.1486, 17.1077] },
+    "kyiv-berlin":     { to: "city.berlin",     zone: "west", cc: "de", ll: [52.5200, 13.4050] },
   };
 
   /* Зона поточного маршруту: null — Україна, інакше закордонний тариф. */
@@ -154,15 +154,26 @@
     var host = document.getElementById("presets");
     if (!host) return;
     PRESET_SLUGS.forEach(function (slug) {
-      var preset = ROUTE_COORDS[slug];
-      if (!preset) return;
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "preset";
-      b.textContent = T("city.kyiv") + " → " + T(preset.to);
-      b.addEventListener("click", function () { applyPreset(preset); });
-      host.appendChild(b);
+      addPresetButton(host, ROUTE_COORDS[slug]);
     });
+    // Закордонні напрямки окремим рядом. Без них у калькуляторі не було
+    // ЖОДНОГО способу дістати євровий тариф: кнопок немає, а пошук
+    // адрес донедавна не виходив за межі України.
+    var abroadHost = document.getElementById("presets-abroad");
+    if (!abroadHost) return;
+    Object.keys(ABROAD_COORDS).forEach(function (slug) {
+      addPresetButton(abroadHost, ABROAD_COORDS[slug]);
+    });
+  }
+
+  function addPresetButton(host, preset) {
+    if (!preset) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "preset";
+    b.textContent = T("city.kyiv") + " → " + T(preset.to);
+    b.addEventListener("click", function () { applyPreset(preset); });
+    host.appendChild(b);
   }
 
   function applyPreset(preset) {
@@ -170,8 +181,8 @@
     activeZone = preset.zone || null;
     var rows = document.querySelectorAll("#points-container .point");
     var points = [
-      [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1]],
-      [T(preset.to), preset.ll[0], preset.ll[1]],
+      [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1], "ua"],
+      [T(preset.to), preset.ll[0], preset.ll[1], preset.cc || ""],
     ];
     points.forEach(function (pt, i) {
       var row = rows[i];
@@ -180,6 +191,8 @@
       input.value = pt[0];
       row.setAttribute("data-lat", pt[1]);
       row.setAttribute("data-lng", pt[2]);
+      if (pt[3]) row.setAttribute("data-cc", pt[3]);
+      else row.removeAttribute("data-cc");
     });
     buildRoute();
   }
@@ -268,6 +281,10 @@
     if (row && !row.classList.contains("point--map")) {
       row.setAttribute("data-lat", item.lat);
       row.setAttribute("data-lng", item.lng);
+      // Країну зберігаємо разом із координатами: за нею калькулятор
+      // визначає тарифну зону, коли адресу ввели руками, а не обрали
+      // готовий напрямок.
+      if (item.cc) row.setAttribute("data-cc", item.cc);
     }
     hideAutocomplete();
     input.blur();
@@ -286,6 +303,7 @@
       if (row && row.getAttribute("data-lat") != null) {
         row.removeAttribute("data-lat");
         row.removeAttribute("data-lng");
+        row.removeAttribute("data-cc");
         row.classList.remove("point--map");
         if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
         row._mapMarker = null;
@@ -295,7 +313,11 @@
       var value = input.value.trim();
       if (value.length < 2) {
         hideAutocomplete();
-        if (row) { row.removeAttribute("data-lat"); row.removeAttribute("data-lng"); }
+        if (row) {
+          row.removeAttribute("data-lat");
+          row.removeAttribute("data-lng");
+          row.removeAttribute("data-cc");
+        }
         return;
       }
       autocompleteTimer = setTimeout(function () {
@@ -353,9 +375,12 @@
     var params = new URLSearchParams({ lat: lat, lon: lng });
     return getJSON(GEO_REVERSE + "?" + params)
       .then(function (data) {
-        return (data && data.display) || T("calc.map_point");
+        return {
+          display: (data && data.display) || T("calc.map_point"),
+          cc: (data && data.cc) || "",
+        };
       })
-      .catch(function () { return T("calc.map_point"); });
+      .catch(function () { return { display: T("calc.map_point"), cc: "" }; });
   }
 
   function enableMapClickMode() {
@@ -409,8 +434,9 @@
     var inp = row.querySelector(".point__input");
     if (!inp) return;
     inp.value = T("calc.pending");
-    reverseGeocode(lat, lng).then(function (label) {
-      inp.value = label;
+    reverseGeocode(lat, lng).then(function (place) {
+      inp.value = place.display;
+      if (place.cc) row.setAttribute("data-cc", place.cc);
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
     marker.bindPopup(inp.value || T("calc.map_point"));
@@ -432,8 +458,9 @@
       '<button class="point__remove" title=T("calc.remove")>✕</button>';
     var inp = div.querySelector(".point__input");
     inp.value = T("calc.pending");
-    reverseGeocode(lat, lng).then(function (label) {
-      inp.value = label;
+    reverseGeocode(lat, lng).then(function (place) {
+      inp.value = place.display;
+      if (place.cc) div.setAttribute("data-cc", place.cc);
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
     marker.bindPopup(inp.value || T("calc.map_point"));
@@ -506,8 +533,10 @@
       var lng = row.getAttribute("data-lng");
       var input = row.querySelector(".point__input");
       var value = input ? input.value.trim() : "";
+      var cc = row.getAttribute("data-cc") || "";
       if (lat != null && lng != null) {
-        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng), label: value || T("calc.map_point") };
+        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng),
+                 cc: cc, label: value || T("calc.map_point") };
       }
       return { type: "address", value: value, label: value };
     });
@@ -516,7 +545,7 @@
   function resolvePoints(points) {
     var promises = points.map(function (p) {
       if (p.type === "coords") {
-        return Promise.resolve({ lat: p.lat, lng: p.lng, display: p.label });
+        return Promise.resolve({ lat: p.lat, lng: p.lng, display: p.label, cc: p.cc });
       }
       if (!p.value) return Promise.resolve(null);
       return geocode(p.value);
@@ -553,6 +582,15 @@
           notice(T("calc.not_found", { label: label }));
           aborted = true;
           return;
+        }
+
+        // Тарифну зону беремо з країн самих точок. Раніше вона
+        // приходила ЛИШЕ з готового напрямку, тому введена руками
+        // «Варшава» рахувалась як звичайне міжмісто в гривні.
+        if (typeof PriceCalculator !== "undefined" && PriceCalculator.zoneForPoints) {
+          var detected = PriceCalculator.zoneForPoints(coords);
+          if (detected) activeZone = detected;
+          else if (coords.some(function (c) { return c && c.cc; })) activeZone = null;
         }
 
         if (map) {

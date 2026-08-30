@@ -39,6 +39,14 @@
         <div class="presets__row" id="presets"></div>
       </div>
 
+      {# Закордон окремим рядом: тариф інший (євро за повний пробіг), і
+         змішувати його з гривневими напрямками в одному ряду означало б
+         дати людині два різні числа під однаковими кнопками. #}
+      <div class="presets presets--abroad">
+        <span class="presets__label">{{ t('calc.presets_abroad') }}</span>
+        <div class="presets__row" id="presets-abroad"></div>
+      </div>
+
       <div class="points" id="points-container">
         <div class="point" data-index="0">
           <div class="point__pin point__pin--start">A</div>
