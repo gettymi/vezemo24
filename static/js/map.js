@@ -459,9 +459,11 @@
     div.setAttribute("data-lng", lng);
     div.innerHTML =
       '<div class="point__pin point__pin--via">•</div>' +
-      '<input type="text" class="point__input" placeholder=T("calc.map_point") readonly>' +
-      '<button class="point__remove" title=T("calc.remove")>✕</button>';
+      '<input type="text" class="input point__input" readonly>' +
+      '<button class="point__remove">✕</button>';
     var inp = div.querySelector(".point__input");
+    inp.setAttribute("placeholder", T("calc.map_point"));
+    div.querySelector(".point__remove").setAttribute("title", T("calc.remove"));
     inp.value = T("calc.pending");
     reverseGeocode(lat, lng).then(function (place) {
       inp.value = place.display;
@@ -521,9 +523,11 @@
     div.className = "point";
     div.innerHTML =
       '<div class="point__pin point__pin--via">•</div>' +
-      '<input type="text" class="point__input" placeholder=T("calc.via_ph") autocomplete="off">' +
-      '<button class="point__remove" title=T("calc.remove")>✕</button>';
+      '<input type="text" class="input point__input" autocomplete="off">' +
+      '<button class="point__remove">✕</button>';
     var inp = div.querySelector(".point__input");
+    inp.setAttribute("placeholder", T("calc.via_ph"));
+    div.querySelector(".point__remove").setAttribute("title", T("calc.remove"));
     div.querySelector(".point__remove").addEventListener("click", function () {
       div.remove();
     });

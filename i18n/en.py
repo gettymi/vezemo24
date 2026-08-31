@@ -200,7 +200,7 @@ STRINGS = {
     "svc.taxi.text": "Furniture, appliances, boxes, packaged building materials, moving belongings. The van arrives and waits while you load, which is exactly why this is charged by the hour.",
     "svc.taxi.c1": "Same-day pickup",
     "svc.taxi.c2": "Kyiv and the Kyiv region",
-    "svc.taxi.c3": "From 799 UAH/hour, minimum 2 hours + callout",
+    "svc.taxi.c3": "From {rate} UAH/hour, minimum {hours} hours + a {feed} UAH call-out fee",
     "svc.cta.title": "Not what you were looking for?",
     "svc.cta.text": "Describe the job and we will tell you straight away whether we can do it and what it costs.",
 

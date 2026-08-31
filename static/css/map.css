@@ -65,6 +65,7 @@
     background: repeating-linear-gradient(180deg, var(--line) 0 5px, transparent 5px 10px);
   }
   .point { position: relative; display: flex; align-items: center; gap: var(--sp-3); }
+  .point__input { flex: 1 1 auto; min-width: 0; }
   .point__pin {
     flex: none;
     display: grid;
