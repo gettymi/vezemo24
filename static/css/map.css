@@ -149,22 +149,29 @@
     border-radius: var(--r-md);
   }
   .mode {
-    padding: var(--sp-3) var(--sp-2);
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: var(--sp-2);
     border: 0;
     border-radius: calc(var(--r-md) - 3px);
     background: transparent;
     color: var(--text-muted);
     font-size: var(--fs-sm);
     font-weight: 600;
-    line-height: 1.25;
+    line-height: 1.2;
+    text-align: center;
     cursor: pointer;
     transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
   }
   .mode:hover { color: var(--text-strong); }
+  /* Обраний сегмент — суцільна заливка брендовим, БЕЗ тіні. Біла пігулка
+     з тінню на світлому тлі читалась як картка, що лежить зверху: клієнт
+     побачив дві кнопки, які «наїхали одна на одну». Заливка не лишає
+     сумнівів, який режим увімкнено. */
   .mode.is-active {
-    background: var(--surface);
-    color: var(--text-strong);
-    box-shadow: var(--sh-1);
+    background: var(--brand-500);
+    color: var(--white);
   }
 
   /* ── Погодинний режим ───────────────────────────────────────────────── */
