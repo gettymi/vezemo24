@@ -144,32 +144,11 @@
   }
 
   /** Рядок-пояснення, звідки взялася сума. */
-  function explain(q) {
-    if (q.mode === "abroad") {
-      return T("price.abroad_note", {
-        km: q.totalKm, rate: q.perTotalKm.toFixed(2).replace(".", ","),
-        oneway: q.perOneWayKm.toFixed(2).replace(".", ","),
-      });
-    }
-    if (q.mode === "intercity") {
-      var uah = T("unit.uah");
-      var money = function (n) {
-        return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
-      };
-      var base = Math.round(q.distanceKm) + " " + T("unit.km") + " × " +
-                 q.perKm + " " + uah;
-      return base + " = " + money(q.total) + " " + uah;
-    }
-    return T("price.hourly_note", {
-      feed: q.feed, hours: q.minHours, rate: q.hourly,
-    });
-  }
 
   global.PriceCalculator = {
     zoneForCountry: zoneForCountry,
     zoneForPoints: zoneForPoints,
     quote: quote,
-    explain: explain,
     quoteAbroad: quoteAbroad,
     constants: {
       LOCAL: LOCAL,

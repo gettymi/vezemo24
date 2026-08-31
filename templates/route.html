@@ -103,7 +103,7 @@
           <strong class="routeprice__value">{{ '{:,}'.format(price).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
         </p>
         <p class="card__text">
-          {{ t('route.price.perkm', rate=pricing.INTERCITY_PER_KM, km=route.km) }}
+          {{ t('route.price.perkm') }}
         </p>
         <p class="routeprice__return">{{ t('route.price.return',
               price=('{:,}'.format(price_return).replace(',', ' '))) }}</p>

@@ -713,11 +713,6 @@
       host.appendChild(retNote);
     }
 
-    var breakdown = document.getElementById("res-price-breakdown");
-    if (breakdown) {
-      breakdown.textContent = PriceCalculator.explain(q);
-      breakdown.hidden = false;
-    }
     // orderRoute.js бере звідси, що переносити у форму заявки.
     var hidden = document.getElementById("res-service");
     if (hidden) hidden.textContent = label.textContent;

@@ -58,10 +58,9 @@
         <p class="price__desc">{{ z.countries | map('t_pass') | join(' · ') }}</p>
         <p class="price__value">{{ ('%.2f' % z.per_total_km) | replace('.', ',') }}
           <span class="price__unit">{{ t('abroad.zone.unit') }}</span></p>
-        <p class="field__hint">
-          {{ t('abroad.zone.oneway', rate=(('%.2f' % (z.per_total_km * 2)) | replace('.', ','))) }}
-          {%- if zone == 'west' %} · {{ t('abroad.zone.west.why') }}{% endif %}
-        </p>
+        {%- if zone == 'west' %}
+        <p class="field__hint">{{ t('abroad.zone.west.why') }}</p>
+        {%- endif %}
         <div class="price__foot">
           {# Кнопка веде в калькулятор ІЗ маршрутом. Без ?route= зона не
              задавалась, і калькулятор рахував європейський рейс як
