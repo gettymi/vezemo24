@@ -37,7 +37,7 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": {{ t('place.faq.q1', city_loc=city_loc) | tojson }},
-      "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a1', rate=pricing.LOCAL_HOURLY, feed=pricing.LOCAL_FEED) | tojson }} } },
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a1', rate=pricing.LOCAL_HOURLY, feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS) | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q2') | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a2') | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q3') | tojson }},
@@ -103,6 +103,7 @@
       </p>
       <ul class="checks">
         <li>{{ t('place.price.feed', feed=pricing.LOCAL_FEED) }}</li>
+        <li>{{ t('place.price.min', hours=pricing.LOCAL_MIN_HOURS) }}</li>
       </ul>
       <p class="field__hint">{{ t('place.price.text') }}</p>
       <div class="card__foot">
@@ -140,7 +141,7 @@
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q1', city_loc=city_loc) }}</summary>
         <p class="faq__a">{{ t('place.faq.a1', rate=pricing.LOCAL_HOURLY,
-              feed=pricing.LOCAL_FEED) }}</p>
+              feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS) }}</p>
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q2') }}</summary>

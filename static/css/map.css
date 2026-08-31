@@ -135,6 +135,81 @@
   }
   .btn--text:hover { background: var(--brand-50); transform: none; }
 
+  /* ── Перемикач режимів ──────────────────────────────────────────────
+     Дві різні послуги з різними моделями ціни, тому це саме перемикач,
+     а не фільтр: одночасно доречний рівно один. */
+  .modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 2px;
+    margin-bottom: var(--sp-5);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+  .mode {
+    padding: var(--sp-3) var(--sp-2);
+    border: 0;
+    border-radius: calc(var(--r-md) - 3px);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .mode:hover { color: var(--text-strong); }
+  .mode.is-active {
+    background: var(--surface);
+    color: var(--text-strong);
+    box-shadow: var(--sh-1);
+  }
+
+  /* ── Погодинний режим ───────────────────────────────────────────────── */
+  .local__q { font-size: var(--fs-md); font-weight: 700; color: var(--text-strong); }
+  .local__help { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--text-muted); }
+  .hours {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    margin: var(--sp-5) 0;
+    padding: var(--sp-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+  }
+  .hours__step {
+    flex: none;
+    width: 48px; height: 48px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface-sunk);
+    color: var(--text-strong);
+    font-size: var(--fs-xl);
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  }
+  .hours__step:hover:not(:disabled) { border-color: var(--brand-300); background: var(--brand-50); }
+  .hours__step:disabled { opacity: .4; cursor: default; }
+  .hours__value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .hours__unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-muted); }
+  .local__quote { margin-bottom: var(--sp-5); }
+
   /* ── Блок вартості ──────────────────────────────────────────────────
      Одна цифра замість трьох карток: моделі різні, порівнювати нема що. */
   .quote {

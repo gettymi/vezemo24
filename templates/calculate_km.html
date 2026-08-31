@@ -28,6 +28,57 @@
         <p>{{ t('calc.lead') }}</p>
       </div>
 
+      {# Два режими, бо це дві різні послуги з різними моделями ціни.
+         По Києву й області маршрут узагалі не потрібен: там платять за
+         час, а не за кілометри, тож замість карти достатньо одного
+         питання — скільки годин. Цей режим стоїть першим, бо більшість
+         роботи буса локальна. #}
+      <div class="modes" role="tablist" aria-label="{{ t('calc.h1') }}">
+        <button type="button" class="mode is-active" id="mode-btn-local"
+                role="tab" aria-selected="true" aria-controls="mode-local">
+          {{ t('calc.mode.local') }}
+        </button>
+        <button type="button" class="mode" id="mode-btn-route"
+                role="tab" aria-selected="false" aria-controls="mode-route">
+          {{ t('calc.mode.route') }}
+        </button>
+      </div>
+
+      {# ── Режим «Київ та область»: години -> ціна ─────────────────────
+         Початкове число рендерить сервер, тому ціна видна ще до того, як
+         виконається будь-який скрипт. JS лише перераховує її на кліку. #}
+      <div class="local" id="mode-local" role="tabpanel" aria-labelledby="mode-btn-local">
+        <p class="local__q">{{ t('calc.hours.q') }}</p>
+        <p class="local__help">{{ t('calc.hours.help') }}</p>
+
+        <div class="hours">
+          <button type="button" class="hours__step" id="hours-minus"
+                  aria-label="{{ t('calc.hours.less') }}">−</button>
+          <span class="hours__value">
+            <output id="hours-value" for="hours-minus hours-plus">{{ PRICING.LOCAL_MIN_HOURS }}</output>
+            <span class="hours__unit">{{ t('calc.hours.unit') }}</span>
+          </span>
+          <button type="button" class="hours__step" id="hours-plus"
+                  aria-label="{{ t('calc.hours.more') }}">+</button>
+        </div>
+
+        <div class="quote quote--hourly local__quote" role="status" aria-live="polite">
+          <span class="quote__label">{{ t('calc.hours.total') }}</span>
+          <span class="quote__value" id="local-total">{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</span>
+          <span class="quote__note">{{ t('calc.hours.note', hours=PRICING.LOCAL_MIN_HOURS, feed=PRICING.LOCAL_FEED) }}</span>
+        </div>
+
+        <div class="result__cta">
+          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}"
+             data-cta="phone-calc-local">📞 {{ t('calc.order_at_price') }}</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}"
+             data-cta="form-calc-local">{{ t('common.callback') }}</a>
+        </div>
+      </div>
+
+      {# ── Режим «Інші міста та закордон»: маршрут на карті ──────────── #}
+      <div id="mode-route" role="tabpanel" aria-labelledby="mode-btn-route" hidden>
+
       {# Повідомлення в самій панелі. Раніше тут були alert(): вони блокують
          сторінку, виглядають як помилка браузера і не показують контексту. #}
       <p class="notice notice--error" id="map-notice" role="status" aria-live="polite"></p>
@@ -112,7 +163,10 @@
         </p>
       </div>
 
-      <p class="panel__note">{{ t('calc.note') }}</p>
+      </div>{# /mode-route #}
+
+      <p class="panel__note">{{ t('calc.note', hours=PRICING.LOCAL_MIN_HOURS,
+            feed=PRICING.LOCAL_FEED) }}</p>
     </div>
   </aside>
 
@@ -138,4 +192,7 @@
 <script src="{{ static_url('js/priceCalculator.js') }}"></script>
 <script src="{{ static_url('js/map.js') }}"></script>
 <script src="{{ static_url('js/orderRoute.js') }}" defer></script>
+{# Окремим файлом навмисно: погодинний режим не залежить ні від Leaflet,
+   ні від map.js, тому падіння карти його не чіпає — і навпаки. #}
+<script src="{{ static_url('js/localQuote.js') }}" defer></script>
 {% endblock %}
