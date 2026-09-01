@@ -109,6 +109,7 @@ STRINGS = {
     "home.what.c3.text": "Furniture, appliances, boxes, moving belongings around Kyiv and the region. The van waits while you load and unload, which is why this is charged by the hour.",
     "home.img.van": "A van up to 3.5 tonnes used for business deliveries",
     "home.img.road": "Motorway — intercity transport across Ukraine",
+    "home.img.cargo": "The van\u2019s cargo bay from inside: flat floor, high roof",
     "home.img.road_wide": "Intercity van transport from Kyiv across Ukraine",
 
     "home.price.eyebrow": "No surprises",

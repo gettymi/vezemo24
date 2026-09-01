@@ -73,8 +73,11 @@
         </div>
       </li>
 
-      <li class="card card--accent">
-        <div class="card__icon" aria-hidden="true">📦</div>
+      <li class="card">
+        <div class="card__media">
+          {{ picture('cargo-card.jpg', alt=t('home.img.cargo'),
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
+        </div>
         <h2 class="card__title">{{ t('svc.taxi.title') }}</h2>
         <p class="card__text">
           {{ t('svc.taxi.text') }}

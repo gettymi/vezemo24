@@ -185,8 +185,16 @@
           <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('common.more') }}</a>
         </div>
       </li>
-      <li class="card card--link card--accent">
-        <div class="card__icon" aria-hidden="true">📦</div>
+      {# Емодзі-коробка стояла тут поруч із двома фотографіями й видавала
+         картку за недороблену. Це кадр вантажного відсіку зсередини — того
+         самого, що на сторінці транспорту. Він і виглядає нарівні з
+         сусідами, і відповідає на питання, з яким сюди приходять: «а моє
+         туди влізе». Фото наше, не стокове. #}
+      <li class="card card--link">
+        <div class="card__media">
+          {{ picture('cargo-card.jpg', alt=t('home.img.cargo'),
+                     sizes='(min-width: 1100px) 360px, (min-width: 700px) 33vw, 100vw') }}
+        </div>
         <h3 class="card__title">{{ t('home.what.c3.title') }}</h3>
         <p class="card__text">
           {{ t('home.what.c3.text') }}

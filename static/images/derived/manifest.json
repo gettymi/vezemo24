@@ -10,6 +10,17 @@
       798
     ]
   },
+  "cargo-card.jpg": {
+    "fallback": "jpg",
+    "h": 470,
+    "stem": "cargo-card",
+    "w": 720,
+    "widths": [
+      400,
+      600,
+      720
+    ]
+  },
   "fleet-1.png": {
     "fallback": "png",
     "h": 679,
