@@ -311,6 +311,218 @@ PLACES = [
             },
         },
     },
+    {
+        "slug": "vasylkiv",
+        "city": "city.vasylkiv",
+        "ll": [50.1848, 30.3103],
+        "side": "place.side.south",
+        "copy": {
+            "uk": {
+                "intro": "Васильків стоїть на Одеській трасі, і це найзручніший "
+                         "напрямок з усієї області: виїзд із Києва через Голосіїв, "
+                         "далі широка магістраль без світлофорів. Затори тут "
+                         "трапляються не в будні вранці, а в п'ятницю ввечері й у "
+                         "неділю, коли місто масово їде на дачі та назад.",
+                "work": "Половина роботи — приватний сектор: у Василькові й довкола "
+                        "багато власних будинків, а це означає меблі, будівельні "
+                        "матеріали та техніку возять не в ліфт, а в двір. Друга "
+                        "половина — товар із київських складів у місцеві магазини.",
+                "note": "У приватному секторі головне питання не поверх, а заїзд: "
+                        "чи пройде бус у ворота й чи розвернеться на вулиці. "
+                        "Скажіть адресу — подивимось на карті до виїзду, а не "
+                        "будемо здавати задом уздовж паркану.",
+            },
+            "ru": {
+                "intro": "Васильков стоит на Одесской трассе, и это самое удобное "
+                         "направление во всей области: выезд из Киева через "
+                         "Голосеево, дальше широкая магистраль без светофоров. "
+                         "Пробки здесь бывают не в будни утром, а в пятницу вечером "
+                         "и в воскресенье, когда город массово едет на дачи и обратно.",
+                "work": "Половина работы — частный сектор: в Василькове и вокруг "
+                        "много своих домов, а это значит, что мебель, стройматериалы "
+                        "и технику возят не в лифт, а во двор. Вторая половина — "
+                        "товар с киевских складов в местные магазины.",
+                "note": "В частном секторе главный вопрос не этаж, а заезд: пройдёт "
+                        "ли бус в ворота и развернётся ли на улице. Скажите адрес — "
+                        "посмотрим на карте до выезда, а не будем сдавать задом "
+                        "вдоль забора.",
+            },
+            "en": {
+                "intro": "Vasylkiv sits on the Odesa highway, which makes it the "
+                         "easiest run in the whole region: out of Kyiv through "
+                         "Holosiivo, then a wide road with no traffic lights. The "
+                         "jams here are not weekday mornings but Friday evenings and "
+                         "Sundays, when the city drives out to its dachas and back.",
+                "work": "Half the work is the private housing sector: Vasylkiv and "
+                        "the villages around it are mostly houses, so furniture, "
+                        "building materials and appliances go into a yard rather "
+                        "than a lift. The other half is stock from Kyiv warehouses "
+                        "to local shops.",
+                "note": "In a street of houses the question is never the floor, it "
+                        "is the entrance: will the van fit through the gate and can "
+                        "it turn around. Send the address and we will look at it on "
+                        "the map beforehand, instead of reversing along your fence.",
+            },
+        },
+    },
+    {
+        "slug": "obukhiv",
+        "city": "city.obukhiv",
+        "ll": [50.1069, 30.6214],
+        "side": "place.side.south",
+        "copy": {
+            "uk": {
+                "intro": "Обухів — південь, дорога вздовж Дніпра через Українку. "
+                         "Траса тут вужча за Одеську й проходить через населені "
+                         "пункти, тож середня швидкість нижча, ніж здається по "
+                         "кілометрах на карті. Ми закладаємо це в час одразу, щоб "
+                         "не переносити другу адресу на завтра.",
+                "work": "Місто промислове, і поруч велике целюлозно-паперове "
+                        "виробництво, тому сюди й звідси регулярно возять палети та "
+                        "габаритні партії. Разом із цим — звичайні переїзди: "
+                        "Обухів давно перестав бути тільки заводським містом.",
+                "note": "Габаритний вантаж на палеті вимагає не тільки місця в "
+                        "кузові, а й того, щоб його було чим завантажити з вашого "
+                        "боку. Вантажників у нас немає — уточніть заздалегідь, чи є "
+                        "на складі навантажувач і рампа.",
+            },
+            "ru": {
+                "intro": "Обухов — юг, дорога вдоль Днепра через Украинку. Трасса "
+                         "здесь уже Одесской и проходит через населённые пункты, "
+                         "поэтому средняя скорость ниже, чем кажется по километрам "
+                         "на карте. Мы закладываем это во время сразу, чтобы не "
+                         "переносить второй адрес на завтра.",
+                "work": "Город промышленный, рядом крупное целлюлозно-бумажное "
+                        "производство, поэтому сюда и отсюда регулярно возят палеты "
+                        "и габаритные партии. Вместе с этим — обычные переезды: "
+                        "Обухов давно перестал быть только заводским городом.",
+                "note": "Габаритный груз на палете требует не только места в кузове, "
+                        "но и того, чем его загрузить с вашей стороны. Грузчиков у "
+                        "нас нет — уточните заранее, есть ли на складе погрузчик и "
+                        "рампа.",
+            },
+            "en": {
+                "intro": "Obukhiv is south, along the Dnipro through Ukrainka. The "
+                         "road is narrower than the Odesa highway and runs through "
+                         "villages, so the average speed is lower than the map's "
+                         "kilometres suggest. We build that into the time from the "
+                         "start rather than pushing your second address to tomorrow.",
+                "work": "It is an industrial town with a large pulp and paper works "
+                        "next door, so pallets and bulky consignments move in and out "
+                        "of here regularly. Alongside that, ordinary household moves: "
+                        "Obukhiv stopped being only a factory town a long time ago.",
+                "note": "A pallet needs more than room in the bay — it needs "
+                        "something at your end to lift it. We have no loaders, so "
+                        "check in advance whether the warehouse has a forklift and a "
+                        "ramp.",
+            },
+        },
+    },
+    {
+        "slug": "fastiv",
+        "city": "city.fastiv",
+        "ll": [50.0747, 29.9203],
+        "side": "place.side.south",
+        "copy": {
+            "uk": {
+                "intro": "Фастів — південний захід, приблизно година дороги від "
+                         "Києва по Житомирській трасі з поворотом. Це вже та "
+                         "відстань, на якій дорога туди й назад займає більшу "
+                         "частину замовлення, тому одна поїздка з двома адресами "
+                         "виходить розумніше, ніж дві окремі.",
+                "work": "Фастів — великий залізничний вузол, і місто живе навколо "
+                        "нього. Возять сюди переважно те, що не поїде вагоном: "
+                        "меблі, побутову техніку, товар у роздрібні точки, речі при "
+                        "переїзді до Києва й назад.",
+                "note": "Якщо у вас дві адреси в один бік — скажіть про це відразу. "
+                        "На такій відстані другу точку майже завжди вигідніше "
+                        "зробити тим самим рейсом, ніж викликати машину вдруге.",
+            },
+            "ru": {
+                "intro": "Фастов — юго-запад, примерно час дороги от Киева по "
+                         "Житомирской трассе с поворотом. Это уже то расстояние, на "
+                         "котором дорога туда и обратно занимает большую часть "
+                         "заказа, поэтому одна поездка с двумя адресами выходит "
+                         "разумнее, чем две отдельные.",
+                "work": "Фастов — крупный железнодорожный узел, и город живёт вокруг "
+                        "него. Возят сюда в основном то, что не поедет вагоном: "
+                        "мебель, бытовую технику, товар в розничные точки, вещи при "
+                        "переезде в Киев и обратно.",
+                "note": "Если у вас два адреса в одну сторону — скажите об этом "
+                        "сразу. На таком расстоянии вторую точку почти всегда "
+                        "выгоднее сделать тем же рейсом, чем вызывать машину второй "
+                        "раз.",
+            },
+            "en": {
+                "intro": "Fastiv is south-west, about an hour from Kyiv on the "
+                         "Zhytomyr road plus a turning. At this distance the drive "
+                         "out and back takes up most of the job, which is why one "
+                         "trip covering two addresses works out more sensibly than "
+                         "two separate call-outs.",
+                "work": "Fastiv is a major railway junction and the town lives around "
+                        "it. What comes here by road is what will not go by wagon: "
+                        "furniture, appliances, stock for shops, and belongings "
+                        "moving to Kyiv and back.",
+                "note": "If you have two addresses in the same direction, say so at "
+                        "the start. At this distance the second stop is almost always "
+                        "cheaper on the same run than as a second call-out.",
+            },
+        },
+    },
+    {
+        "slug": "bila-tserkva",
+        "city": "city.bilatserkva",
+        "ll": [49.7950, 30.1310],
+        "side": "place.side.south",
+        "copy": {
+            "uk": {
+                "intro": "Біла Церква — найдальше місто з тих, що ми рахуємо як "
+                         "область: близько 80 кілометрів по Одеській трасі. Дорога "
+                         "хороша й швидка, але туди й назад це вже пів робочого дня, "
+                         "і на таких замовленнях ми домовляємось про час і ціну "
+                         "особливо ретельно — телефоном, а не листуванням.",
+                "work": "Це велике самостійне місто з промисловою зоною, а не "
+                        "передмістя, тому робота тут інша: не стільки дачі й "
+                        "приватний сектор, скільки товар між складами, обладнання та "
+                        "переїзди між Києвом і Білою Церквою в обидва боки.",
+                "note": "На такій відстані порожній зворотний рейс — головна стаття "
+                        "витрат. Якщо у вас є що відправити назад до Києва, скажіть: "
+                        "рейс із вантажем в обидва боки завжди рахується інакше, ніж "
+                        "рейс в один кінець.",
+            },
+            "ru": {
+                "intro": "Белая Церковь — самый дальний город из тех, что мы считаем "
+                         "областью: около 80 километров по Одесской трассе. Дорога "
+                         "хорошая и быстрая, но туда и обратно это уже полдня, и на "
+                         "таких заказах мы договариваемся о времени и цене особенно "
+                         "тщательно — по телефону, а не перепиской.",
+                "work": "Это большой самостоятельный город с промышленной зоной, а не "
+                        "пригород, поэтому работа здесь другая: не столько дачи и "
+                        "частный сектор, сколько товар между складами, оборудование и "
+                        "переезды между Киевом и Белой Церковью в обе стороны.",
+                "note": "На таком расстоянии пустой обратный рейс — главная статья "
+                        "расходов. Если у вас есть что отправить назад в Киев, "
+                        "скажите: рейс с грузом в обе стороны всегда считается иначе, "
+                        "чем рейс в один конец.",
+            },
+            "en": {
+                "intro": "Bila Tserkva is the furthest town we still count as the "
+                         "region: about 80 kilometres down the Odesa highway. The "
+                         "road is good and fast, but out and back is half a working "
+                         "day, so on jobs like this we agree the time and the price "
+                         "especially carefully — by phone, not by messages.",
+                "work": "This is a large town in its own right with an industrial "
+                        "zone, not a suburb, and the work reflects that: less dacha "
+                        "and private-house traffic, more stock between warehouses, "
+                        "equipment, and moves between Kyiv and Bila Tserkva in both "
+                        "directions.",
+                "note": "At this distance an empty return leg is the single biggest "
+                        "cost. If you have something to send back to Kyiv, say so — a "
+                        "run loaded both ways is always priced differently from a "
+                        "one-way one.",
+            },
+        },
+    },
 ]
 
 BY_SLUG = {p["slug"]: p for p in PLACES}
