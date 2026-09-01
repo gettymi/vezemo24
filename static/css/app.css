@@ -1390,20 +1390,48 @@
    ========================================================================== */
 @layer components {
   /* Текст ліворуч, форма праворуч. До 900px — одна колонка, форма під
-     текстом: на телефоні дві вузькі колонки читаються гірше за одну. */
-  .cta--form { text-align: left; }
-  .cta--form .cta__text { margin-inline: 0; }
-  .cta--form .cta__title { text-align: left; }
-  .cta {
+     текстом: на телефоні дві вузькі колонки читаються гірше за одну.
+
+     Усе scoped на .cta--form, а не на голий .cta: базовий клас лишається
+     тим, чим був (центрований блок), і якщо колись знадобиться заклик без
+     форми — він не поїде.
+
+     ГОЛОВНЕ ПРО ВІДСТУПИ. У базового .cta вони асиметричні: по вертикалі
+     до 3rem, по горизонталі рівно 1.5rem. У центрованому блоці це не
+     видно, а в лівому вирівнюванні заголовок з'їжджає до самого краю
+     картки й виглядає притиснутим. Тут відступ однаковий з усіх боків —
+     саме він і був причиною «заголовок трохи лівіше, ніж треба». */
+  .cta--form {
     display: grid;
     gap: var(--sp-6);
     grid-template-columns: minmax(0, 1fr);
+    text-align: left;
+    padding: clamp(1.75rem, 1.1rem + 2.6vw, 3.25rem);
   }
+  .cta--form .cta__title { text-align: left; margin-bottom: var(--sp-4); }
+  /* 42ch, а не 52: поруч стоїть форма, і довгий рядок тягнеться під неї. */
+  .cta--form .cta__text { max-width: 42ch; margin: 0 0 var(--sp-5); }
+  .cta--form .cta__note { margin-top: var(--sp-5); }
+
   @media (min-width: 900px) {
-    .cta--form { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: start; }
+    .cta--form {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 25rem);
+      gap: var(--sp-7);
+      align-items: center;
+    }
+  }
+
+  /* Форма сидить у власній підкладці. Без неї два стовпці зливаються в одну
+     сіру масу полів і тексту; світла панель каже оком, де закінчується
+     розповідь і починається дія. */
+  .cta__form {
+    padding: var(--sp-5);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-lg);
   }
   .cta__formhead {
-    margin-bottom: var(--sp-4);
+    margin: 0 0 var(--sp-4);
     font-weight: 700;
     color: var(--brand-700);
   }
