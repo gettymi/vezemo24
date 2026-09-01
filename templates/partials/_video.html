@@ -48,12 +48,29 @@
         </div>
       </div>
       <div class="videoblock__player">
-        <video class="vplayer" controls preload="none" playsinline
-               poster="{{ v_poster }}" width="404" height="720">
-          <source src="{{ v_webm }}" type="video/webm">
-          <source src="{{ v_mp4 }}" type="video/mp4">
-        </video>
-      </div>
+        {# Рідних controls немає навмисно — разом з ними йде кнопка
+           повноекранного режиму. Кадр 404 точки завширшки, розтягнутий на
+           весь екран, дає мило; а сам повний екран горизонтальний, тож
+           вертикальне відео в ньому або обрізається з боків, або тоне в
+           чорних полях. Ні того, ні іншого показувати не варто.
+
+           Замість дрібної системної кнопки — велика по центру кадру.
+           Кнопка справжня (<button>), тому працює з клавіатури й читається
+           екранним читачем; JS живе в site.js і вмикається лише там, де
+           цей блок є. Без JS лишається постер і підпис — сторінка не
+           ламається. #}
+        <div class="vwrap" data-video>
+          <video class="vplayer" preload="none" playsinline
+                 disablePictureInPicture controlsList="nodownload noplaybackrate"
+                 poster="{{ v_poster }}" width="404" height="720">
+            <source src="{{ v_webm }}" type="video/webm">
+            <source src="{{ v_mp4 }}" type="video/mp4">
+          </video>
+          <button type="button" class="vplay" data-video-play
+                  aria-label="{{ t('video.play') }}">
+            <span class="vplay__icon" aria-hidden="true"></span>
+          </button>
+        </div>
     </div>
   </div>
 </section>

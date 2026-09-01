@@ -38,6 +38,40 @@
     });
   }
 
+
+  /* ── Відео з рейсу ──────────────────────────────────────────────────────
+     Рідні controls у <video> прибрані разом із кнопкою повного екрана:
+     кадр 404px завширшки в повний екран перетворюється на мило, а
+     вертикальне відео на горизонтальному екрані ще й ріжеться з боків.
+     Тут лишається одне — пуск і пауза по великій кнопці посеред кадру.
+
+     Слухаємо play/pause/ended на самому елементі, а не ставимо прапорець
+     у обробнику кліку: тоді кнопка лишається правильною і коли відео
+     скінчилось саме, і коли його зупинила система. */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-video]"), function (box) {
+    var video = box.querySelector("video");
+    var btn = box.querySelector("[data-video-play]");
+    if (!video || !btn) return;
+
+    function state() { box.classList.toggle("is-playing", !video.paused && !video.ended); }
+    video.addEventListener("play", state);
+    video.addEventListener("pause", state);
+    video.addEventListener("ended", state);
+
+    function toggle() {
+      if (video.paused || video.ended) {
+        var r = video.play();
+        // Safari повертає проміс, який відхиляється, якщо браузер відмовив.
+        if (r && r.catch) r.catch(function () {});
+        if (window.vezemoTrack) window.vezemoTrack("video_play", { cta_location: "video-story" });
+      } else {
+        video.pause();
+      }
+    }
+    btn.addEventListener("click", toggle);
+    video.addEventListener("click", toggle);
+  });
+
   /* ── Конверсії ──────────────────────────────────────────────────────────
      Дзвінок — головна конверсія в цій ніші, тому кожен клік по телефону,
      месенджеру чи формі йде в dataLayer. */

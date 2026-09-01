@@ -1317,9 +1317,16 @@
 
   .videoblock__player { justify-self: center; width: 100%; max-width: 300px; }
 
+  /* Кнопка лежить поверх кадру, тож обгортка — точка відліку. */
+  .vwrap { position: relative; display: block; }
+
   /* aspect-ratio тримає місце під програвач ще до того, як завантажиться
      постер: інакше блок стрибає, коли картинка приїде (це і є CLS). 404/720 —
-     реальні пропорції кадру після обрізання чорних полів. */
+     реальні пропорції кадру після обрізання чорних полів.
+
+     object-fit: contain, а НЕ cover. З cover браузер обрізав кадр по боках,
+     щойно пропорції контейнера хоч трохи розходилися з відео — саме через
+     це «не видно ліве й праве». contain показує кадр цілком завжди. */
   .vplayer {
     display: block;
     width: 100%;
@@ -1327,6 +1334,50 @@
     border-radius: var(--r-lg);
     box-shadow: var(--sh-2);
     background: var(--surface-dark);
-    object-fit: cover;
+    object-fit: contain;
+  }
+
+  /* Велика кнопка посеред кадру. Системна надто дрібна й ховається в кутку,
+     а тут єдина дія на блоці — пуск. */
+  .vplay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: var(--r-lg);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .vplay__icon {
+    width: 72px; height: 72px;
+    border-radius: var(--r-full);
+    background: var(--brand-500);
+    box-shadow: 0 0 0 10px rgba(255,255,255,.28), var(--sh-2);
+    transition: transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+  }
+  /* Трикутник — псевдоелемент, щоб не тягнути ще один файл заради іконки. */
+  .vplay__icon::after {
+    content: "";
+    display: block;
+    width: 0; height: 0;
+    margin: 26px 0 0 30px;
+    border-style: solid;
+    border-width: 11px 0 11px 18px;
+    border-color: transparent transparent transparent #fff;
+  }
+  .vplay:hover .vplay__icon,
+  .vplay:focus-visible .vplay__icon { transform: scale(1.08); }
+  .vplay:focus-visible { outline: 3px solid var(--brand-700); outline-offset: 3px; }
+
+  /* Під час відтворення кнопка зникає, але клікабельною лишається: другий
+     клік по кадру ставить на паузу, і кнопка повертається. */
+  .is-playing .vplay__icon { opacity: 0; transform: scale(.8); }
+  .vplay__icon { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .vplay__icon { transition: none; }
   }
 }
