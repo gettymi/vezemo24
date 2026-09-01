@@ -43,3 +43,7 @@ _to_delete/
 
 # Логи застосунку (Phase 4)
 logs/
+
+# сміття від застряглих git-локів на мосту та .bak від sed -i
+_gitlocks/
+*.bak
