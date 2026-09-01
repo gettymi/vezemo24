@@ -3,23 +3,23 @@
 <g clip-path="url(#clip0_0_1)">
 <g id="Repeat group 1_inner" data-figma-trr="r6u2.5-0f">
 <g filter="url(#filter0_d_0_1)">
-<path d="M17 256.5C17 388.772 124.228 496 256.5 496C388.772 496 496 388.772 496 256.5" stroke="#0EA5E9" stroke-width="9"/>
+<path d="M17 256C17 388.548 124.228 496 256.5 496C271.416 496 286.014 494.634 300.176 492.019" stroke="#0EA5E9" stroke-width="9"/>
 </g>
 <g filter="url(#filter1_d_0_1)">
-<path d="M17 256.5C17 124.228 124.228 17 256.5 17C388.772 17 496 124.228 496 256.5" stroke="#0EA5E9" stroke-width="9"/>
+<path d="M17 256.5C17 124.228 124.228 17 256.5 17C271.023 17 285.245 18.2927 299.055 20.7693" stroke="#0EA5E9" stroke-width="9"/>
 </g>
 </g>
-<use xlink:href="#Repeat%20group%201_inner" transform="translate(868.918 205.489) rotate(60)"/>
-<use xlink:href="#Repeat%20group%201_inner" transform="translate(1125.42 1060.74) rotate(120)"/>
-<use xlink:href="#Repeat%20group%201_inner" transform="translate(513 1710.5) rotate(-180)"/>
-<use xlink:href="#Repeat%20group%201_inner" transform="translate(-355.918 1505.01) rotate(-120)"/>
-<use xlink:href="#Repeat%20group%201_inner" transform="translate(-612.418 649.761) rotate(-60)"/>
-<path d="M348.486 142.45L270.333 328.868M331.42 183.224L348.486 142.45H93.725M331.42 183.224L468.66 241.71C473.178 243.635 475.601 248.581 474.354 253.331L456.464 321.482C455.322 325.834 451.388 328.868 446.888 328.868H418.5M331.42 183.224L270.333 328.868M270.333 328.868L185.575 330.55M270.333 328.868H357.175M93.725 330.55C93.725 330.55 116.829 330.55 130.575 330.55M50.825 231H213.625M77.775 188.262H213.625M213.625 275.55H35.975" stroke="#0E9FE9" stroke-width="13.2" stroke-linecap="round"/>
-<circle cx="387.45" cy="331.45" r="25.85" stroke="#0EA5E9" stroke-width="13.2"/>
-<circle cx="157.45" cy="331.45" r="25.85" stroke="#0EA5E9" stroke-width="13.2"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(819.962 290.284) rotate(60)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(978.55 1145.53) rotate(120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(317.176 1710.5) rotate(-180)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(-502.786 1420.22) rotate(-120)"/>
+<use xlink:href="#Repeat%20group%201_inner" transform="translate(-661.374 564.966) rotate(-60)"/>
+<path d="M84.75 151H339.511L306.537 221.5M339.511 151L237.525 369.05M306.537 221.5L237.525 369.05M306.537 221.5H347.125C352.593 221.5 357.025 225.932 357.025 231.4V265.6C357.025 271.068 361.457 275.5 366.925 275.5H435.65C441.118 275.5 445.55 279.932 445.55 285.4V359.15C445.55 364.618 441.118 369.05 435.65 369.05H419.5M237.525 369.05H186M237.525 369.05H357.025M84.75 369.05C84.75 369.05 114.254 369.05 128 369.05M68.8 239.55H204.65M102.525 196.812H204.65M204.65 284.1H37.5" stroke="#0E9FE9" stroke-width="13.2" stroke-linecap="round"/>
+<circle cx="387.45" cy="369.45" r="25.85" stroke="#0EA5E9" stroke-width="13.2"/>
+<path d="M157.45 338.05C171.727 338.05 183.3 349.624 183.3 363.9C183.3 378.177 171.727 389.75 157.45 389.75C143.174 389.75 131.6 378.177 131.6 363.9C131.6 349.624 143.174 338.05 157.45 338.05Z" stroke="#0EA5E9" stroke-width="13.2"/>
 </g>
 <defs>
-<filter id="filter0_d_0_1" x="12.5" y="256.5" width="488" height="244" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_d_0_1" x="12.5" y="256" width="288.493" height="244.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>
@@ -28,7 +28,7 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1" result="shape"/>
 </filter>
-<filter id="filter1_d_0_1" x="12.5" y="12.5" width="488" height="244" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter1_d_0_1" x="12.5" y="12.5" width="287.35" height="244" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>

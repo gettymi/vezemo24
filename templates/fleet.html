@@ -84,26 +84,6 @@
   </div>
 </section>
 
-<section class="section section--dark trust">
-  <div class="container">
-    <div class="section-head">
-      <span class="section-head__eyebrow">{{ t('fleet.why.eyebrow') }}</span>
-      <h2>{{ t('fleet.why.h2') }}</h2>
-    </div>
-    {# Той самий стиль карток, що й у блоці довіри на головній: на темному
-       тлі .card лишається білою і секція розсипається на дві теми. #}
-    <ul class="trust__grid">
-      {% for n, icon in [('c1', '◷'), ('c2', '⟳'), ('c3', '⇄')] %}
-        <li class="trust__card">
-          <div class="trust__icon" aria-hidden="true">{{ icon }}</div>
-          <h3 class="trust__title">{{ t('fleet.why.' ~ n ~ '.h') }}</h3>
-          <p class="trust__text">{{ t('fleet.why.' ~ n ~ '.t') }}</p>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-</section>
-
 <section class="section section--flush">
   <div class="container container--narrow">
     <div class="section-head section-head--center">

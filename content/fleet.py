@@ -8,6 +8,11 @@
 дорожче, ніж порожнє місце.
 
 Коли зʼявляться заміри — додати їх у `specs` і показати в картці.
+
+Машина тут одна, і кількість ніде не називається — ані в текстах, ані в
+розмітці. Власник просив не називати чисел узагалі: скільки машин і
+скільки водіїв — не те, що має цікавити замовника, і будь-яка цифра, яку
+ми не можемо підтвердити, працює проти нас.
 """
 
 VEHICLES = [
@@ -18,36 +23,6 @@ VEHICLES = [
         "color": "fleet.color.white",
         "body": "fleet.body.panel",
         "note": "fleet.v1.note",
-        "on_home": True,
-        "specs": [],
-    },
-    {
-        "id": "v2",
-        "image": "fleet-2.png",
-        "name": "Volkswagen Crafter",
-        "color": "fleet.color.black",
-        "body": "fleet.body.panel",
-        "note": "fleet.v2.note",
-        "on_home": True,
-        "specs": [],
-    },
-    {
-        "id": "v3",
-        "image": "fleet-3.png",
-        "name": "Volkswagen Crafter",
-        "color": "fleet.color.grey",
-        "body": "fleet.body.high",
-        "note": "fleet.v3.note",
-        "on_home": False,
-        "specs": [],
-    },
-    {
-        "id": "v4",
-        "image": "fleet-4.png",
-        "name": "Volkswagen Crafter",
-        "color": "fleet.color.black",
-        "body": "fleet.body.long",
-        "note": "fleet.v4.note",
         "on_home": True,
         "specs": [],
     },
