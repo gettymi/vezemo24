@@ -540,6 +540,12 @@ def neighbours(slug, limit=3):
     а Вишгород — єдиний на півночі — не отримував жодного: на сторінку,
     на яку ніхто не веде, Google дивиться значно гірше. Тест перевіряє,
     що разом сторінки лінкують усі міста без винятку.
+
+    Один слот завжди лишається «чужій» зоні/стороні, якщо вона є. Без цього
+    місто, яке єдине зі свого боку, не отримує ЖОДНОГО вхідного
+    посилання: у решти той самий бік заповнює всі три місця, і сторінка
+    залишається сиротою. Саме так загубився Берлін — єдиний у західній
+    зоні, — і раніше Вишгород на півночі.
     """
     current = BY_SLUG.get(slug)
     if not current:
@@ -548,4 +554,6 @@ def neighbours(slug, limit=3):
     rotated = PLACES[i + 1:] + PLACES[:i]
     same = [p for p in rotated if p["side"] == current["side"]]
     other = [p for p in rotated if p["side"] != current["side"]]
+    if other and len(same) >= limit:
+        return same[:limit - 1] + other[:1]
     return (same + other)[:limit]

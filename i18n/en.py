@@ -335,6 +335,18 @@ STRINGS = {
     "abroad.faq.a3": "It depends on the destination and the border queue. Poland is usually a day to a day and a half; further west takes longer. We give exact timings for the specific trip and do not promise what we cannot control.",
     "abroad.cta.title": "Let us price your European trip",
     "abroad.cta.text": "Tell us the country, the city and what you are sending — we will quote the price and the timing.",
+
+    # ── Сторінка одного напрямку (abroad_place.html) ─────────────────────
+    "meta.abroadp.title": "Kyiv to {city} transport | Vezemo24",
+    "meta.abroadp.desc": "Van transport from Kyiv to {city} in our own van up to 3.5 t: {rate} €/km of the full mileage, no transfers and no groupage depots. The price is fixed before we set off.",
+    "abroadp.h1": "{from} to {city}",
+    "abroadp.work.h2": "What travels on this route",
+    "abroadp.note.h2": "Worth knowing",
+    "abroadp.price.h2": "What it costs",
+    "abroadp.price.text": "The exact figure is worked out by the calculator over the real route. We do not hardcode a distance into the page, because that would mean quoting a number we cannot stand behind.",
+    "abroadp.price.cta": "Price this run",
+    "abroadp.near.h2": "Other destinations",
+    "abroadp.all": "All destinations",
     "nav.abroad": "Europe",
     "city.warszawa": "Warsaw",
     "city.krakow": "Kraków",

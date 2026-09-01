@@ -87,8 +87,11 @@
     <div class="presets presets--center">
       <div class="presets__row">
         {% for d in destinations %}
-          <a class="preset" href="{{ url_for('main.calculate_km') }}?route={{ d.slug }}"
-             data-cta="calc-{{ d.slug }}">{{ t('city.kyiv') }} → {{ t(d.city) }}</a>
+          {# Веде на сторінку напрямку, а не одразу в калькулятор: сторінка
+             існує в пошуку, калькулятор — ні, і людині корисніше спершу
+             прочитати про рейс. Кнопка розрахунку є на самій сторінці. #}
+          <a class="preset" href="{{ url_for('main.abroad_page', slug=d.slug) }}"
+             data-cta="dest-{{ d.slug }}">{{ t('city.kyiv') }} → {{ t(d.city) }}</a>
         {% endfor %}
       </div>
     </div>

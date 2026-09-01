@@ -195,6 +195,34 @@ def abroad(lang=DEFAULT):
     return render_template("abroad.html", destinations=abroad_data.DESTINATIONS)
 
 
+# Окремий префікс під напрямок: /perevezennya-za-kordon — це хаб, а конкретне
+# місто живе під ним. Так адреса читається як шлях, і хлібні крихти збігаються
+# з реальною ієрархією, а не малюють вигадану.
+@main_bp.route("/perevezennya-za-kordon/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya-za-kordon/<slug>")
+def abroad_page(slug, lang=DEFAULT):
+    dest = abroad_data.BY_SLUG.get(slug)
+    if dest is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+
+    # Калькулятор відкривається на готовому напрямку: у map.js для цих п'яти
+    # пресети є, тож достатньо slug — координати він візьме сам.
+    calc_url = url_for("main.calculate_km") + "?route=" + slug
+
+    zone = pricing.ABROAD_ZONES.get(dest["zone"], {})
+    return render_template(
+        "abroad_place.html",
+        dest=dest,
+        rate=("%.2f" % zone.get("per_total_km", 0)).replace(".", ","),
+        copy=dest.get("copy", {}).get(locale) or dest.get("copy", {}).get(DEFAULT, {}),
+        near=abroad_data.neighbours(slug),
+        calc_url=calc_url,
+    )
+
+
 @main_bp.route("/avtopark", defaults={"lang": DEFAULT})
 @main_bp.route(LANG_RULE + "/avtopark")
 def fleet(lang=DEFAULT):
@@ -311,6 +339,17 @@ def sitemap():
             "priority": "0.85" if lang == DEFAULT else "0.65",
         }
         for p in place_data.PLACES
+        for lang in LOCALES
+    ] + [
+        # Закордонні напрямки: пріоритет нижчий за локальні сторінки — запитів
+        # менше, але й конкуренції менше, тож сторінки того варті.
+        {
+            "loc": _abs_url("main.abroad_page", lang, slug=d["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.8" if lang == DEFAULT else "0.6",
+        }
+        for d in abroad_data.DESTINATIONS
         for lang in LOCALES
     ]
     xml = render_template("sitemap_template.xml", pages=pages)
