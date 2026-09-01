@@ -45,10 +45,34 @@
           {% if TELEGRAM_URL %}<li><a href="{{ TELEGRAM_URL }}" data-cta="telegram-footer">Telegram</a></li>{% endif %}
           <li><strong>{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }}</strong></li>
           <li>{{ t('hours.note') }}</li>
-          <li>{{ t('schema.city') }} · {{ t('schema.region') }} · {{ t('common.country') }}</li>
+          {# Зона роботи називала лише Україну, хоча закордонні рейси —
+             окремий напрямок із власними сторінками. #}
+          <li>{{ t('schema.city') }} · {{ t('schema.region') }} · {{ t('common.country') }} · {{ t('foot.europe') }}</li>
         </ul>
       </div>
     </div>
+
+    {# Напрямки окремим рядком, а не ще однією колонкою: колонок і так
+       чотири, п'ята зробила б їх усі вузькими.
+
+       Це не декор. Сторінок тепер 96, і без посилань із підвалу половина з
+       них лежить на третьому кроці від головної — Google доходить до таких
+       в останню чергу, а деякі не обходить зовсім. Тут вони отримують
+       посилання з КОЖНОЇ сторінки сайту.
+
+       Списки беруться з тих самих модулів, що й самі сторінки, тож новий
+       напрямок з'являється тут сам і не може розійтися зі списком. #}
+    <nav class="footer__dirs" aria-label="{{ t('foot.dirs') }}">
+      <p class="footer__dirsrow">
+        <span class="footer__dirslabel">{{ t('foot.dirs_ua') }}</span>
+        {% for r in ROUTES[:6] %}<a href="{{ url_for('main.route_page', slug=r.slug) }}">{{ t(r.city) }}</a>{% endfor %}
+        {% for pl in PLACES[:6] %}<a href="{{ url_for('main.place_page', slug=pl.slug) }}">{{ t(pl.city) }}</a>{% endfor %}
+      </p>
+      <p class="footer__dirsrow">
+        <span class="footer__dirslabel">{{ t('foot.dirs_eu') }}</span>
+        {% for d in ABROAD %}<a href="{{ url_for('main.abroad_page', slug=d.slug) }}">{{ t(d.city) }}</a>{% endfor %}
+      </p>
+    </nav>
 
     <div class="footer__bottom">
       © {{ YEAR }} <strong>{{ t('brand.full') }}</strong>. {{ t('foot.bottom') }}

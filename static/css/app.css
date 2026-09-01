@@ -227,7 +227,6 @@
 
   .stack { display: flex; flex-direction: column; gap: var(--sp-4); }
   .stack--sm { gap: var(--sp-2); }
-  .stack--lg { gap: var(--sp-6); }
 
   .cluster {
     display: flex;
@@ -242,7 +241,6 @@
   .grid--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
   .grid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr)); }
 
-  .prose { max-width: var(--measure); }
 }
 
 /* ==========================================================================
@@ -303,13 +301,6 @@
   }
   .btn--primary:hover { background: var(--brand-600); box-shadow: 0 10px 26px -4px rgba(14,165,233,.5); }
 
-  .btn--accent {
-    background: var(--accent-600);
-    color: var(--text-invert);
-    box-shadow: 0 6px 20px -4px rgba(234,88,12,.42);
-  }
-  .btn--accent:hover { background: var(--accent-500); }
-
   .btn--outline {
     border-color: var(--brand-500);
     color: var(--brand-700);
@@ -352,9 +343,6 @@
     background: var(--brand-100);
     color: var(--brand-800);
   }
-  .badge--accent { background: #fdead9; color: #9a3d08; }
-  .badge--ok { background: var(--ok-50); color: var(--ok-600); }
-  .badge--soft { background: var(--ink-100); color: var(--ink-700); }
 
   /* ── Картка: ОДИН компонент замість чотирьох різних імен ────────────── */
   .card {
@@ -515,7 +503,6 @@
   }
   .notice.is-shown { display: block; }
   .notice--error { background: var(--err-50); color: var(--err-600); border: 1px solid #f4c9c6; }
-  .notice--ok { background: var(--ok-50); color: var(--ok-600); border: 1px solid #b9dfd0; }
 
   /* Пастка для ботів — прибрана з потоку, але не display:none */
   .honeypot {
@@ -789,6 +776,34 @@
   .footer strong,
   .section--dark strong { color: var(--white); }
 
+  /* Рядок напрямків: підпис і далі посилання через крапку. Розділювач —
+     псевдоелемент, а не символ у розмітці: інакше він потрапляє у
+     виділення тексту й читається екранним читачем як частина назви. */
+  .footer__dirs {
+    border-top: 1px solid rgba(255,255,255,.12);
+    padding-block: var(--sp-5);
+    font-size: var(--fs-xs);
+  }
+  .footer__dirsrow { margin: 0; }
+  .footer__dirsrow + .footer__dirsrow { margin-top: var(--sp-3); }
+  .footer__dirslabel {
+    color: var(--white);
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-right: var(--sp-2);
+  }
+  .footer__dirsrow a { color: rgba(255,255,255,.62); }
+  .footer__dirsrow a:hover { color: var(--white); text-decoration: underline; }
+  .footer__dirsrow a + a::before {
+    content: "·";
+    margin: 0 .45em;
+    color: rgba(255,255,255,.32);
+  }
+  @media (max-width: 640px) {
+    .footer__dirs { text-align: center; }
+  }
+
   .footer__bottom {
     border-top: 1px solid rgba(255,255,255,.12);
     padding-block: var(--sp-5);
@@ -1038,7 +1053,6 @@
   }
   @media (min-width: 900px) {
     .split { grid-template-columns: 1.05fr 1fr; gap: var(--sp-7); }
-    .split--flip .split__media { order: 2; }
   }
   .split__media {
     position: relative;
@@ -1284,9 +1298,6 @@
 @layer utilities {
   .center      { text-align: center; }
   .muted       { color: var(--text-muted); }
-  .nowrap      { white-space: nowrap; }
-  .tnum        { font-variant-numeric: tabular-nums; }
-  .mt-auto     { margin-top: auto; }
   .visually-hidden {
     position: absolute;
     width: 1px; height: 1px;
@@ -1295,7 +1306,6 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .scroll-x { overflow-x: auto; }
 }
 
 /* ==========================================================================

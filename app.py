@@ -5,7 +5,7 @@ from flask import Flask, jsonify, render_template, request
 import i18n
 from assets import assets
 from config import Config
-from content import fleet, places, pricing
+from content import abroad, fleet, places, pricing, routes as route_data
 from extensions import csrf, limiter
 from routes.contact import contact_bp
 from routes.geo import geo_bp
@@ -56,6 +56,11 @@ def create_app():
             "FLEET": fleet,
             # Список міст області потрібен і на сторінці послуг, і в підвалі.
             "PLACES": places.PLACES,
+            # Напрямки в підвалі. Це не прикраса: 96 адрес мають отримувати
+            # посилання з кожної сторінки, інакше половина з них лишається
+            # глибоко в структурі, і Google доходить до них у останню чергу.
+            "ROUTES": route_data.ROUTES,
+            "ABROAD": abroad.DESTINATIONS,
             # Поки триває верифікація, машини не показуємо ніде: сторінка,
             # блок на головній і посилання в підвалі вимикаються разом.
             "FLEET_VISIBLE": c["FLEET_VISIBLE"],
