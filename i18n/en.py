@@ -76,7 +76,7 @@ STRINGS = {
     "home.lead": "Business deliveries, intercity runs, a van with a driver, and home or office removals. {veh_nom}. The price is agreed before we start — nothing is added along the way.",
 
     "home.adv1.title": "Same-day pickup",
-    "home.adv1.text": "We start at 07:00, earlier than most. Urgent jobs across Kyiv on the same day.",
+    "home.adv1.text": "Calls from {open} to {close}; the form takes a request at any hour. Urgent jobs across Kyiv.",
     "home.adv2.title": "Van up to 3.5 tonnes",
     "home.adv2.text": "Furniture, appliances, boxes, long items. Not sure it will fit? Describe it and we will tell you straight away.",
     "home.adv3.title": "Kyiv, the region and beyond",
@@ -414,7 +414,7 @@ STRINGS = {
     "place.faq.q2": "Do you provide loaders?",
     "place.faq.a2": "No. We have no loaders at all — loading and unloading are your side of the job. The driver is responsible for the transport and for securing the load in the van. That is exactly why the price is lower than with full-service carriers.",
     "place.faq.q3": "Can you come today?",
-    "place.faq.a3": "Often yes: we start at 07:00, and same-day call-outs around the region are routine. It depends on whether a van is free at your hour, so calling beats writing.",
+    "place.faq.a3": "Often yes: we take calls from {open} to {close}, and same-day call-outs around the region are routine. It depends on whether a van is free at your hour, so calling beats writing.",
     "place.faq.q4": "What if it is further than the region?",
     "place.faq.a4": "Then a different tariff applies: intercity runs are priced per kilometre, {km_rate} UAH per kilometre of one-way distance, with no minimum booking. The hourly model makes no sense over that distance — the van is driving, not waiting.",
     "place.cta.h2": "Tell us the address and what you are moving",

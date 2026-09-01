@@ -81,7 +81,7 @@
       <li class="card card--icon">
         <div class="card__icon"><img src="{{ static_url('icons/truck.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">{{ t('home.adv1.title') }}</h2>
-        <p class="card__text">{{ t('home.adv1.text') }}</p>
+        <p class="card__text">{{ t('home.adv1.text', open=HOURS_OPEN, close=HOURS_CLOSE) }}</p>
       </li>
       <li class="card card--icon">
         <div class="card__icon"><img src="{{ static_url('icons/card.svg') }}" alt="" width="28" height="28"></div>

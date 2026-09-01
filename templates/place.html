@@ -41,7 +41,7 @@
     { "@type": "Question", "name": {{ t('place.faq.q2') | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a2') | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q3') | tojson }},
-      "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a3') | tojson }} } },
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a3', open=HOURS_OPEN, close=HOURS_CLOSE) | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q4') | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a4', km_rate=pricing.INTERCITY_PER_KM) | tojson }} } }
   ]
@@ -149,7 +149,7 @@
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q3') }}</summary>
-        <p class="faq__a">{{ t('place.faq.a3') }}</p>
+        <p class="faq__a">{{ t('place.faq.a3', open=HOURS_OPEN, close=HOURS_CLOSE) }}</p>
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q4') }}</summary>
