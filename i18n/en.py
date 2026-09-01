@@ -16,6 +16,11 @@ STRINGS = {
     "brand.word": "Vezemo24",
     "brand.full": "Vezemo24",
     "common.callback": "Call me back",
+
+    # ── Відео з рейсу (partials/_video.html) ─────────────────────────────
+    "video.eyebrow": "From a run",
+    "video.h2": "What it actually looks like",
+    "video.text": "Filmed on the road, nothing staged: a loaded van, the motorway, and the same vehicle that turns up at your door. Seventeen seconds, with sound.",
     "common.more": "Learn more",
     "common.order": "Book it",
     "common.call": "Call now",
