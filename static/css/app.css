@@ -555,13 +555,17 @@
      currentColor, тому в підвалі на темному тлі достатньо змінити color
      на елементі, а не переписувати SVG. */
   .logo { display: flex; align-items: center; gap: var(--sp-2); flex: none; }
+  /* Знак малюється сам собою: у ньому вже є кільце, і воно ж і є формою.
+     Тут колись стояли border-radius і box-shadow — від часів, коли знак
+     був суцільною синьою плиткою і тінь під нею мала сенс. Із прозорим
+     кільцем та сама тінь малює позаду квадратну пляму, ледь темнішу за
+     біле тло шапки: видно не тінь, а «інший відтінок білого» під
+     логотипом. */
   .logo__mark {
     display: block;
     width: 40px; height: 40px;
     flex: none;
     color: var(--brand-500);
-    border-radius: var(--r-sm);
-    box-shadow: var(--sh-brand);
   }
   .logo__word {
     font-family: var(--font-display);
@@ -758,7 +762,7 @@
   /* На темному тлі синій квадрат виглядає брудно: міняємо ролі місцями —
      біла плитка, синя дорога. Обидва кольори беруться з тих самих
      токенів, окремого SVG не потрібно. */
-  .footer .logo__mark { color: var(--white); --logo-road: var(--brand-600); box-shadow: none; }
+  .footer .logo__mark { color: var(--white); }
   .footer__desc { max-width: 30ch; margin-top: var(--sp-4); }
   .footer__desc strong { color: var(--white); }
   .footer__phone {
