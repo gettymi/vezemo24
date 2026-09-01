@@ -139,13 +139,18 @@ def contact_submit():
     name = html.escape(request.form.get("name", "").strip()) or "Не вказано"
     email = html.escape(request.form.get("email", "").strip()) or "Не вказано"
     message = html.escape(request.form.get("message", "").strip()) or "Не вказано"
+    # Звідки прийшла заявка. Форма стоїть унизу кожної сторінки, і без цього
+    # поля неможливо сказати, які сторінки приносять клієнтів, а які просто
+    # існують. Обрізаємо жорстко: поле наше, але приходить із браузера, тож
+    # довіряти йому не можна.
+    source = html.escape(request.form.get("source", "").strip())[:60] or "—"
     ip = get_client_ip()
 
     lead_id = save_lead({
         "name": name,
         "phone": phone,
         "email": email,
-        "message": message,
+        "message": message + ("" if source == "—" else "\n[джерело: %s]" % source),
         "ip": ip,
         "user_agent": request.headers.get("User-Agent", "")[:400],
         "referer": request.headers.get("Referer", "")[:400],
@@ -157,6 +162,7 @@ def contact_submit():
         f"<b>Імʼя:</b> {name}\n"
         f"<b>Email:</b> {email}\n\n"
         f"<b>Повідомлення:</b>\n{message}\n\n"
+        f"<b>Звідки:</b> {source}\n\n"
         f"<i>IP: {ip} · №{lead_id if lead_id else '—'}</i>"
     )
 

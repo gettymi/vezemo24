@@ -60,6 +60,18 @@ STRINGS = {
     "cta.title": "Need something moved?",
     "cta.text": "Call and we will quote you in about a minute. Or leave your number and we will call you back.",
 
+    # ── Форма в блоці заклику та віджет розрахунку на головній ──────────
+    "cta.form.head": "Or leave a number and we will call back",
+    "quote.eyebrow": "Kyiv and the region",
+    "quote.h2": "Work out the cost in a few seconds",
+    "quote.lead": "In the city and the region the meter runs by the hour: {rate} UAH an hour plus a {feed} UAH call-out fee, {hours} hours minimum. We do not count kilometres here — the van is standing and waiting at the loading bay, not driving.",
+    "quote.hours": "How many hours do you need",
+    "quote.minus": "One hour less",
+    "quote.plus": "One hour more",
+    "quote.note": "The {feed} UAH call-out fee is already included. The exact price is confirmed on the call before we set off.",
+    "quote.cta": "Price a route by the kilometre",
+    "quote.other": "Intercity, abroad and ready-made routes live in the calculator",
+
     "form.honeypot": "Please leave this field empty",
     "form.phone": "Your phone number",
     "form.phone_ph": "Phone number",

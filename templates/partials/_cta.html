@@ -1,16 +1,28 @@
-{# Блок заклику. Параметри: cta_title, cta_text, cta_source #}
+{# Блок заклику. Параметри: cta_title, cta_text, cta_source
+
+   Раніше тут були дві кнопки, і друга вела на окрему сторінку контактів.
+   Кожен зайвий перехід — це втрачені люди, тому форма стоїть прямо тут:
+   телефон для тих, хто дзвонить, поле номера для тих, хто не любить
+   дзвонити. Обовʼязкове поле одне.
+
+   Сторінка контактів лишається — на неї ведуть меню й підвал, і в неї
+   інший fid, щоб id не збіглися, якби колись блоки опинились разом. #}
 <section class="section">
   <div class="container">
-    <div class="cta">
-      <h2 class="cta__title">{{ cta_title | default(t('cta.title'), true) }}</h2>
-      <p class="cta__text">{{ cta_text | default(t('cta.text'), true) }}</p>
-      <div class="cluster cluster--center">
+    <div class="cta cta--form">
+      <div class="cta__side">
+        <h2 class="cta__title">{{ cta_title | default(t('cta.title'), true) }}</h2>
+        <p class="cta__text">{{ cta_text | default(t('cta.text'), true) }}</p>
         <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}"
-           data-cta="phone-{{ cta_source | default('cta') }}">📞 {{ PHONE_DISPLAY }}</a>
-        <a class="btn btn--ghost btn--lg" href="{{ url_for('contact.contact') }}"
-           data-cta="form-{{ cta_source | default('cta') }}">{{ t('common.callback') }}</a>
+           data-cta="phone-{{ cta_source | default('cta') }}">&#128222; {{ PHONE_DISPLAY }}</a>
+        <p class="cta__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }} &middot; {{ t('hours.note') }}</p>
       </div>
-      <p class="cta__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }} · {{ t('hours.note') }}</p>
+      <div class="cta__form">
+        <p class="cta__formhead">{{ t('cta.form.head') }}</p>
+        {% with fid = 'cta', source = cta_source | default('cta') %}
+          {% include 'partials/_lead_form.html' %}
+        {% endwith %}
+      </div>
     </div>
   </div>
 </section>

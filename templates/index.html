@@ -102,6 +102,54 @@
   </div>
 </section>
 
+<!-- ШВИДКИЙ РОЗРАХУНОК -->
+{# Найпростіше питання, на яке людина приходить за відповіддю: «скільки це
+   коштує по Києву». Раніше відповідь була за два переходи — у калькулятор і
+   там ще перемкнути режим. Тепер вона тут, одразу під перевагами.
+
+   Ціну на мінімальні дві години малює СЕРВЕР, тому вона видна ще до того, як
+   виконається будь-який скрипт, і залишається видною, якщо скрипт не
+   виконається взагалі. JS лише перераховує на кліку; тарифи їдуть у
+   data-атрибутах, тож віджет не залежить від priceCalculator.js і не тягне
+   жодного зайвого файлу. #}
+<section class="section section--tight">
+  <div class="container">
+    <div class="homequote" data-quote
+         data-feed="{{ PRICING.LOCAL_FEED }}"
+         data-hourly="{{ PRICING.LOCAL_HOURLY }}"
+         data-min="{{ PRICING.LOCAL_MIN_HOURS }}">
+      <div class="homequote__side">
+        <span class="section-head__eyebrow">{{ t('quote.eyebrow') }}</span>
+        <h2>{{ t('quote.h2') }}</h2>
+        <p class="section-head__lead">{{ t('quote.lead', feed=PRICING.LOCAL_FEED,
+              rate=PRICING.LOCAL_HOURLY, hours=PRICING.LOCAL_MIN_HOURS) }}</p>
+      </div>
+
+      <div class="homequote__box">
+        <p class="homequote__label" id="quote-hours-label">{{ t('quote.hours') }}</p>
+        <div class="hours" role="group" aria-labelledby="quote-hours-label">
+          <button type="button" class="hours__btn" data-quote-minus
+                  aria-label="{{ t('quote.minus') }}">&minus;</button>
+          <output class="hours__value" data-quote-out
+                  for="quote-hours-label">{{ PRICING.LOCAL_MIN_HOURS }}</output>
+          <button type="button" class="hours__btn" data-quote-plus
+                  aria-label="{{ t('quote.plus') }}">+</button>
+        </div>
+
+        <p class="homequote__total">
+          <span class="routeprice__from">{{ t('home.price.from') }}</span>
+          <strong class="routeprice__value" data-quote-total>{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
+        </p>
+        <p class="field__hint">{{ t('quote.note', feed=PRICING.LOCAL_FEED) }}</p>
+
+        <a class="btn btn--primary btn--block" href="{{ url_for('main.calculate_km') }}"
+           data-cta="quote-home">{{ t('quote.cta') }}</a>
+        <p class="field__hint center">{{ t('quote.other') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ЩО ВОЗИМО -->
 <section class="section">
   <div class="container">

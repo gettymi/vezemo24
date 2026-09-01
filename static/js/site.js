@@ -72,6 +72,48 @@
     video.addEventListener("click", toggle);
   });
 
+
+  /* ── Швидкий розрахунок на головній ─────────────────────────────────────
+     Тарифи беремо з data-атрибутів, а не з priceCalculator.js: той файл
+     вантажиться лише на сторінці калькулятора, і тягнути його на головну
+     заради трьох чисел не варто. Якщо атрибутів немає — нічого не робимо,
+     і на сторінці лишається сума, яку намалював сервер. */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-quote]"), function (box) {
+    var out = box.querySelector("[data-quote-out]");
+    var total = box.querySelector("[data-quote-total]");
+    var minus = box.querySelector("[data-quote-minus]");
+    var plus = box.querySelector("[data-quote-plus]");
+    if (!out || !total || !minus || !plus) return;
+
+    var feed = parseInt(box.getAttribute("data-feed"), 10);
+    var hourly = parseInt(box.getAttribute("data-hourly"), 10);
+    var MIN = parseInt(box.getAttribute("data-min"), 10) || 2;
+    var MAX = 12;                 // довше за робочий день — це вже інша розмова
+    if (!feed || !hourly) return;
+
+    var hours = parseInt(out.textContent, 10) || MIN;
+    // Одиницю («грн») знімаємо з того, що віддав сервер, щоб не дублювати
+    // переклад у скрипті й не розійтися з ним мовою.
+    var unitMatch = total.textContent.match(/[^\d\s\u00a0]+\s*$/);
+    var UNIT = unitMatch ? unitMatch[0].trim() : "";
+
+    function money(n) {
+      // Нерозривний пробіл: інакше «3 200 грн» переноситься посеред числа.
+      return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+    }
+
+    function render() {
+      out.textContent = hours;
+      total.textContent = money(feed + hours * hourly) + " " + UNIT;
+      minus.disabled = hours <= MIN;
+      plus.disabled = hours >= MAX;
+    }
+
+    minus.addEventListener("click", function () { if (hours > MIN) { hours -= 1; render(); } });
+    plus.addEventListener("click", function () { if (hours < MAX) { hours += 1; render(); } });
+    render();
+  });
+
   /* ── Конверсії ──────────────────────────────────────────────────────────
      Дзвінок — головна конверсія в цій ніші, тому кожен клік по телефону,
      месенджеру чи формі йде в dataLayer. */

@@ -1381,3 +1381,90 @@
     .vplay__icon { transition: none; }
   }
 }
+
+/* ==========================================================================
+   Воронка: форма в блоці заклику + віджет розрахунку на головній
+
+   Шар відкривається ще раз навмисно — @layer це дозволяє, і так правило
+   дописується в кінець components, не ріжучи файл посередині.
+   ========================================================================== */
+@layer components {
+  /* Текст ліворуч, форма праворуч. До 900px — одна колонка, форма під
+     текстом: на телефоні дві вузькі колонки читаються гірше за одну. */
+  .cta--form { text-align: left; }
+  .cta--form .cta__text { margin-inline: 0; }
+  .cta--form .cta__title { text-align: left; }
+  .cta {
+    display: grid;
+    gap: var(--sp-6);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 900px) {
+    .cta--form { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: start; }
+  }
+  .cta__formhead {
+    margin-bottom: var(--sp-4);
+    font-weight: 700;
+    color: var(--brand-700);
+  }
+
+  /* Віджет розрахунку. Класи навмисно .homequote, а не .quote: .quote вже
+     зайнятий блоком ціни в калькуляторі (стилі в map.css). Однакове ім'я
+     означало б, що правило з app.css, який вантажиться скрізь, ламає
+     калькулятор — і помітили б це не одразу.
+
+     Та сама сітка, що й у блоці заклику: два блоки
+     поруч на широкому екрані, один під одним на телефоні. */
+  .homequote {
+    display: grid;
+    gap: var(--sp-6);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .homequote { grid-template-columns: minmax(0, 1fr) minmax(0, 24rem); }
+  }
+  .homequote__box {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    background: var(--surface);
+    border: 1px solid var(--brand-200);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-2);
+  }
+  .homequote__label { font-weight: 700; margin: 0; }
+  .homequote__total { margin: 0; }
+
+  /* Степер годин. Клас .hours живе в map.css, але той файл вантажиться лише
+     на калькуляторі, тож для головної потрібні свої правила. Дублювання тут
+     свідоме: тягнути весь map.css заради трьох кнопок дорожче. */
+  .homequote .hours {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .homequote .hours__btn {
+    width: 44px; height: 44px;      /* 44 — мінімальна зручна ціль для пальця */
+    flex: none;
+    display: grid;
+    place-items: center;
+    font-size: var(--fs-lg);
+    line-height: 1;
+    color: var(--brand-700);
+    background: var(--surface);
+    border: 1px solid var(--brand-200);
+    border-radius: var(--r-full);
+    cursor: pointer;
+  }
+  .homequote .hours__btn:hover:not(:disabled) { background: var(--ink-50); }
+  .homequote .hours__btn:disabled { opacity: .4; cursor: default; }
+  .homequote .hours__value {
+    min-width: 3ch;
+    text-align: center;
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}

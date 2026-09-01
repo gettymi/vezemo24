@@ -89,6 +89,12 @@
   {# Має йти перед рештою скриптів: вони беруть із нього рядки. #}
   <script src="{{ static_url('js/i18n.js') }}" defer></script>
   <script src="{{ static_url('js/site.js') }}" defer></script>
+  {# Форма заявки стоїть тепер унизу кожної сторінки, тож її скрипти
+     переїхали сюди зі сторінки контактів. Разом ~7 КБ до стиснення, обидва
+     defer — вони не блокують показ і не чіпають LCP. Обидва самі нічого не
+     роблять, якщо форми на сторінці немає. #}
+  <script src="{{ static_url('js/phoneField.js') }}" defer></script>
+  <script src="{{ static_url('js/contact.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

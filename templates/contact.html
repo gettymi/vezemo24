@@ -23,13 +23,11 @@
 
       <div class="divider"><span>{{ t('contact.or') }}</span></div>
 
-      {% include 'partials/_lead_form.html' %}
+      {% with fid = 'page', source = 'contact-page' %}{% include 'partials/_lead_form.html' %}{% endwith %}
     </div>
   </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ static_url('js/phoneField.js') }}" defer></script>
-<script src="{{ static_url('js/contact.js') }}" defer></script>
 {% endblock %}
