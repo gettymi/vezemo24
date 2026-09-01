@@ -12,7 +12,7 @@
 {% set city_loc = t(place.city ~ '.loc') %}
 
 {% block title %}{{ t('meta.place.title', city=city) }}{% endblock %}
-{% block description %}{{ t('meta.place.desc', city=city, rate=pricing.LOCAL_HOURLY) }}{% endblock %}
+{% block description %}{% if place.price == 'km' %}{{ t('meta.place.desckm', city=city, rate=pricing.INTERCITY_PER_KM, feed=pricing.LOCAL_FEED) }}{% else %}{{ t('meta.place.desc', city=city, rate=pricing.LOCAL_HOURLY) }}{% endif %}{% endblock %}
 
 {% block content %}
 {# tojson екранує лапки й переноси сам — інакше «лапкове» слово в перекладі
@@ -37,7 +37,7 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": {{ t('place.faq.q1', city_loc=city_loc) | tojson }},
-      "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a1', rate=pricing.LOCAL_HOURLY, feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS) | tojson }} } },
+      "acceptedAnswer": { "@type": "Answer", "text": {{ (t('place.faq.a1km', rate=pricing.INTERCITY_PER_KM, feed=pricing.LOCAL_FEED) if place.price == 'km' else t('place.faq.a1', rate=pricing.LOCAL_HOURLY, feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS)) | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q2') | tojson }},
       "acceptedAnswer": { "@type": "Answer", "text": {{ t('place.faq.a2') | tojson }} } },
     { "@type": "Question", "name": {{ t('place.faq.q3') | tojson }},
@@ -97,6 +97,19 @@
     </div>
 
     <article class="card card--accent" style="max-width: 46rem; margin-inline: auto">
+      {# Два способи рахунку, і сторінка показує рівно той, за яким це місто
+         справді рахується. Показати обидва означало б залишити людину з
+         питанням «то скільки з мене»; показати не той — назвати чужу ціну. #}
+      {% if place.price == 'km' %}
+      <p class="routeprice">
+        <strong class="routeprice__value">{{ pricing.INTERCITY_PER_KM }} {{ t('place.price.km') }}</strong>
+      </p>
+      <ul class="checks">
+        <li>{{ t('place.price.feedmin', feed=pricing.LOCAL_FEED) }}</li>
+        <li>{{ t('place.price.oneway') }}</li>
+      </ul>
+      <p class="field__hint">{{ t('place.price.textkm') }}</p>
+      {% else %}
       <p class="routeprice">
         <span class="routeprice__from">{{ t('home.price.from') }}</span>
         <strong class="routeprice__value">{{ pricing.LOCAL_HOURLY }} {{ t('place.price.hour') }}</strong>
@@ -106,6 +119,7 @@
         <li>{{ t('place.price.min', hours=pricing.LOCAL_MIN_HOURS) }}</li>
       </ul>
       <p class="field__hint">{{ t('place.price.text') }}</p>
+      {% endif %}
       <div class="card__foot">
         <a class="btn btn--primary btn--block" href="{{ calc_url }}"
            data-cta="calc-place-{{ place.slug }}">{{ t('place.price.cta') }}</a>
@@ -140,8 +154,10 @@
     <div class="faq">
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q1', city_loc=city_loc) }}</summary>
-        <p class="faq__a">{{ t('place.faq.a1', rate=pricing.LOCAL_HOURLY,
-              feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS) }}</p>
+        <p class="faq__a">{% if place.price == 'km' %}{{ t('place.faq.a1km',
+              rate=pricing.INTERCITY_PER_KM, feed=pricing.LOCAL_FEED) }}{% else %}{{
+              t('place.faq.a1', rate=pricing.LOCAL_HOURLY,
+                feed=pricing.LOCAL_FEED, hours=pricing.LOCAL_MIN_HOURS) }}{% endif %}</p>
       </details>
       <details class="faq__item">
         <summary class="faq__q">{{ t('place.faq.q2') }}</summary>

@@ -71,10 +71,17 @@
         <span class="fact__label">{{ t('route.time') }}</span>
         <strong class="routefacts__value">{{ route.hours }} {{ t('unit.hour') }}</strong>
       </li>
+      {# Картка «Через» з'являється лише тоді, коли справді є через що їхати.
+         У шести напрямків "via": [] — дорога не проходить жодного міста,
+         яке варто називати. Без цієї умови картка малювалась порожньою:
+         підпис «Через» і нічого під ним. Порожнє поле гірше за відсутнє —
+         воно виглядає як зламана сторінка, а не як коротка дорога. #}
+      {% if via_names %}
       <li class="card card--icon">
         <span class="fact__label">{{ t('route.via') }}</span>
         <strong class="routefacts__value">{{ via_names | join(', ') }}</strong>
       </li>
+      {% endif %}
       <li class="card card--icon">
         <span class="fact__label">{{ t('route.vehicle') }}</span>
         <strong class="routefacts__value">{{ t('calc.vehicle_val') }}</strong>
