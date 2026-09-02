@@ -76,7 +76,7 @@ STRINGS = {
     "form.phone_ph": "Номер телефона",
     "form.country": "Код страны",
     "form.country_search": "Поиск страны",
-    "form.country_top": "Куда возим",
+    "form.country_top": "Популярные",
     "form.country_all": "Все страны",
     "form.country_none": "Ничего не нашли",
     "form.country_other": "Другая страна",

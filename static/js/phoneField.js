@@ -258,7 +258,7 @@
         var h = document.createElement("li");
         h.className = "phone__group";
         h.setAttribute("role", "presentation");
-        h.textContent = T("form.country_top", "Куди возимо");
+        h.textContent = T("form.country_top", "Популярні");
         list.appendChild(h);
       }
       top.forEach(function (c) { list.appendChild(row(c, true)); });

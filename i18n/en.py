@@ -81,7 +81,7 @@ STRINGS = {
     "form.phone_ph": "Phone number",
     "form.country": "Country code",
     "form.country_search": "Search country",
-    "form.country_top": "Where we drive",
+    "form.country_top": "Popular",
     "form.country_all": "All countries",
     "form.country_none": "Nothing found",
     "form.country_other": "Another country",
