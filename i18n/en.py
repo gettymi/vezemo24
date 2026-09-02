@@ -331,7 +331,7 @@ STRINGS = {
     "country.it": "Italy",
     "country.es": "Spain",
     "meta.abroad.title": "International Transport from Kyiv to Europe — Price per km | Vezemo24",
-    "meta.abroad.desc": "Van transport Ukraine to Europe, up to 3.5 tonnes: Poland, Czechia, Slovakia, Germany. One load, one trip, no transfers. Priced per kilometre and fixed before departure.",
+    "meta.abroad.desc": "Cargo transport Ukraine to Europe {veh_ins}: Poland, Czechia, Slovakia, Germany. One load, one trip, no transfers. Priced per kilometre and fixed before departure.",
     "abroad.eyebrow": "Ukraine → Europe",
     "abroad.h1": "International transport from Kyiv",
     "abroad.lead": "We carry loads from Ukraine into Europe {veh_ins}. Your load travels on its own trip — no transfers at warehouses, no waiting for a groupage lorry to fill up. The price is worked out per kilometre and fixed before we set off.",
