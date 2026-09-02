@@ -14,7 +14,7 @@
         <h2 class="cta__title">{{ cta_title | default(t('cta.title'), true) }}</h2>
         <p class="cta__text">{{ cta_text | default(t('cta.text'), true) }}</p>
         <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}"
-           data-cta="phone-{{ cta_source | default('cta') }}">&#128222; {{ PHONE_DISPLAY }}</a>
+           data-cta="phone-{{ cta_source | default('cta') }}">{{ PHONE_DISPLAY }}</a>
         <p class="cta__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }} &middot; {{ t('hours.note') }}</p>
       </div>
       <div class="cta__form">

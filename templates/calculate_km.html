@@ -69,7 +69,7 @@
         </div>
 
         <div class="result__cta">
-          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}"
+          <a class="btn btn--primary btn--block btn--phone" href="tel:{{ PHONE_E164 }}"
              data-cta="phone-calc-local">{{ t('calc.order_at_price') }}</a>
           <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}"
              data-cta="form-calc-local">{{ t('common.callback') }}</a>
@@ -149,7 +149,7 @@
         <div class="result__legs" id="legs-details"></div>
 
         <div class="result__cta">
-          <a class="btn btn--primary btn--block" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
+          <a class="btn btn--primary btn--block btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
             {{ t('calc.order_at_price') }}
           </a>
           <a class="btn btn--ghost btn--block" id="order-this-route"
