@@ -79,6 +79,7 @@ STRINGS = {
     "form.country_top": "Куда возим",
     "form.country_all": "Все страны",
     "form.country_none": "Ничего не нашли",
+    "form.country_other": "Другая страна",
     "form.phone_ph2": "номер",
     "form.details": "Добавить детали (необязательно)",
     "form.name": "Имя",

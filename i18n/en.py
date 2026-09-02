@@ -84,6 +84,7 @@ STRINGS = {
     "form.country_top": "Where we drive",
     "form.country_all": "All countries",
     "form.country_none": "Nothing found",
+    "form.country_other": "Another country",
     "form.phone_ph2": "number",
     "form.details": "Add details (optional)",
     "form.name": "Name",

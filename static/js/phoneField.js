@@ -33,8 +33,14 @@
     FR: "33", GB: "44", GR: "30", IE: "353", IT: "39", LV: "371", LT: "370", LU: "352",
     MT: "356", NL: "31", NO: "47", PT: "351", SI: "386", ES: "34", SE: "46", CH: "41",
     RS: "381", BA: "387", ME: "382", MK: "389", AL: "355", TR: "90", GE: "995", IS: "354",
-    US: "1", CA: "1", IL: "972", AE: "971", KZ: "7", BY: "375", RU: "7"
+    US: "1", CA: "1", IL: "972", AE: "971", KZ: "7"
   };
+  /* Білорусі й росії у списку немає — це рішення власника, а не недогляд.
+
+     Щоб відсутність країни в списку нікого не замикала, є режим RAW: номер,
+     що починається з «+» і не збігається з жодним відомим префіксом,
+     лишається як є, а перевіряє його сервер бібліотекою phonenumbers, яка
+     знає всі країни світу. Тобто ми не пропонуємо — але й не блокуємо. */
 
   /* Показуються першими, у цьому порядку. */
   var TOP = ["UA", "PL", "CZ", "SK", "DE", "MD", "RO", "HU"];
@@ -67,7 +73,10 @@
     }));
   }
 
-  function remember(iso) { try { localStorage.setItem(STORE_KEY, iso); } catch (e) {} }
+  function remember(iso) {
+    if (iso === RAW) return;      // «інша країна» запамʼятовувати нічого
+    try { localStorage.setItem(STORE_KEY, iso); } catch (e) {}
+  }
   function recall() {
     try { return DIAL[localStorage.getItem(STORE_KEY)] ? localStorage.getItem(STORE_KEY) : null; }
     catch (e) { return null; }
@@ -92,14 +101,20 @@
   var BY_DIAL = Object.keys(DIAL)
     .sort(function (a, b) { return DIAL[b].length - DIAL[a].length; });
 
+  var RAW = "__raw";       // країна невідома, номер лишаємо як набрали
+
+  function looksInternational(raw) {
+    return (raw || "").charAt(0) === "+" || digitsOf(raw).indexOf("00") === 0;
+  }
+
   function detect(raw) {
+    if (!looksInternational(raw)) return null;
     var d = digitsOf(raw);
-    if ((raw || "").charAt(0) !== "+" && d.indexOf("00") !== 0) return null;
     if (d.indexOf("00") === 0) d = d.slice(2);
     for (var i = 0; i < BY_DIAL.length; i++) {
       if (d.indexOf(DIAL[BY_DIAL[i]]) === 0) return BY_DIAL[i];
     }
-    return null;
+    return RAW;
   }
 
   /* Український номер розбиваємо групами — так його читають і диктують.
@@ -115,8 +130,14 @@
     return out;
   }
 
-  function maxLen(iso) { return iso === "UA" ? 9 : 15 - DIAL[iso].length; }
-  function minLen(iso) { return iso === "UA" ? 9 : 6; }
+  function maxLen(iso) {
+    if (iso === RAW) return 15;
+    return iso === "UA" ? 9 : 15 - DIAL[iso].length;
+  }
+  function minLen(iso) {
+    if (iso === RAW) return 8;   // коротших міжнародних номерів не буває
+    return iso === "UA" ? 9 : 6;
+  }
 
   /* ── Побудова поля ────────────────────────────────────────────────────── */
 
@@ -129,7 +150,7 @@
 
     var iso = detect(input.value) || recall() || DEFAULT_ISO;
     var digits = digitsOf(input.value);
-    if (digits.indexOf(DIAL[iso]) === 0) digits = digits.slice(DIAL[iso].length);
+    if (iso !== RAW && digits.indexOf(DIAL[iso]) === 0) digits = digits.slice(DIAL[iso].length);
     digits = digits.slice(0, maxLen(iso));
 
     /* Обгортка навколо наявного input, щоб розмітка форми не змінювалась і
@@ -173,13 +194,14 @@
       btn.innerHTML = "";
       var f = document.createElement("span");
       f.className = "phone__flag";
-      f.textContent = flag(iso);
+      f.textContent = iso === RAW ? "\uD83C\uDF10" : flag(iso);   // глобус
       var d = document.createElement("span");
       d.className = "phone__dial";
-      d.textContent = "+" + DIAL[iso];
+      d.textContent = iso === RAW ? "+" : "+" + DIAL[iso];
       btn.appendChild(f);
       btn.appendChild(d);
       input.placeholder = iso === "UA" ? "67 123 45 67" : T("form.phone_ph2", "номер");
+      btn.title = iso === RAW ? T("form.country_other", "Інша країна") : countryName(iso);
     }
 
     function renderInput(caretEnd) {
@@ -192,7 +214,10 @@
     }
 
     function valid() { return digits.length >= minLen(iso) && digits.length <= maxLen(iso); }
-    function e164() { return valid() ? "+" + DIAL[iso] + digits : ""; }
+    function e164() {
+      if (!valid()) return "";
+      return iso === RAW ? "+" + digits : "+" + DIAL[iso] + digits;
+    }
 
     /* ── Список країн ───────────────────────────────────────────────────── */
     function renderList(query) {
@@ -326,7 +351,8 @@
         remember(iso);
         var d = digitsOf(input.value);
         if (d.indexOf("00") === 0) d = d.slice(2);
-        digits = d.slice(DIAL[iso].length, DIAL[iso].length + maxLen(iso));
+        digits = iso === RAW ? d.slice(0, 15)
+                             : d.slice(DIAL[iso].length, DIAL[iso].length + maxLen(iso));
         renderButton();
       } else {
         var raw = digitsOf(input.value);
