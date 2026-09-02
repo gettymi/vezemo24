@@ -26,8 +26,7 @@
          однаково знаходяться через hreflang у <head>, а не через видиму
          кнопку. #}
 
-      <a class="header__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">
-        <span aria-hidden="true">📞</span>{{ PHONE_DISPLAY }}
+      <a class="header__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">{{ PHONE_DISPLAY }}
       </a>
       <a class="btn btn--solid-dark" href="{{ url_for('contact.contact') }}">{{ t('nav.lead') }}</a>
     </nav>

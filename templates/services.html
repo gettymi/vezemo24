@@ -28,7 +28,7 @@
         {{ t('svc.lead') }}
       </p>
       <div class="cluster" style="margin-top: var(--sp-5)">
-        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-services">📞 {{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-services">{{ PHONE_DISPLAY }}</a>
         <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
       </div>
     </div>

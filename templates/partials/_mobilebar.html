@@ -1,7 +1,7 @@
 {# Завжди на екрані на мобільних — головний канал конверсії в цій ніші. #}
 <div class="mobilebar" role="group" aria-label="{{ t('bar.aria') }}">
   <a class="mobilebar__btn mobilebar__btn--call" href="tel:{{ PHONE_E164 }}" data-cta="phone-sticky">
-    <span aria-hidden="true">📞</span> {{ t('bar.call') }}
+     {{ t('bar.call') }}
   </a>
   {% if VIBER_URL %}
   <a class="mobilebar__btn mobilebar__btn--viber" href="{{ VIBER_URL }}" data-cta="viber-sticky">Viber</a>

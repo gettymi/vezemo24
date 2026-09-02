@@ -65,8 +65,7 @@
       {{ t('home.lead') }}
     </p>
     <div class="cluster cluster--center">
-      <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-hero">
-        📞 {{ PHONE_DISPLAY }}
+      <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-hero">{{ PHONE_DISPLAY }}
       </a>
       <a class="btn btn--on-dark btn--lg" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
     </div>
@@ -336,8 +335,7 @@
         </p>
         <div class="cluster">
           <a class="btn btn--primary" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
-          <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">
-            📞 {{ PHONE_DISPLAY }}
+          <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">{{ PHONE_DISPLAY }}
           </a>
         </div>
       </div>

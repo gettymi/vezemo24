@@ -12,7 +12,7 @@
       <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ t('common.home_link') }}</a>
       <a class="btn btn--ghost" href="{{ url_for('main.services') }}">{{ t('nav.services') }}</a>
       <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
-      <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-404">📞 {{ PHONE_DISPLAY }}</a>
+      <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-404">{{ PHONE_DISPLAY }}</a>
     </div>
   </div>
 </section>

@@ -33,7 +33,7 @@
       <p class="section-head__lead">{{ t('abroad.lead') }}</p>
       <div class="cluster" style="margin-top: var(--sp-5)">
         <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}"
-           data-cta="phone-abroad">📞 {{ PHONE_DISPLAY }}</a>
+           data-cta="phone-abroad">{{ PHONE_DISPLAY }}</a>
         <a class="btn btn--ghost" href="{{ url_for('contact.contact') }}">{{ t('common.callback') }}</a>
       </div>
     </div>
