@@ -129,7 +129,11 @@ def contact_submit():
         return jsonify({"error": "Введіть номер телефону."}), 400
 
     try:
-        parsed = phonenumbers.parse(phone_raw, "UA")
+        # Номер приходить у міжнародному вигляді (+380…, +48…): у формі тепер
+        # є вибір країни. Регіон "UA" лишається запасним варіантом для тих,
+        # хто вставив «067…» без коду — а таких більшість.
+        region = None if phone_raw.startswith("+") else "UA"
+        parsed = phonenumbers.parse(phone_raw, region)
         if not phonenumbers.is_valid_number(parsed):
             return jsonify({"error": "Введіть коректний номер телефону."}), 400
         phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)

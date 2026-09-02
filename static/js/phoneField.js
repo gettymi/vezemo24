@@ -1,96 +1,362 @@
 /**
- * Поле телефону для України — без зовнішніх бібліотек.
- * Замінює intl-tel-input (~200 КБ з CDN + власні стилі, які доводилось
- * перебивати двадцятьма !important).
+ * Поле телефону з вибором країни — без зовнішніх бібліотек.
  *
- * Приймає будь-який звичний формат вводу: 0671234567, +380671234567,
- * 380671234567, 067 123 45 67 — і показує як +380 67 123 45 67.
- * Остаточну перевірку все одно робить сервер (phonenumbers).
+ * Чому не intl-tel-input: ~200 КБ із CDN, власні стилі, які доводилось
+ * перебивати двадцятьма !important, і ще один зовнішній домен у критичному
+ * шляху. Тут те саме поводження в 6 КБ і без жодного запиту.
+ *
+ * НАЗВИ КРАЇН НЕ ЗБЕРІГАЄМО. Їх дає Intl.DisplayNames, який є в браузері:
+ * "PL" → «Польща» українською, «Польша» російською, «Poland» англійською.
+ * Тому в даних лише код країни й телефонний префікс, а переклад трьома
+ * мовами не коштує жодного байта й не може розійтися сам із собою.
+ *
+ * ПОРЯДОК У СПИСКУ. Спершу країни, куди ми справді їздимо і звідки нам
+ * дзвонять, — це не географія, а робота: Україна, Польща, Чехія,
+ * Словаччина, Німеччина, Молдова, Румунія, Угорщина. Далі решта за
+ * абеткою мовою сторінки (Intl.Collator сортує «Ї» і «Є» правильно, чого
+ * звичайний sort() не робить).
+ *
+ * ПЕРЕВІРКА. Клієнт стежить лише за довжиною: 6–15 цифр — стільки
+ * дозволяє E.164. Справжню перевірку робить сервер бібліотекою
+ * phonenumbers, бо правил у кожної країни свої й тягнути їх у браузер
+ * означало б повернутися до тих самих 200 КБ.
  */
 (function (global) {
   "use strict";
 
-  var NDC_LEN = 2;          // код оператора після 380 (напр. 67)
-  var SUBSCRIBER_LEN = 7;   // решта номера
-  var TOTAL = NDC_LEN + SUBSCRIBER_LEN; // 9 цифр після 380
+  /* Код країни → телефонний префікс. Тільки Європа та кілька країн, звідки
+     реально бувають замовлення; повний світовий список — це ще 200 рядків
+     заради випадків, яких не буває. */
+  var DIAL = {
+    UA: "380", PL: "48", CZ: "420", SK: "421", DE: "49", MD: "373", RO: "40", HU: "36",
+    AT: "43", BE: "32", BG: "359", HR: "385", CY: "357", DK: "45", EE: "372", FI: "358",
+    FR: "33", GB: "44", GR: "30", IE: "353", IT: "39", LV: "371", LT: "370", LU: "352",
+    MT: "356", NL: "31", NO: "47", PT: "351", SI: "386", ES: "34", SE: "46", CH: "41",
+    RS: "381", BA: "387", ME: "382", MK: "389", AL: "355", TR: "90", GE: "995", IS: "354",
+    US: "1", CA: "1", IL: "972", AE: "971", KZ: "7", BY: "375", RU: "7"
+  };
 
-  /** Лишає самі цифри національного номера (без 380). */
-  function normalize(raw) {
-    var d = (raw || "").replace(/\D/g, "");
-    if (d.indexOf("380") === 0) d = d.slice(3);
-    else if (d.indexOf("80") === 0) d = d.slice(2);
-    else if (d.charAt(0) === "0") d = d.slice(1);
-    return d.slice(0, TOTAL);
+  /* Показуються першими, у цьому порядку. */
+  var TOP = ["UA", "PL", "CZ", "SK", "DE", "MD", "RO", "HU"];
+
+  var DEFAULT_ISO = "UA";
+  var STORE_KEY = "vezemo_phone_iso";
+
+  /* ── Дрібні помічники ─────────────────────────────────────────────────── */
+
+  function lang() {
+    return (document.documentElement.getAttribute("lang") || "uk").slice(0, 2);
   }
 
-  /** +380 67 123 45 67 */
-  function format(digits) {
-    if (!digits) return "";
-    var out = "+380";
-    if (digits.length) out += " " + digits.slice(0, 2);
-    if (digits.length > 2) out += " " + digits.slice(2, 5);
-    if (digits.length > 5) out += " " + digits.slice(5, 7);
-    if (digits.length > 7) out += " " + digits.slice(7, 9);
+  var displayNames = null;
+  function countryName(iso) {
+    if (displayNames === null) {
+      try { displayNames = new Intl.DisplayNames([lang()], { type: "region" }); }
+      catch (e) { displayNames = false; }
+    }
+    if (!displayNames) return iso;
+    try { return displayNames.of(iso) || iso; } catch (e) { return iso; }
+  }
+
+  /* Прапорець — два «regional indicator» символи з коду країни. На Windows
+     емодзі-прапорців немає, і там видно самі літери «UA». Це не поломка:
+     саме тому поруч завжди стоїть префікс «+380», і зрозуміло без картинки. */
+  function flag(iso) {
+    return String.fromCodePoint.apply(null, iso.toUpperCase().split("").map(function (c) {
+      return 0x1F1E6 + c.charCodeAt(0) - 65;
+    }));
+  }
+
+  function remember(iso) { try { localStorage.setItem(STORE_KEY, iso); } catch (e) {} }
+  function recall() {
+    try { return DIAL[localStorage.getItem(STORE_KEY)] ? localStorage.getItem(STORE_KEY) : null; }
+    catch (e) { return null; }
+  }
+
+  function sortedList() {
+    var rest = Object.keys(DIAL).filter(function (i) { return TOP.indexOf(i) < 0; });
+    try {
+      var coll = new Intl.Collator(lang());
+      rest.sort(function (a, b) { return coll.compare(countryName(a), countryName(b)); });
+    } catch (e) { rest.sort(); }
+    return { top: TOP.slice(), rest: rest };
+  }
+
+  /* ── Розбір і формат ──────────────────────────────────────────────────── */
+
+  function digitsOf(raw) { return (raw || "").replace(/\D/g, ""); }
+
+  /* Якщо людина вставила повний міжнародний номер — визначаємо країну самі,
+     а не змушуємо шукати її в списку. Довші префікси перевіряємо першими,
+     інакше "380" сплутається з "38". */
+  var BY_DIAL = Object.keys(DIAL)
+    .sort(function (a, b) { return DIAL[b].length - DIAL[a].length; });
+
+  function detect(raw) {
+    var d = digitsOf(raw);
+    if ((raw || "").charAt(0) !== "+" && d.indexOf("00") !== 0) return null;
+    if (d.indexOf("00") === 0) d = d.slice(2);
+    for (var i = 0; i < BY_DIAL.length; i++) {
+      if (d.indexOf(DIAL[BY_DIAL[i]]) === 0) return BY_DIAL[i];
+    }
+    return null;
+  }
+
+  /* Український номер розбиваємо групами — так його читають і диктують.
+     Для решти країн правила різні, і вигадувати їх було б гірше, ніж
+     лишити цифри як є. */
+  function group(iso, d) {
+    if (iso !== "UA") return d;
+    var out = "";
+    if (d.length) out += d.slice(0, 2);
+    if (d.length > 2) out += " " + d.slice(2, 5);
+    if (d.length > 5) out += " " + d.slice(5, 7);
+    if (d.length > 7) out += " " + d.slice(7, 9);
     return out;
   }
 
-  function isValid(digits) {
-    return digits.length === TOTAL;
-  }
+  function maxLen(iso) { return iso === "UA" ? 9 : 15 - DIAL[iso].length; }
+  function minLen(iso) { return iso === "UA" ? 9 : 6; }
 
-  function e164(digits) {
-    return "+380" + digits;
-  }
+  /* ── Побудова поля ────────────────────────────────────────────────────── */
 
   function attach(input) {
-    if (!input) return null;
+    if (!input || input.__phoneField) return input ? input.__phoneField : null;
+
+    var T = function (k, fb) {
+      return (global.VZ && global.VZ.t && global.VZ.t(k) !== k) ? global.VZ.t(k) : fb;
+    };
+
+    var iso = detect(input.value) || recall() || DEFAULT_ISO;
+    var digits = digitsOf(input.value);
+    if (digits.indexOf(DIAL[iso]) === 0) digits = digits.slice(DIAL[iso].length);
+    digits = digits.slice(0, maxLen(iso));
+
+    /* Обгортка навколо наявного input, щоб розмітка форми не змінювалась і
+       все, що вже вміє форма (label for, автозаповнення), лишилось живим. */
+    var wrap = document.createElement("div");
+    wrap.className = "phone";
+    input.parentNode.insertBefore(wrap, input);
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "phone__country";
+    btn.setAttribute("aria-haspopup", "listbox");
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-label", T("form.country", "Код країни"));
+
+    var pop = document.createElement("div");
+    pop.className = "phone__pop";
+    pop.hidden = true;
+
+    var search = document.createElement("input");
+    search.type = "text";
+    search.className = "phone__search";
+    search.setAttribute("autocomplete", "off");
+    search.placeholder = T("form.country_search", "Пошук країни");
+
+    var list = document.createElement("ul");
+    list.className = "phone__list";
+    list.setAttribute("role", "listbox");
+
+    pop.appendChild(search);
+    pop.appendChild(list);
+    wrap.appendChild(btn);
+    wrap.appendChild(input);
+    wrap.appendChild(pop);
 
     input.setAttribute("inputmode", "tel");
     input.setAttribute("autocomplete", "tel");
-    if (!input.placeholder) input.placeholder = "+380 67 123 45 67";
+    input.classList.add("phone__input");
 
-    var state = { digits: normalize(input.value) };
+    function renderButton() {
+      btn.innerHTML = "";
+      var f = document.createElement("span");
+      f.className = "phone__flag";
+      f.textContent = flag(iso);
+      var d = document.createElement("span");
+      d.className = "phone__dial";
+      d.textContent = "+" + DIAL[iso];
+      btn.appendChild(f);
+      btn.appendChild(d);
+      input.placeholder = iso === "UA" ? "67 123 45 67" : T("form.phone_ph2", "номер");
+    }
 
-    function render(keepCaretAtEnd) {
-      input.value = format(state.digits);
-      if (keepCaretAtEnd) {
-        var end = input.value.length;
-        try { input.setSelectionRange(end, end); } catch (e) { /* не всі типи підтримують */ }
+    function renderInput(caretEnd) {
+      input.value = group(iso, digits);
+      if (caretEnd) {
+        try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+      }
+      input.classList.toggle("is-valid", valid());
+      if (valid()) input.classList.remove("is-error");
+    }
+
+    function valid() { return digits.length >= minLen(iso) && digits.length <= maxLen(iso); }
+    function e164() { return valid() ? "+" + DIAL[iso] + digits : ""; }
+
+    /* ── Список країн ───────────────────────────────────────────────────── */
+    function renderList(query) {
+      var q = (query || "").trim().toLowerCase();
+      list.innerHTML = "";
+      var data = sortedList();
+
+      function row(code, isTop) {
+        var li = document.createElement("li");
+        li.className = "phone__opt" + (code === iso ? " is-current" : "");
+        li.setAttribute("role", "option");
+        li.setAttribute("data-iso", code);
+        li.setAttribute("aria-selected", code === iso ? "true" : "false");
+        li.tabIndex = -1;
+        li.innerHTML = '<span class="phone__flag">' + flag(code) + "</span>" +
+                       '<span class="phone__name"></span>' +
+                       '<span class="phone__dial">+' + DIAL[code] + "</span>";
+        li.querySelector(".phone__name").textContent = countryName(code);
+        if (isTop) li.classList.add("is-top");
+        return li;
+      }
+
+      function matches(code) {
+        if (!q) return true;
+        return countryName(code).toLowerCase().indexOf(q) === 0 ||
+               countryName(code).toLowerCase().indexOf(" " + q) > -1 ||
+               code.toLowerCase().indexOf(q) === 0 ||
+               ("+" + DIAL[code]).indexOf(q) === 0 ||
+               DIAL[code].indexOf(q.replace("+", "")) === 0;
+      }
+
+      var top = data.top.filter(matches);
+      var rest = data.rest.filter(matches);
+
+      /* Підпис «Куди возимо» показуємо лише поки не шукають: у результатах
+         пошуку групування тільки заважає. */
+      if (top.length && !q) {
+        var h = document.createElement("li");
+        h.className = "phone__group";
+        h.setAttribute("role", "presentation");
+        h.textContent = T("form.country_top", "Куди возимо");
+        list.appendChild(h);
+      }
+      top.forEach(function (c) { list.appendChild(row(c, true)); });
+      if (rest.length && !q) {
+        var h2 = document.createElement("li");
+        h2.className = "phone__group";
+        h2.setAttribute("role", "presentation");
+        h2.textContent = T("form.country_all", "Усі країни");
+        list.appendChild(h2);
+      }
+      rest.forEach(function (c) { list.appendChild(row(c, false)); });
+
+      if (!top.length && !rest.length) {
+        var none = document.createElement("li");
+        none.className = "phone__group";
+        none.textContent = T("form.country_none", "Нічого не знайшли");
+        list.appendChild(none);
       }
     }
 
-    input.addEventListener("focus", function () {
-      if (!state.digits) render(true);
-    });
+    function open() {
+      renderList("");
+      search.value = "";
+      pop.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      var cur = list.querySelector(".is-current");
+      if (cur) cur.scrollIntoView({ block: "nearest" });
+      search.focus();
+    }
 
-    input.addEventListener("input", function () {
-      state.digits = normalize(input.value);
-      render(true);
-      input.classList.remove("is-error");
-      if (isValid(state.digits)) input.classList.add("is-valid");
-      else input.classList.remove("is-valid");
-    });
+    function close(focusInput) {
+      pop.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      if (focusInput) input.focus();
+    }
 
-    input.addEventListener("blur", function () {
-      if (!state.digits) { input.value = ""; input.classList.remove("is-valid", "is-error"); return; }
-      render(false);
-      input.classList.toggle("is-valid", isValid(state.digits));
-      input.classList.toggle("is-error", !isValid(state.digits));
-    });
+    function choose(code) {
+      if (!DIAL[code]) return;
+      iso = code;
+      remember(iso);
+      digits = digits.slice(0, maxLen(iso));
+      renderButton();
+      renderInput(true);
+      close(true);          // фокус одразу в номер — на один клік менше
+    }
 
-    // Backspace на порожньому хвості не має залишати «+380 »
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Backspace" && normalize(input.value).length === 0) {
-        input.value = "";
+    /* ── Події ──────────────────────────────────────────────────────────── */
+    btn.addEventListener("click", function () { pop.hidden ? open() : close(false); });
+
+    search.addEventListener("input", function () { renderList(search.value); });
+
+    search.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { e.preventDefault(); close(true); return; }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        var first = list.querySelector(".phone__opt");
+        if (first) first.focus();
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        var only = list.querySelector(".phone__opt");
+        if (only) choose(only.getAttribute("data-iso"));
       }
     });
 
-    return {
-      isValid: function () { return isValid(state.digits); },
-      getNumber: function () { return isValid(state.digits) ? e164(state.digits) : ""; },
-      getDigits: function () { return state.digits; },
+    list.addEventListener("click", function (e) {
+      var li = e.target.closest ? e.target.closest(".phone__opt") : null;
+      if (li) choose(li.getAttribute("data-iso"));
+    });
+
+    list.addEventListener("keydown", function (e) {
+      var li = e.target.closest ? e.target.closest(".phone__opt") : null;
+      if (!li) return;
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(li.getAttribute("data-iso")); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); var n = li.nextElementSibling; while (n && !n.classList.contains("phone__opt")) n = n.nextElementSibling; if (n) n.focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); var p = li.previousElementSibling; while (p && !p.classList.contains("phone__opt")) p = p.previousElementSibling; if (p) p.focus(); else search.focus(); }
+      else if (e.key === "Escape") { e.preventDefault(); close(true); }
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!pop.hidden && !wrap.contains(e.target)) close(false);
+    });
+
+    input.addEventListener("input", function () {
+      /* Вставили повний міжнародний номер — перемикаємо країну самі. */
+      var guess = detect(input.value);
+      if (guess) {
+        iso = guess;
+        remember(iso);
+        var d = digitsOf(input.value);
+        if (d.indexOf("00") === 0) d = d.slice(2);
+        digits = d.slice(DIAL[iso].length, DIAL[iso].length + maxLen(iso));
+        renderButton();
+      } else {
+        var raw = digitsOf(input.value);
+        /* 0671234567 → 671234567: український нуль перед кодом оператора. */
+        if (iso === "UA" && raw.charAt(0) === "0") raw = raw.slice(1);
+        if (iso === "UA" && raw.indexOf("380") === 0) raw = raw.slice(3);
+        digits = raw.slice(0, maxLen(iso));
+      }
+      input.classList.remove("is-error");
+      renderInput(true);
+    });
+
+    input.addEventListener("blur", function () {
+      if (!digits) { input.value = ""; input.classList.remove("is-valid", "is-error"); return; }
+      input.classList.toggle("is-valid", valid());
+      input.classList.toggle("is-error", !valid());
+    });
+
+    renderButton();
+    renderInput(false);
+
+    var api = {
+      isValid: valid,
+      getNumber: e164,
+      getDigits: function () { return digits; },
+      getCountry: function () { return iso; },
     };
+    input.__phoneField = api;
+    return api;
   }
 
-  global.PhoneField = { attach: attach, normalize: normalize, format: format, isValid: isValid, e164: e164 };
+  global.PhoneField = { attach: attach, DIAL: DIAL, TOP: TOP };
 })(typeof window !== "undefined" ? window : this);

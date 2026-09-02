@@ -49,7 +49,9 @@ class Config:
     PHONE_IS_PLACEHOLDER = os.getenv("PHONE_E164") is None
 
     VIBER_URL = os.getenv("VIBER_URL", "")        # viber://chat?number=%2B380390000000
-    TELEGRAM_URL = os.getenv("TELEGRAM_URL", "")  # https://t.me/username
+    # Кнопки месенджерів з'являються на сайті лише коли адреса задана —
+    # порожнє посилання не малюється взагалі, щоб не вести в нікуди.
+    TELEGRAM_URL = os.getenv("TELEGRAM_URL", "https://t.me/vezemo24")
     EMAIL = os.getenv("CONTACT_EMAIL", "info@vezemo24.com")
 
     # ─── Графік роботи ───────────────────────────────────────────────────────
