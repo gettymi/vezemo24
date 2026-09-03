@@ -25,7 +25,7 @@ tests/test_pricing_parity.py вичитує константи з JS і звір
 """
 
 # ── 1. Погодинно: Київ і область ────────────────────────────────────────
-LOCAL_HOURLY = 799        # грн/год
+LOCAL_HOURLY = 800        # грн/год
 LOCAL_FEED = 1000          # подача, грн
 LOCAL_MIN_HOURS = 2
 

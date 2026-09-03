@@ -23,7 +23,7 @@
 обраної мови.
 """
 
-from flask import current_app, g, request, url_for
+from flask import g, request, url_for
 
 from . import en, ru, uk
 
@@ -49,22 +49,14 @@ def current_locale():
 
 def _vehicle_words(lang):
     """
-    Як називати машини: «власний бус» чи «власний транспорт».
-
-    Керує тим самий прапорець, що ховає сторінку автопарку. Інакше довелося
-    б памʼятати два різні місця й перемикати їх разом — а забутий текст про
-    згадка автопарку при схованій сторінці означала б заяву, якої ми зараз не
-    підтверджуємо.
+    Як називати машини. Одне формулювання на весь сайт: воно стоїть у семи
+    ключах трьох мов, і правити його треба тут, а не в текстах сторінок.
     """
-    try:
-        state = "fleet" if current_app.config.get("FLEET_VISIBLE") else "one"
-    except RuntimeError:
-        state = "one"       # поза контекстом застосунку — обережніший варіант
     cat = CATALOGS.get(lang) or CATALOGS[DEFAULT]
     base = CATALOGS[DEFAULT]
     return {
-        "veh_nom": cat.get("veh.nom." + state) or base["veh.nom." + state],
-        "veh_ins": cat.get("veh.ins." + state) or base["veh.ins." + state],
+        "veh_nom": cat.get("veh.nom") or base["veh.nom"],
+        "veh_ins": cat.get("veh.ins") or base["veh.ins"],
     }
 
 

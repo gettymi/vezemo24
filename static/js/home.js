@@ -1,36 +1,7 @@
-/* Головна: відео лише там, де воно того варте, і поява блоку довіри. */
+/* Головна: поява блоку довіри.
+   Тут був запуск hero-відео; відео з героя прибрано, лишилась фотографія. */
 (function () {
   "use strict";
-
-  /* Hero-відео НЕ вантажимо на мобільних: раніше 4,5 МБ їхало на кожен
-     телефон з autoplay. Тепер широкий екран + не economy + без reduced-motion.
-     На телефоні лишається тільки poster. */
-  var video = document.getElementById("js-hero-video");
-  if (video) {
-    var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    var saveData = !!(conn && (conn.saveData || /(^|[^4])2g/.test(conn.effectiveType || "")));
-    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var wide = window.matchMedia("(min-width: 900px)").matches;
-
-    if (wide && !saveData && !reduced) {
-      var src = video.getAttribute("data-src");
-      if (src) {
-        var start = function () {
-          // Проявляємо відео лише коли пішов реальний кадр, інакше поверх
-          // постера блимне порожній прямокутник.
-          video.addEventListener("playing", function () {
-            video.classList.add("is-playing");
-          }, { once: true });
-          video.src = src;
-          video.load();
-          var p = video.play();
-          if (p && p.catch) p.catch(function () { /* автоплей заблоковано — лишається постер */ });
-        };
-        if ("requestIdleCallback" in window) requestIdleCallback(start, { timeout: 2500 });
-        else setTimeout(start, 1200);
-      }
-    }
-  }
 
   var trust = document.getElementById("trust");
   if (trust && "IntersectionObserver" in window) {

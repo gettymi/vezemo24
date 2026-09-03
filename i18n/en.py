@@ -95,8 +95,8 @@ STRINGS = {
 
     "meta.home.title": "Van Transport in Kyiv & Across Ukraine — Deliveries and Removals | Vezemo24",
     "meta.home.desc": "English-speaking van transport in Kyiv, the Kyiv region and across Ukraine: business deliveries, intercity runs (Kyiv–Lviv, Kyiv–Odesa), van with driver, home and office removals. Up to 3.5 tonnes. Price fixed before we start.",
-    "home.eyebrow": "Kyiv · the region · all of Ukraine",
-    "home.h1": "Van transport in Kyiv and across Ukraine",
+    "home.eyebrow": "Kyiv · the region · all of Ukraine · Europe",
+    "home.h1": "Van transport from Kyiv across Ukraine and Europe",
     "home.lead": "Business deliveries, intercity runs, a van with a driver, and home or office removals. {veh_nom}. The price is agreed before we start — nothing is added along the way.",
 
     "home.adv1.title": "Same-day pickup",
@@ -379,47 +379,13 @@ STRINGS = {
     "city.berlin": "Berlin",
 
     # ── Автопарк ─────────────────────────────────────────────────────────
-    "nav.fleet": "Our van",
-    "meta.fleet.title": "Our van — a Volkswagen Crafter up to 3.5 t | Vezemo24",
-    "meta.fleet.desc": "The van we actually drive: a Volkswagen Crafter up to 3.5 t with a high roof. Photos of the van and of the cargo bay from the inside.",
-    "fleet.eyebrow": "Our van",
-    "fleet.h1": "Our van",
-    "fleet.lead": "A Volkswagen Crafter up to 3.5 tonnes, high roof. This is our own van, not somebody else’s hired in: what you see here is what turns up at your door.",
-    "fleet.color.white": "White",
-    "fleet.color.black": "Black",
-    "fleet.color.grey": "Grey",
-    "fleet.body.panel": "Panel van, high roof",
-    "fleet.body.high": "High roof",
-    "fleet.body.long": "Long wheelbase, high roof",
-    "fleet.v1.note": "Long wheelbase and a high roof: this is the one that takes home moves and intercity runs when there is a lot to carry.",
-    "fleet.alt": "{color} Volkswagen Crafter — the Vezemo24 van",
-    "fleet.specs.pending": "We confirm the exact bay dimensions for your load on the call.",
-    "fleet.interior.eyebrow": "Inside",
-    "fleet.interior.h2": "What the cargo bay looks like",
-    "fleet.interior.text": "A flat floor, a high roof and lashing points along the sides. We strap the load down so it does not slide around on corners \u2014 that is why furniture and appliances arrive without scratches.",
-    "fleet.interior.alt": "The cargo bay of a Volkswagen Crafter from inside: flat floor and high roof",
-    "fleet.faq.h2": "Questions about the vans",
-    "fleet.faq.q1": "What van is it?",
-    "fleet.faq.a1": "A Volkswagen Crafter up to 3.5 tonnes with a high roof. There are no loaders — the driver is responsible for the transport and for securing the load.",
-    "fleet.faq.q2": "When is the van free?",
-    "fleet.faq.a2": "Tell us the date and time and we will confirm on the call. If the van is taken that day, you will hear it straight away, not an hour before the pickup.",
-    "fleet.faq.q3": "How do I know my load will fit?",
-    "fleet.faq.a3": "Describe what you are moving: the longest item, roughly how many boxes, whether the furniture is dismantled. We will tell you before we set off, not once the van is already outside.",
-    "fleet.cta.h2": "Tell us what and where",
-    "fleet.cta.text": "We will match a van to the load and give you the price before we set off.",
-    "home.fleet.eyebrow": "Our van",
-    "home.fleet.h2": "The van we drive",
-    "home.fleet.lead": "A Volkswagen Crafter up to 3.5 tonnes with a high roof. It is ours — what you see is what turns up.",
-    "home.fleet.cta": "See the van",
 
     # ── Формулювання про машини ──────────────────────────────────────────
-    # Два стани під прапорець FLEET_VISIBLE: поки триває верифікація,
-    # кількість машин ніде не згадується. Підставляє app.py як veh_nom /
-    # veh_ins — щоб один вимикач керував і сторінкою, і текстами.
-    "veh.nom.one": "Our own van, up to 3.5 tonnes",
-    "veh.ins.one": "with our own van, up to 3.5 tonnes",
-    "veh.nom.fleet": "Our own van, up to 3.5 t",
-    "veh.ins.fleet": "with our own van, up to 3.5 tonnes",
+    # Одне формулювання на весь сайт. Підставляє i18n/__init__.py
+    # як {veh_nom} (називний) і {veh_ins} (орудний). Кількість машин
+    # не називається ніде.
+    "veh.nom": "Our own cargo vans up to 3.5 t",
+    "veh.ins": "with our own cargo vans, up to 3.5 tonnes",
 
     # ── Kyiv region town pages ───────────────────────────────────────────
     "city.brovary": "Brovary",

@@ -5,8 +5,9 @@ from flask import Flask, jsonify, render_template, request
 import i18n
 from assets import assets
 from config import Config
-from content import abroad, fleet, places, pricing, routes as route_data
+from content import abroad, places, pricing, routes as route_data
 from extensions import csrf, limiter
+from monitoring import init_sentry
 from routes.contact import contact_bp
 from routes.geo import geo_bp
 from routes.main import main_bp
@@ -18,6 +19,9 @@ def create_app():
     app.config.from_object(Config)
 
     setup_logger(app)
+    # Одразу після логера: Sentry підхоплює саме logging, тож має бути
+    # налаштований раніше, ніж застосунок почне щось писати.
+    init_sentry(app)
 
     csrf.init_app(app)
     limiter.init_app(app)
@@ -52,8 +56,6 @@ def create_app():
             # Тарифи — з одного модуля, щоб цифра на головній не розійшлася
             # з тією, яку рахує калькулятор.
             "PRICING": pricing,
-            # Автопарк потрібен і на головній, і на своїй сторінці.
-            "FLEET": fleet,
             # Список міст області потрібен і на сторінці послуг, і в підвалі.
             "PLACES": places.PLACES,
             # Напрямки в підвалі. Це не прикраса: 96 адрес мають отримувати
@@ -61,9 +63,6 @@ def create_app():
             # глибоко в структурі, і Google доходить до них у останню чергу.
             "ROUTES": route_data.ROUTES,
             "ABROAD": abroad.DESTINATIONS,
-            # Поки триває верифікація, машини не показуємо ніде: сторінка,
-            # блок на головній і посилання в підвалі вимикаються разом.
-            "FLEET_VISIBLE": c["FLEET_VISIBLE"],
         }
 
     # ─── Заголовки безпеки ──────────────────────────────────────────────────

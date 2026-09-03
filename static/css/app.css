@@ -220,8 +220,15 @@
 
   .page { flex: 1; }
 
-  .section { padding-block: clamp(2.5rem, 1.8rem + 3vw, 4.5rem); }
-  .section--tight { padding-block: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem); }
+  /* Відступ рахується ДВІЧІ. Між двома секціями стоїть низ однієї і верх
+     наступної, тому 72px давали 144px порожнечі на шві — саме те, що
+     виглядало як «завелика відстань між блоками». Виміряно: 144px на
+     1440 і 81px на 390. Тепер 104px і 65px.
+
+     Правити треба тут, а не додавати від'ємні margin на окремі секції:
+     інакше кожен новий блок доводиться пам'ятати. */
+  .section { padding-block: clamp(2rem, 1.5rem + 2.2vw, 3.25rem); }
+  .section--tight { padding-block: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem); }
   .section--flush { padding-block: 0; }
   .section--dark {
     background: var(--surface-dark);
@@ -912,8 +919,6 @@
   }
   /* Відео проявляється поверх постера аж тоді, коли реально пішло —
      інакше на секунду блимає порожній чорний прямокутник. */
-  .hero__media--video { opacity: 0; transition: opacity .8s var(--ease); }
-  .hero__media--video.is-playing { opacity: 1; }
   .hero__scrim {
     position: absolute;
     inset: 0;
@@ -1270,57 +1275,6 @@
   }
   .outcome__text { max-width: 46ch; margin: var(--sp-3) auto var(--sp-6); color: var(--text-muted); }
 
-  /* ── Автопарк ───────────────────────────────────────────────────────── */
-  /* Фото машин прийшли з вирізаним фоном, тому картці потрібне власне
-     світле тло — інакше білий бус на білій картці зникає. Усі знімки
-     зведені до 4:3 у scripts/prepare_fleet.py, і aspect-ratio тут тримає
-     ту саму рамку: без неї картки стрибають по висоті, поки вантажаться
-     зображення. */
-  .fleet {
-    display: grid;
-    gap: var(--sp-5);
-    /* min() рятує вузькі екрани: без нього 240px-колонка не влазить у
-       320px-екран разом із полями й сторінка їде вбік. */
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-    margin-top: var(--sp-7);
-  }
-  /* Чотири машини мають стати в один ряд: 3 + одна сирота знизу читається
-     як «четверта чимось гірша». */
-  @media (min-width: 1060px) {
-    .fleet { grid-template-columns: repeat(4, 1fr); }
-    .fleet--home { grid-template-columns: repeat(3, 1fr); }
-  }
-  .fleet__item {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    background: var(--surface);
-    box-shadow: var(--sh-1);
-    transition: transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
-  }
-  .fleet__item:hover { transform: translateY(-2px); box-shadow: var(--sh-2); }
-  .fleet__media {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-items: center;
-    padding: var(--sp-4);
-    background: linear-gradient(180deg, var(--surface-sunk), var(--surface));
-    border-bottom: 1px solid var(--line);
-  }
-  .fleet__img { width: 100%; height: 100%; object-fit: contain; }
-  .fleet__body { padding: var(--sp-5); }
-  .fleet__name { font-size: var(--fs-md); margin-bottom: 2px; }
-  .fleet__meta {
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: var(--brand-700);
-  }
-  .fleet__note { margin-top: var(--sp-3); color: var(--text-muted); font-size: var(--fs-sm); }
-  .fleet__hint { margin-top: var(--sp-5); text-align: center; }
 }
 
 /* ==========================================================================
@@ -1707,4 +1661,36 @@
     font-weight: 800;
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* Шар відкривається ще раз навмисно (див. коментар вище): .card__media й
+   решта карток живуть у components, тож і це має жити там. Дописане в
+   pages програло б порядку шарів — саме так уже загубився .cta--form. */
+@layer components {
+  /* ── Напрямки в картці ──────────────────────────────────────────────
+     Стоять там, де в сусідніх картках фотографія, тому мають тримати
+     схожу висоту й не розсипатись на вузькому екрані. Це посилання, а не
+     підписи: з головної вони ведуть на сторінки маршрутів. */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0 0 var(--sp-4);
+    padding: 0;
+    list-style: none;
+  }
+  .chip {
+    display: inline-block;
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--text-strong);
+    text-decoration: none;
+    transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+  }
+  .chip:hover { background: var(--brand-50); border-color: var(--brand-200); }
+  .chip:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
 }

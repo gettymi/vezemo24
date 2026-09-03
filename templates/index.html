@@ -50,13 +50,19 @@
 
 <!-- ГЕРОЙ -->
 <section class="hero">
-  {# Постер винесено з атрибута poster= в окремий <img>: poster не вміє
-     srcset, тому на телефон їхало те саме зображення на 1920px. #}
+  {# ЗАМІНИТИ, щойно буде фото №1: наша машина в дорозі, завантажена,
+     горизонтально, від 2400 px завширшки. Зараз тут стокова траса.
+
+     Відео звідси прибрано. Воно було 1280x720 на 441 кбіт/с — для рухомого
+     кадру з полями й асфальтом цього замало на порядок, тому картинка
+     розсипалась. Головне ж: то була та сама стокова італійська траса, що
+     й у двох інших місцях сторінки, і про машину клієнта вона не казала
+     нічого. Власне відео з рейсу лишається нижче, там його і вмикають.
+
+     Постер лишився окремим <img>, а не атрибутом poster=: той не вміє
+     srcset, тому на телефон їхало зображення на 1920 px. #}
   {{ picture('video-poster.jpg', alt='', sizes='100vw', loading='eager',
              fetchpriority='high', img_class='hero__media') }}
-  <video id="js-hero-video" class="hero__media hero__media--video" muted loop playsinline
-         preload="none" data-src="{{ static_url('videos/derived/hero-720.mp4') }}"
-         disablePictureInPicture aria-hidden="true"></video>
   <div class="hero__scrim"></div>
   <div class="container hero__inner">
     <p class="hero__eyebrow">{{ t('home.eyebrow') }}</p>
@@ -83,7 +89,7 @@
         <p class="card__text">{{ t('home.adv1.text', open=HOURS_OPEN, close=HOURS_CLOSE) }}</p>
       </li>
       <li class="card card--icon">
-        <div class="card__icon"><img src="{{ static_url('icons/card.svg') }}" alt="" width="28" height="28"></div>
+        <div class="card__icon"><img src="{{ static_url('icons/box.svg') }}" alt="" width="28" height="28"></div>
         <h2 class="card__title">{{ t('home.adv2.title') }}</h2>
         <p class="card__text">{{ t('home.adv2.text') }}</p>
       </li>
@@ -98,54 +104,6 @@
         <p class="card__text">{{ t('home.adv4.text') }}</p>
       </li>
     </ul>
-  </div>
-</section>
-
-<!-- ШВИДКИЙ РОЗРАХУНОК -->
-{# Найпростіше питання, на яке людина приходить за відповіддю: «скільки це
-   коштує по Києву». Раніше відповідь була за два переходи — у калькулятор і
-   там ще перемкнути режим. Тепер вона тут, одразу під перевагами.
-
-   Ціну на мінімальні дві години малює СЕРВЕР, тому вона видна ще до того, як
-   виконається будь-який скрипт, і залишається видною, якщо скрипт не
-   виконається взагалі. JS лише перераховує на кліку; тарифи їдуть у
-   data-атрибутах, тож віджет не залежить від priceCalculator.js і не тягне
-   жодного зайвого файлу. #}
-<section class="section section--tight">
-  <div class="container">
-    <div class="homequote" data-quote
-         data-feed="{{ PRICING.LOCAL_FEED }}"
-         data-hourly="{{ PRICING.LOCAL_HOURLY }}"
-         data-min="{{ PRICING.LOCAL_MIN_HOURS }}">
-      <div class="homequote__side">
-        <span class="section-head__eyebrow">{{ t('quote.eyebrow') }}</span>
-        <h2>{{ t('quote.h2') }}</h2>
-        <p class="section-head__lead">{{ t('quote.lead', feed=PRICING.LOCAL_FEED,
-              rate=PRICING.LOCAL_HOURLY, hours=PRICING.LOCAL_MIN_HOURS) }}</p>
-      </div>
-
-      <div class="homequote__box">
-        <p class="homequote__label" id="quote-hours-label">{{ t('quote.hours') }}</p>
-        <div class="hours" role="group" aria-labelledby="quote-hours-label">
-          <button type="button" class="hours__btn" data-quote-minus
-                  aria-label="{{ t('quote.minus') }}">&minus;</button>
-          <output class="hours__value" data-quote-out
-                  for="quote-hours-label">{{ PRICING.LOCAL_MIN_HOURS }}</output>
-          <button type="button" class="hours__btn" data-quote-plus
-                  aria-label="{{ t('quote.plus') }}">+</button>
-        </div>
-
-        <p class="homequote__total">
-          <span class="routeprice__from">{{ t('home.price.from') }}</span>
-          <strong class="routeprice__value" data-quote-total>{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
-        </p>
-        <p class="field__hint">{{ t('quote.note', feed=PRICING.LOCAL_FEED) }}</p>
-
-        <a class="btn btn--primary btn--block" href="{{ url_for('main.calculate_km') }}"
-           data-cta="quote-home">{{ t('quote.cta') }}</a>
-        <p class="field__hint center">{{ t('quote.other') }}</p>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -172,10 +130,18 @@
         </div>
       </li>
       <li class="card card--link">
-        <div class="card__media">
-          {{ picture('road-card.jpg', alt=t('home.img.road'),
-                     sizes='(min-width: 1100px) 360px, (min-width: 700px) 33vw, 100vw') }}
-        </div>
+        {# Тут стояло road-card.jpg — той самий кадр, що в героя і в блоці
+           міжміських, тобто третій показ однієї фотографії на одній
+           сторінці. Замість нього самі напрямки: вони відповідають на
+           питання картки й водночас ведуть із головної на сторінки
+           маршрутів. Порожнього місця це не лишає, а посилань додає.
+
+           ЗАМІНИТИ на фото №7 (наша машина на трасі), коли буде. #}
+        <ul class="chips" role="list">
+          {% for r in ROUTES %}
+            <li><a class="chip" href="{{ url_for('main.route_page', slug=r.slug) }}">{{ t(r.city) }}</a></li>
+          {% endfor %}
+        </ul>
         <h3 class="card__title">{{ t('home.what.c2.title') }}</h3>
         <p class="card__text">
           {{ t('home.what.c2.text') }}
@@ -250,40 +216,53 @@
   </div>
 </section>
 
-<!-- АВТОПАРК -->
-{% if FLEET_VISIBLE %}
-{# Машина на головній — коротко. Розгорнутий блок — це вже
-   каталог, а головна має вести далі, а не замінювати сторінку. #}
-<section class="section section--flush">
+<!-- ШВИДКИЙ РОЗРАХУНОК -->
+{# Найпростіше питання, на яке людина приходить за відповіддю: «скільки це
+   коштує по Києву». Раніше відповідь була за два переходи — у калькулятор і
+   там ще перемкнути режим. Тепер вона тут, одразу під перевагами.
+
+   Ціну на мінімальні дві години малює СЕРВЕР, тому вона видна ще до того, як
+   виконається будь-який скрипт, і залишається видною, якщо скрипт не
+   виконається взагалі. JS лише перераховує на кліку; тарифи їдуть у
+   data-атрибутах, тож віджет не залежить від priceCalculator.js і не тягне
+   жодного зайвого файлу. #}
+<section class="section section--tight">
   <div class="container">
-    <div class="section-head section-head--center">
-      <span class="section-head__eyebrow">{{ t('home.fleet.eyebrow') }}</span>
-      <h2>{{ t('home.fleet.h2') }}</h2>
-      <p class="section-head__lead">{{ t('home.fleet.lead') }}</p>
-    </div>
-    <ul class="fleet fleet--home" role="list">
-      {% for v in FLEET.home_vehicles() %}
-        <li class="fleet__item">
-          <div class="fleet__media">
-            {{ picture(v.image,
-                       alt=t('fleet.alt', color=t(v.color)),
-                       sizes='(min-width: 900px) 360px, (min-width: 640px) 45vw, 92vw',
-                       img_class='fleet__img') }}
-          </div>
-          <div class="fleet__body">
-            <h3 class="fleet__name">{{ v.name }}</h3>
-            <p class="fleet__meta">{{ t(v.color) | capitalize }} · {{ t(v.body) }}</p>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-    <div class="cluster cluster--center" style="margin-top: var(--sp-6)">
-      <a class="btn btn--ghost" href="{{ url_for('main.fleet') }}"
-         data-cta="fleet-home">{{ t('home.fleet.cta') }}</a>
+    <div class="homequote" data-quote
+         data-feed="{{ PRICING.LOCAL_FEED }}"
+         data-hourly="{{ PRICING.LOCAL_HOURLY }}"
+         data-min="{{ PRICING.LOCAL_MIN_HOURS }}">
+      <div class="homequote__side">
+        <span class="section-head__eyebrow">{{ t('quote.eyebrow') }}</span>
+        <h2>{{ t('quote.h2') }}</h2>
+        <p class="section-head__lead">{{ t('quote.lead', feed=PRICING.LOCAL_FEED,
+              rate=PRICING.LOCAL_HOURLY, hours=PRICING.LOCAL_MIN_HOURS) }}</p>
+      </div>
+
+      <div class="homequote__box">
+        <p class="homequote__label" id="quote-hours-label">{{ t('quote.hours') }}</p>
+        <div class="hours" role="group" aria-labelledby="quote-hours-label">
+          <button type="button" class="hours__btn" data-quote-minus
+                  aria-label="{{ t('quote.minus') }}">&minus;</button>
+          <output class="hours__value" data-quote-out
+                  for="quote-hours-label">{{ PRICING.LOCAL_MIN_HOURS }}</output>
+          <button type="button" class="hours__btn" data-quote-plus
+                  aria-label="{{ t('quote.plus') }}">+</button>
+        </div>
+
+        <p class="homequote__total">
+          <span class="routeprice__from">{{ t('home.price.from') }}</span>
+          <strong class="routeprice__value" data-quote-total>{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
+        </p>
+        <p class="field__hint">{{ t('quote.note', feed=PRICING.LOCAL_FEED) }}</p>
+
+        <a class="btn btn--primary btn--block" href="{{ url_for('main.calculate_km') }}"
+           data-cta="quote-home">{{ t('quote.cta') }}</a>
+        <p class="field__hint center">{{ t('quote.other') }}</p>
+      </div>
     </div>
   </div>
 </section>
-{% endif %}
 
 <!-- ДОВІРА -->
 <section class="section section--dark trust" id="trust">
@@ -319,26 +298,22 @@
 </section>
 
 <!-- МІЖМІСЬКІ -->
+{# Був .split з road-wide.jpg ліворуч — той самий кадр, що вже стоїть у
+   героєві. Двоколонковий макет тримався на фотографії: без неї він давав
+   високу порожню колонку, тому блок став на всю ширину. Класи всі наявні,
+   нового CSS не додано.
+
+   ПОВЕРНУТИ .split разом із фото №6 (українська траса). #}
 <section class="section">
   <div class="container">
-    <div class="split">
-      <div class="split__media">
-        {{ picture('road-wide.jpg', alt=t('home.img.road_wide'),
-                   sizes='(min-width: 1100px) 510px, (min-width: 900px) 46vw, 100vw') }}
-        <span class="split__tag">{{ t('home.split.tag') }}</span>
-      </div>
-      <div class="split__body">
-        <p class="split__hook">{{ t('home.split.hook') }}</p>
-        <h2>{{ t('home.split.h2') }}</h2>
-        <p class="split__text">
-          {{ t('home.split.text') }}
-        </p>
-        <div class="cluster">
-          <a class="btn btn--primary" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
-          <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">{{ PHONE_DISPLAY }}
-          </a>
-        </div>
-      </div>
+    <div class="section-head section-head--center">
+      <span class="section-head__eyebrow">{{ t('home.split.hook') }}</span>
+      <h2>{{ t('home.split.h2') }}</h2>
+      <p class="section-head__lead">{{ t('home.split.text') }}</p>
+    </div>
+    <div class="cluster cluster--center">
+      <a class="btn btn--primary" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
+      <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">{{ PHONE_DISPLAY }}</a>
     </div>
   </div>
 </section>

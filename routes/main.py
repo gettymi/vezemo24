@@ -11,7 +11,6 @@ from flask import (
 )
 
 import content.abroad as abroad_data
-import content.fleet as fleet_data
 import content.places as place_data
 import content.routes as route_data
 from content import pricing
@@ -39,24 +38,13 @@ SITEMAP_PAGES = [
     {"endpoint": "main.mizhmiski",    "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
     {"endpoint": "main.calculate_km", "priority": "0.85", "priority_alt": "0.65", "changefreq": "weekly"},
     {"endpoint": "main.abroad",       "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
-    # Автопарк тримається за прапорцем FLEET_VISIBLE: поки він вимкнений,
-    # сторінка віддає 404, і в мапі сайту їй теж не місце — інакше Google
-    # проіндексує адресу, якої немає.
-    {"endpoint": "main.fleet",        "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly",
-     "flag": "FLEET_VISIBLE"},
     {"endpoint": "contact.contact",   "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
 ]
 
 
 def visible_pages():
-    """Сторінки для мапи сайту, які справді відкриваються.
-
-    Запис із ключем "flag" зникає, поки відповідний прапорець вимкнено:
-    сторінка тоді віддає 404, і рекламувати її в sitemap.xml означало б
-    самому надіслати Google на неіснуючу адресу.
-    """
-    return [p for p in SITEMAP_PAGES
-            if not p.get("flag") or current_app.config.get(p["flag"])]
+    """Сторінки для мапи сайту, які справді відкриваються."""
+    return list(SITEMAP_PAGES)
 
 
 def _t(key):
@@ -221,17 +209,6 @@ def abroad_page(slug, lang=DEFAULT):
         near=abroad_data.neighbours(slug),
         calc_url=calc_url,
     )
-
-
-@main_bp.route("/avtopark", defaults={"lang": DEFAULT})
-@main_bp.route(LANG_RULE + "/avtopark")
-def fleet(lang=DEFAULT):
-    """Автопарк. Показуємо машини, якими справді їздимо."""
-    if not current_app.config["FLEET_VISIBLE"]:
-        abort(404)
-    return render_template("fleet.html",
-                           vehicles=fleet_data.VEHICLES,
-                           interior=fleet_data.INTERIOR)
 
 
 # ─── 301 зі старих URL ───────────────────────────────────────────────────────
