@@ -670,6 +670,12 @@
     host.innerHTML = "";
     host.className = "quote quote--" + q.mode;
 
+    /* Підказка на вкладці «Київ та область». Скидаємо її на кожному
+       перерахунку: якщо наступний маршрут виявиться міжміським, підсвічувати
+       погодинний режим уже нема за що. */
+    var localTab = document.getElementById("mode-btn-local");
+    if (localTab) localTab.classList.remove("mode--hint");
+
     var label = document.createElement("span");
     label.className = "quote__label";
     var value = document.createElement("strong");
@@ -698,6 +704,31 @@
     host.appendChild(label);
     host.appendChild(value);
     host.appendChild(note);
+
+    /* По Києву й області ціна залежить від годин, а лічильник годин живе
+       в СУСІДНІЙ вкладці. Без цього містка людина бачить «від 800 грн/год»
+       і не має куди клікнути, щоб побачити свою суму. */
+    if (q.mode === "hourly" && localTab) {
+      localTab.classList.add("mode--hint");
+      if (!localTab.dataset.hintWired) {
+        localTab.dataset.hintWired = "1";
+        localTab.addEventListener("click", function () {
+          localTab.classList.remove("mode--hint");
+        });
+      }
+      var jump = document.createElement("button");
+      jump.type = "button";
+      jump.className = "btn btn--text quote__jump";
+      jump.textContent = T("quote.local_cta");
+      jump.addEventListener("click", function () {
+        // Перемикач режимів живе в localQuote.js — не дублюємо його логіку,
+        // а просто натискаємо ту саму кнопку. Немає localQuote.js — немає й
+        // переходу, але сторінка не ламається.
+        localTab.click();
+        localTab.focus();
+      });
+      host.appendChild(jump);
+    }
 
     /* Зворотний рейс показуємо окремим рядком, а не другою ціною поруч:
        це доплата до вже названої суми, а не альтернатива їй. */
