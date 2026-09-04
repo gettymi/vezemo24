@@ -1,8 +1,10 @@
 from datetime import date
 
 from flask import Flask, jsonify, render_template, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import i18n
+import os
 from assets import assets
 from config import Config
 from content import abroad, places, pricing, routes as route_data
@@ -14,9 +16,12 @@ from routes.main import main_bp
 from utils import setup_logger
 
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     setup_logger(app)
     # Одразу після логера: Sentry підхоплює саме logging, тож має бути
@@ -31,6 +36,15 @@ def create_app():
     app.register_blueprint(contact_bp)
     app.register_blueprint(geo_bp)
     app.register_blueprint(main_bp)
+
+    @app.before_request
+    def _tmp_log_ip():
+        if request.path != "/":
+            return
+        app.logger.info("XFF=%r CF=%r remote=%r",
+                        request.headers.get("X-Forwarded-For"),
+                        request.headers.get("CF-Connecting-IP"),
+                        request.remote_addr)
 
     # ─── Контакти доступні в кожному шаблоні ────────────────────────────────
     @app.context_processor
@@ -126,4 +140,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, port=5001, host="0.0.0.0")
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1", port=5001, host="0.0.0.0")
