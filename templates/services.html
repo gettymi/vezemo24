@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <ul class="grid grid--2">
+    <ul class="grid grid--2 grid--2up">
       <li class="card card--feature">
         <div class="card__media card__media--contain">
           {{ picture('busik.png', alt=t('home.img.van'),
@@ -89,6 +89,36 @@
         </ul>
         <div class="card__foot">
           <a class="btn btn--ghost btn--block btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-service-taxi">{{ t('common.call') }}</a>
+        </div>
+      </li>
+
+      {# Четверта послуга — Європа. Досі сторінка послуг про закордон не
+         говорила взагалі, хоча він є в меню, в підвалі й у H1 головної.
+         Фото немає, тож замість .card__media — напрямки: вони заповнюють
+         верх картки так само, як у міжміській картці головної, і ведуть
+         на п'ять сторінок, до яких із /services не вело жодне посилання.
+
+         Ставку беремо зі східної зони — це найдешевша, тому «від». Число
+         не набране руками: воно з PRICING, форматується так само, як на
+         сторінці /abroad. #}
+      {% set eur = ('%.2f' % PRICING.ABROAD_ZONES.east.per_total_km) | replace('.', ',') %}
+      <li class="card">
+        <ul class="chips" role="list">
+          {% for d in ABROAD %}
+            <li><a class="chip" href="{{ url_for('main.abroad_page', slug=d.slug) }}">{{ t(d.city) }}</a></li>
+          {% endfor %}
+        </ul>
+        <h2 class="card__title">{{ t('svc.abroad.title') }}</h2>
+        <p class="card__text">
+          {{ t('svc.abroad.text') }}
+        </p>
+        <ul class="checks">
+          <li>{{ t('svc.abroad.c1') }}</li>
+          <li>{{ t('svc.abroad.c2') }}</li>
+          <li>{{ t('svc.abroad.c3', rate=eur) }}</li>
+        </ul>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.abroad') }}">{{ t('common.more') }}</a>
         </div>
       </li>
 

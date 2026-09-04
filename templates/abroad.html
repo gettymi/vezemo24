@@ -37,6 +37,16 @@
         <a class="btn btn--ghost" href="{{ url_for('contact.contact') }}">{{ t('common.callback') }}</a>
       </div>
     </div>
+
+    {# Єдина сторінка послуг, де не було жодного зображення. Блок такий
+       самий, як на /mizhmiski: та сама смуга 21:9 на всю ширину, той самий
+       підпис. Знак на фото — реальний вʼїзд до Німеччини, однієї з країн,
+       які названі в тексті сторінки. #}
+    <div class="split__media" style="aspect-ratio: 21/9; margin-top: var(--sp-6)">
+      {{ picture('abroad-wide.jpg', alt=t('abroad.img.wide'),
+                 sizes='(min-width: 1140px) 1092px, 100vw') }}
+      <span class="split__tag">{{ t('abroad.split.tag') }}</span>
+    </div>
   </div>
 </section>
 

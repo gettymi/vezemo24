@@ -252,6 +252,16 @@
   .grid--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
   .grid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr)); }
 
+  /* Рівно дві колонки на широкому екрані.
+     auto-fit при мінімумі 300px вкладає в 1092px не дві колонки, а три —
+     тому список послуг насправді стояв утрьох, а не парами, і четверта
+     картка лишилась би сиротою в другому рядку. Заразом це робить чесним
+     sizes='540px' у тамтешніх фотографій: при трьох колонках реальна
+     ширина була 353px, тобто браузер тягнув більший файл, ніж потрібно. */
+  @media (min-width: 900px) {
+    .grid--2up { grid-template-columns: repeat(2, 1fr); }
+  }
+
 }
 
 /* ==========================================================================
@@ -420,7 +430,9 @@
     border-width: 2px;
     box-shadow: var(--sh-2);
   }
-  .card--icon { align-items: flex-start; }
+  /* Іконка над текстом по центру: у чотириколонковій сітці картки вузькі,
+     і значок, притиснутий ліворуч, лишав над заголовком порожній кут. */
+  .card--icon { align-items: center; text-align: center; }
 
   /* Не для кожної послуги є фото — така картка має виглядати задумано,
      а не наполовину порожньою. */
@@ -442,9 +454,17 @@
     width: 52px; height: 52px;
     border-radius: var(--r-md);
     background: var(--brand-50);
+    color: var(--brand-600);
     font-size: 1.5rem;
   }
-  .card__icon img { width: 28px; height: 28px; }
+  /* Іконки в цих плитках намальовані inline, тож беруть колір із .card__icon
+     (--brand-600) через currentColor. 30 із 52 — та сама пропорція ~60%, що
+     й у темних плитках блоку довіри. */
+  .card__icon svg {
+    width: 30px; height: 30px;
+    fill: none; stroke: currentColor; stroke-width: 1.7;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
 
   /* ── Список з галочками ─────────────────────────────────────────────── */
   .checks { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -996,6 +1016,8 @@
   .trust__card {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: var(--sp-3);
     padding: var(--sp-5);
     border-radius: var(--r-lg);
@@ -1013,8 +1035,17 @@
     border-radius: var(--r-md);
     background: var(--brand-500);
     color: var(--white);
-    font-size: 1.35rem;
     box-shadow: var(--sh-brand);
+  }
+  /* Іконки намальовані, а не набрані символами: ☎ на iOS має емодзі-
+     презентацію й малювався червоною емодзі-трубкою. currentColor —
+     щоб колір лишався один з фоном плитки. */
+  .trust__icon svg {
+    /* 28 із 46 — це ~60% плитки. На 23px значок «тонув» у синьому квадраті:
+       ореол навколо нього був ширший за сам малюнок. */
+    width: 28px; height: 28px;
+    fill: none; stroke: currentColor; stroke-width: 1.7;
+    stroke-linecap: round; stroke-linejoin: round;
   }
   .trust__title { color: var(--white); font-size: var(--fs-lg); }
   .trust__text { color: rgba(255,255,255,.72); font-size: var(--fs-sm); }
