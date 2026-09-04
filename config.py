@@ -9,7 +9,9 @@ class Config:
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
-    GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_API")
+    # GOOGLE_MAPS_API_KEY прибрано: карти в нас на Leaflet, маршрути рахує
+    # OSRM, адреси шукає Nominatim. Google Maps не викликається ніде, тож
+    # ключ у .env створював ілюзію, що щось налаштоване.
 
     # ─── Rate limiting ───────────────────────────────────────────────────────
     # Порожній REDIS_URL -> Flask-Limiter працює в памʼяті (memory://).
@@ -19,8 +21,10 @@ class Config:
     # ─── Analytics (заповнити реальними ID) ──────────────────────────────────
     GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "")   # напр. G-XXXXXXXXXX
     GTM_CONTAINER_ID = os.getenv("GTM_CONTAINER_ID", "")       # напр. GTM-XXXXXXX
-    GOOGLE_ADS_ID = os.getenv("GOOGLE_ADS_ID", "")             # напр. AW-XXXXXXXXX
-    GOOGLE_ADS_CONVERSION_LABEL = os.getenv("GOOGLE_ADS_CONVERSION_LABEL", "")
+    # GOOGLE_ADS_ID і GOOGLE_ADS_CONVERSION_LABEL прибрано: жоден шаблон їх
+    # не читав, тобто заповнення нічого не вмикало. Конверсії Ads їдуть
+    # через GTM (GTM_CONTAINER_ID вище) — тег Ads налаштовується там, а не
+    # в коді сайту.
 
     # ─── Канонічний домен ────────────────────────────────────────────────────
     SITE_URL = os.getenv("SITE_URL", "https://vezemo24.com")

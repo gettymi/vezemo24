@@ -37,15 +37,6 @@ def create_app():
     app.register_blueprint(geo_bp)
     app.register_blueprint(main_bp)
 
-    @app.before_request
-    def _tmp_log_ip():
-        if request.path != "/":
-            return
-        app.logger.info("XFF=%r CF=%r remote=%r",
-                        request.headers.get("X-Forwarded-For"),
-                        request.headers.get("CF-Connecting-IP"),
-                        request.remote_addr)
-
     # ─── Контакти доступні в кожному шаблоні ────────────────────────────────
     @app.context_processor
     def inject_site_context():
