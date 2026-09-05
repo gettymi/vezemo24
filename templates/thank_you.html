@@ -1,39 +1,32 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Дякуємо за заявку | Vezemo24{% endblock %}
-{% block description %}Ваша заявка прийнята. Ми передзвонимо найближчим часом та розрахуємо вартість перевезення.{% endblock %}
-
-{% block head %}
-<meta name="robots" content="noindex, nofollow">
-{% endblock %}
+{% block title %}{{ t('meta.thanks.title') }}{% endblock %}
+{% block description %}{{ t('meta.thanks.desc') }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex, follow">{% endblock %}
 
 {% block content %}
-<section class="thank-you-section">
-  <div class="container">
-    <div class="thank-you-card">
-      <div class="thank-you-icon">✓</div>
-      <h1 class="thank-you-title">Дякуємо за заявку!</h1>
-      <p class="thank-you-text">
-        Ми отримали ваше повідомлення і зв'яжемося з вами протягом 15 хвилин.
-      </p>
-      <a href="{{ url_for('main.index') }}" class="btn-primary">Повернутися на головну</a>
+<section class="section">
+  <div class="container container--narrow">
+    <div class="cta outcome">
+      <div class="outcome__mark" aria-hidden="true">✓</div>
+      <h1>{{ t('thanks.h1') }}</h1>
+      <p class="outcome__text">{{ t('thanks.text') }}</p>
+      <div class="cluster cluster--center">
+        <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-thankyou">{{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost btn--lg" href="{{ url_for('main.index') }}">{{ t('common.home_link') }}</a>
+      </div>
+      <p class="cta__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }}</p>
     </div>
   </div>
 </section>
+{% endblock %}
 
-{# GTM / Google Ads: конверсія при відкритті сторінки подяки #}
+{% block scripts %}
 <script>
-(function() {
+(function () {
   window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'generate_lead', method: 'form' });
   window.dataLayer.push({ event: 'form_submission' });
-  window.dataLayer.push({
-    event: 'form_submit_success',
-    conversion: 'contact_form',
-    page: 'thank_you'
-  });
-  try {
-    window.dispatchEvent(new CustomEvent('formConversion', { detail: { type: 'contact_form', page: 'thank_you' } }));
-  } catch (e) {}
 })();
 </script>
 {% endblock %}

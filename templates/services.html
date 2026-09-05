@@ -1,89 +1,152 @@
 {% extends 'base.html' %}
 
-{% block title %}Послуги перевезень — бус, самосвал, переїзд, вантажники | Vezemo24{% endblock %}
-{% block description %}Послуги вантажних перевезень у Києві та області: бус до 2,5 т, самосвал до 10 т, квартирний переїзд під ключ, вантажники. Прозорі ціни.{% endblock %}
-{% block keywords %}послуги перевезень київ, вантажне таксі київ, переїзд під ключ, самосвал київ, вантажники київ, бус київ{% endblock %}
-
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-{% endblock %}
+{% block title %}{{ t('meta.services.title') }}{% endblock %}
+{% block description %}{{ t('meta.services.desc') }}{% endblock %}
 
 {% block content %}
-<div class="services-page">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "{{ t('nav.home') }}", "item": "{{ SITE_URL }}{{ url_for('main.index') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ t('nav.services') }}", "item": "{{ SITE_URL }}{{ url_for('main.services') }}" }
+  ]
+}
+</script>
+
+<section class="section">
   <div class="container">
-    <header class="services-page-header">
-      <h1 class="section-title">Наші послуги</h1>
-      <p class="services-page-intro">
-        Повний спектр вантажних перевезень у Києві та Київській області. Підбираємо транспорт і вантажників під ваше завдання. Прозорі ціни, фіксація до старту.
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a> <span aria-hidden="true">→</span> <span>{{ t('nav.services') }}</span>
+    </nav>
+
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('svc.eyebrow') }}</span>
+      <h1>{{ t('svc.h1') }}</h1>
+      <p class="section-head__lead">
+        {{ t('svc.lead') }}
       </p>
-    </header>
-
-    <div class="services-list">
-      <article class="service-card">
-        <div class="service-card-image">
-          <img src="{{ url_for('static', filename='images/busik.png') }}" alt="Бус до 2,5 тонн">
-        </div>
-        <div class="service-card-body">
-          <h2 class="service-card-title">Бус до 2,5 тонн</h2>
-          <p class="service-card-desc">Вантажне таксі для невеликих вантажів: меблі, побутова техніка, коробки. Швидкий виїзд, мінімум формальностей.</p>
-          <ul class="service-card-features">
-            <li>Переїзд з однієї квартири</li>
-            <li>Доставка меблів та техніки</li>
-            <li>По Києву та області</li>
-          </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
-        </div>
-      </article>
-
-      <article class="service-card">
-        <div class="service-card-image">
-          <img src="{{ url_for('static', filename='images/samosval.png') }}" alt="Самосвал до 10 тонн">
-        </div>
-        <div class="service-card-body">
-          <h2 class="service-card-title">Самосвал до 10 тонн</h2>
-          <p class="service-card-desc">Перевезення сипучих матеріалів, будівельних відходів, піску, щебеню. Вивіз сміття після ремонту.</p>
-          <ul class="service-card-features">
-            <li>Сипучі матеріали та відходи</li>
-            <li>Доставка на об'єкт</li>
-            <li>Київ та Київська область</li>
-          </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
-        </div>
-      </article>
-
-      <article class="service-card service-card--no-img">
-        <div class="service-card-icon" aria-hidden="true">🏠</div>
-        <div class="service-card-body">
-          <h2 class="service-card-title">Квартирний переїзд під ключ</h2>
-          <p class="service-card-desc">Авто + вантажники: збираємо, завантажуємо, веземо, розвантажуємо та розставляємо. Можна замовити упаковку та матеріали.</p>
-          <ul class="service-card-features">
-            <li>Повний цикл: від збирання до розстановки</li>
-            <li>Упаковка та матеріали за запитом</li>
-            <li>Вартість під ваш обсяг</li>
-          </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
-        </div>
-      </article>
-
-      <article class="service-card service-card--no-img">
-        <div class="service-card-icon" aria-hidden="true">👷</div>
-        <div class="service-card-body">
-          <h2 class="service-card-title">Вантажники</h2>
-          <p class="service-card-desc">Допомога з завантаженням і розвантаженням — з авто або без. Підйом на поверх, розстановка меблів.</p>
-          <ul class="service-card-features">
-            <li>Завантаження / розвантаження</li>
-            <li>Підйом на поверх</li>
-            <li>Тариф від години</li>
-          </ul>
-          <a href="{{ url_for('contact.contact') }}" class="service-card-btn">Замовити</a>
-        </div>
-      </article>
+      <div class="cluster" style="margin-top: var(--sp-5)">
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-services">{{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
+      </div>
     </div>
 
-    <div class="services-page-cta">
-      <p class="services-page-cta-text">Не знайшли потрібне? Опишіть задачу — підберемо варіант.</p>
-      <a href="{{ url_for('contact.contact') }}" class="btn-primary btn-cta-large">Залишити заявку</a>
+    <ul class="grid grid--2 grid--2up">
+      <li class="card card--feature">
+        <div class="card__media card__media--contain">
+          {{ picture('busik.png', alt=t('home.img.van'),
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
+        </div>
+        <span class="badge">{{ t('home.what.badge') }}</span>
+        <h2 class="card__title">{{ t('svc.b2b.title') }}</h2>
+        <p class="card__text">
+          {{ t('svc.b2b.text') }}
+        </p>
+        <ul class="checks">
+          <li>{{ t('svc.b2b.c1') }}</li>
+          <li>{{ t('svc.b2b.c2') }}</li>
+          <li>{{ t('svc.b2b.c3') }}</li>
+        </ul>
+        <div class="card__foot">
+          <a class="btn btn--primary btn--block" href="{{ url_for('contact.contact') }}">{{ t('svc.b2b.cta') }}</a>
+        </div>
+      </li>
+
+      <li class="card">
+        <div class="card__media">
+          {{ picture('road-card.jpg', alt=t('home.img.road'),
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
+        </div>
+        <h2 class="card__title">{{ t('svc.mizh.title') }}</h2>
+        <p class="card__text">
+          {{ t('svc.mizh.text') }}
+        </p>
+        <ul class="checks">
+          <li>{{ t('svc.mizh.c1') }}</li>
+          <li>{{ t('svc.mizh.c2') }}</li>
+          <li>{{ t('svc.mizh.c3', rate=PRICING.INTERCITY_PER_KM) }}</li>
+        </ul>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('common.more') }}</a>
+        </div>
+      </li>
+
+      <li class="card">
+        <div class="card__media">
+          {{ picture('cargo-card.jpg', alt=t('home.img.cargo'),
+                     sizes='(min-width: 1100px) 540px, (min-width: 640px) 50vw, 100vw') }}
+        </div>
+        <h2 class="card__title">{{ t('svc.taxi.title') }}</h2>
+        <p class="card__text">
+          {{ t('svc.taxi.text') }}
+        </p>
+        <ul class="checks">
+          <li>{{ t('svc.taxi.c1') }}</li>
+          <li>{{ t('svc.taxi.c2') }}</li>
+          <li>{{ t('svc.taxi.c3', rate=PRICING.LOCAL_HOURLY, hours=PRICING.LOCAL_MIN_HOURS, feed=PRICING.LOCAL_FEED) }}</li>
+        </ul>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-service-taxi">{{ t('common.call') }}</a>
+        </div>
+      </li>
+
+      {# Четверта послуга — Європа. Досі сторінка послуг про закордон не
+         говорила взагалі, хоча він є в меню, в підвалі й у H1 головної.
+         Фото немає, тож замість .card__media — напрямки: вони заповнюють
+         верх картки так само, як у міжміській картці головної, і ведуть
+         на п'ять сторінок, до яких із /services не вело жодне посилання.
+
+         Ставку беремо зі східної зони — це найдешевша, тому «від». Число
+         не набране руками: воно з PRICING, форматується так само, як на
+         сторінці /abroad. #}
+      {% set eur = ('%.2f' % PRICING.ABROAD_ZONES.east.per_total_km) | replace('.', ',') %}
+      <li class="card">
+        <ul class="chips" role="list">
+          {% for d in ABROAD %}
+            <li><a class="chip" href="{{ url_for('main.abroad_page', slug=d.slug) }}">{{ t(d.city) }}</a></li>
+          {% endfor %}
+        </ul>
+        <h2 class="card__title">{{ t('svc.abroad.title') }}</h2>
+        <p class="card__text">
+          {{ t('svc.abroad.text') }}
+        </p>
+        <ul class="checks">
+          <li>{{ t('svc.abroad.c1') }}</li>
+          <li>{{ t('svc.abroad.c2') }}</li>
+          <li>{{ t('svc.abroad.c3', rate=eur) }}</li>
+        </ul>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.abroad') }}">{{ t('common.more') }}</a>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+</section>
+
+{# Вхід на сторінки міст області. Без цього блоку вони існують, але до них
+   немає жодного посилання з сайту — а сторінка, на яку ніхто не веде, для
+   Google майже те саме, що сторінки немає. #}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <h2>{{ t('places.h2') }}</h2>
+      <p class="section-head__lead">{{ t('places.lead') }}</p>
+    </div>
+    <div class="presets">
+      <div class="presets__row">
+        {% for p in PLACES %}
+          <a class="preset" href="{{ url_for('main.place_page', slug=p.slug) }}"
+             data-cta="place-{{ p.slug }}">{{ t(p.city) }}</a>
+        {% endfor %}
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+{% with cta_title = t('svc.cta.title'), cta_text = t('svc.cta.text'), cta_source = 'services' %}
+  {% include 'partials/_cta.html' %}
+{% endwith %}
 {% endblock %}

@@ -1,0 +1,55 @@
+{# Форма заявки. Мінімум обовʼязкових полів: лише телефон, решта за
+   розкриттям, щоб не лякати обсягом.
+
+   ПАРАМЕТРИ:
+     fid    — суфікс для id. На сторінці може бути дві форми (сторінка
+              контактів і блок заклику), а два однакові id — це невалідний
+              HTML, і <label for> починає вести не туди. За замовчуванням
+              "cta", сторінка контактів передає своє.
+     source — звідки прийшла заявка. Їде прихованим полем і потрапляє в
+              повідомлення: без цього неможливо сказати, яка сторінка
+              приносить клієнтів, а вгадувати — те саме, що не знати.
+
+   JS шукає форми через [data-lead-form] і працює з кожною окремо. #}
+{% set fid = fid | default('cta', true) %}
+<form class="stack" method="POST" action="{{ url_for('contact.contact_submit') }}"
+      novalidate data-lead-form id="form-{{ fid }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {# Бекенд відповідає тією ж мовою, якою людина заповнювала форму. #}
+  <input type="hidden" name="lang" value="{{ LOCALE }}">
+  <input type="hidden" name="source" value="{{ source | default(fid, true) }}">
+
+  <div class="honeypot" aria-hidden="true">
+    <label for="website-{{ fid }}">{{ t('form.honeypot') }}</label>
+    <input type="text" id="website-{{ fid }}" name="website" tabindex="-1" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label class="field__label" for="phone-{{ fid }}">{{ t('form.phone') }} <span class="field__req">*</span></label>
+    <input class="input" id="phone-{{ fid }}" name="phone" type="tel" required
+           data-lead-phone placeholder="{{ t('form.phone_ph') }}" autocomplete="tel">
+  </div>
+
+  <details class="disclosure">
+    <summary>{{ t('form.details') }}</summary>
+    <div class="stack" style="padding-top: var(--sp-3)">
+      <div class="field">
+        <label class="field__label" for="name-{{ fid }}">{{ t('form.name') }}</label>
+        <input class="input" type="text" id="name-{{ fid }}" name="name"
+               placeholder="{{ t('form.name_ph') }}" autocomplete="name">
+      </div>
+      <div class="field">
+        <label class="field__label" for="message-{{ fid }}">{{ t('form.message') }}</label>
+        <textarea class="input" id="message-{{ fid }}" name="message" rows="4"
+                  data-lead-message placeholder="{{ t('form.message_ph') }}"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <button type="submit" class="btn btn--primary btn--lg btn--block" data-lead-submit>
+    <span>{{ t('common.callback') }}</span>
+  </button>
+
+  <p class="field__hint center">{{ t('form.hint') }}</p>
+  <div class="notice notice--error" role="alert" data-lead-alert></div>
+</form>

@@ -1,0 +1,75 @@
+{# Відео з рейсу. Один партіал, два місця: головна і сторінка транспорту.
+
+   Знято вертикально (телефон), тому програвач вертикальний — 9:16 у
+   ширині телефона. Обрізати вертикальний кадр під широкий блок означало б
+   викинути дві третини картинки; чесніше показати як є.
+
+   Доріжки звуку у файлі немає взагалі (-an на кодуванні), а не приглушена:
+   власник знімав без звуку, тож порожня доріжка тільки важила б.
+
+   ЧОМУ БЕЗ AUTOPLAY. preload="none" + poster: браузер малює картинку-
+   заглушку (58 КБ) і не тягне жодного байта відео, доки людина не
+   натисне. Тобто блок не впливає на швидкість сторінки взагалі — ані на
+   LCP, ані на трафік.
+
+   Розмітку VideoObject додаємо ЛИШЕ на головній (schema=true), щоб не
+   дублювати той самий об'єкт на двох адресах. #}
+{% set v_mp4 = static_url('videos/derived/story.mp4') %}
+{% set v_webm = static_url('videos/derived/story.webm') %}
+{% set v_poster = static_url('images/story-poster.jpg') %}
+
+{% if schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": {{ t('video.h2') | tojson }},
+  "description": {{ t('video.text') | tojson }},
+  "thumbnailUrl": "{{ SITE_URL }}{{ v_poster }}",
+  "uploadDate": "2026-09-01",
+  "duration": "PT17S",
+  "contentUrl": "{{ SITE_URL }}{{ v_mp4 }}"
+}
+</script>
+{% endif %}
+
+<section class="section section--flush">
+  <div class="container">
+    <div class="videoblock">
+      <div class="videoblock__text">
+        <span class="section-head__eyebrow">{{ t('video.eyebrow') }}</span>
+        <h2>{{ t('video.h2') }}</h2>
+        <p class="section-head__lead">{{ t('video.text') }}</p>
+        <div class="cluster" style="margin-top: var(--sp-5)">
+          <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}"
+             data-cta="phone-video">{{ PHONE_DISPLAY }}</a>
+          <a class="btn btn--ghost" href="{{ url_for('contact.contact') }}">{{ t('common.callback') }}</a>
+        </div>
+      </div>
+      <div class="videoblock__player">
+        {# Рідних controls немає навмисно — разом з ними йде кнопка
+           повноекранного режиму. Кадр 404 точки завширшки, розтягнутий на
+           весь екран, дає мило; а сам повний екран горизонтальний, тож
+           вертикальне відео в ньому або обрізається з боків, або тоне в
+           чорних полях. Ні того, ні іншого показувати не варто.
+
+           Замість дрібної системної кнопки — велика по центру кадру.
+           Кнопка справжня (<button>), тому працює з клавіатури й читається
+           екранним читачем; JS живе в site.js і вмикається лише там, де
+           цей блок є. Без JS лишається постер і підпис — сторінка не
+           ламається. #}
+        <div class="vwrap" data-video>
+          <video class="vplayer" preload="none" playsinline
+                 disablePictureInPicture controlsList="nodownload noplaybackrate"
+                 poster="{{ v_poster }}" width="404" height="720">
+            <source src="{{ v_webm }}" type="video/webm">
+            <source src="{{ v_mp4 }}" type="video/mp4">
+          </video>
+          <button type="button" class="vplay" data-video-play
+                  aria-label="{{ t('video.play') }}">
+            <span class="vplay__icon" aria-hidden="true"></span>
+          </button>
+        </div>
+    </div>
+  </div>
+</section>

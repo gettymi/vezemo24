@@ -1,74 +1,333 @@
+import json
+import os
+
 from datetime import date
 
-from flask import Blueprint, render_template, url_for, Response
+from urllib.parse import urlencode
 
-main_bp = Blueprint('main', __name__)
+from flask import (
+    Blueprint, abort, render_template, url_for, Response, redirect,
+    current_app, send_file
+)
 
-# Публічні сторінки для sitemap (без thank-you — сторінка конверсії)
+import content.abroad as abroad_data
+import content.places as place_data
+import content.routes as route_data
+from content import pricing
+from i18n import DEFAULT, LOCALES
+
+main_bp = Blueprint("main", __name__)
+
+# Кожна публічна сторінка живе за трьома адресами. Українська — в корені,
+# без префікса: це основна мова, її URL уже проіндексовані й міняти їх
+# заради симетрії було б шкідливо.
+#
+#   /            /ru/            /en/
+#   /services    /ru/services    /en/services
+#
+# Другий декоратор ловить префікс, а defaults={"lang": DEFAULT} тримає
+# українську версію в корені. Далі url_defaults (див. i18n/__init__.py)
+# сам підставляє поточну мову в кожен url_for, тому в шаблонах посилання
+# лишились без змін і не викидають людину з обраної мови.
+LANG_RULE = "/<any(ru,en):lang>" 
+
+# Публічні сторінки для sitemap (без /thank-you — це сторінка конверсії)
 SITEMAP_PAGES = [
-    {"endpoint": "main.index", "priority": "1.0", "changefreq": "weekly"},
-    {"endpoint": "main.calculate_km", "priority": "0.9", "changefreq": "weekly"},
-    {"endpoint": "main.services", "priority": "0.85", "changefreq": "monthly"},
-    {"endpoint": "main.zakordon", "priority": "0.85", "changefreq": "monthly"},
-    {"endpoint": "contact.contact", "priority": "0.8", "changefreq": "monthly"},
+    {"endpoint": "main.index",        "priority": "1.0",  "priority_alt": "0.8",  "changefreq": "weekly"},
+    {"endpoint": "main.services",     "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
+    {"endpoint": "main.mizhmiski",    "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
+    {"endpoint": "main.calculate_km", "priority": "0.85", "priority_alt": "0.65", "changefreq": "weekly"},
+    {"endpoint": "main.abroad",       "priority": "0.9",  "priority_alt": "0.7",  "changefreq": "monthly"},
+    {"endpoint": "contact.contact",   "priority": "0.8",  "priority_alt": "0.6",  "changefreq": "monthly"},
 ]
 
-@main_bp.route("/")
-def index():
-    # ПРИБРАЛИ: current_app.logger.info("User visited Home Page")
+
+def visible_pages():
+    """Сторінки для мапи сайту, які справді відкриваються."""
+    return list(SITEMAP_PAGES)
+
+
+def _t(key):
+    """t() з i18n, але доступний і поза шаблоном."""
+    from i18n import t
+    return t(key)
+
+
+def _abs_url(endpoint, lang=None, **values):
+    """Абсолютний URL на канонічному домені (а не на тому, з якого прийшов запит)."""
+    base = current_app.config["SITE_URL"].rstrip("/")
+    return base + (url_for(endpoint, lang=lang, **values) if lang
+                   else url_for(endpoint, **values))
+
+
+@main_bp.route("/", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/")
+def index(lang=DEFAULT):
     return render_template("index.html")
 
-@main_bp.route("/calculate-km")
-def calculate_km():
+
+@main_bp.route("/calculate-km", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/calculate-km")
+def calculate_km(lang=DEFAULT):
     return render_template("calculate_km.html")
 
 
-@main_bp.route("/thank-you")
-def thank_you():
-    """Сторінка подяки після відправки форми — для відстеження конверсий (GTM / Google Ads)."""
+@main_bp.route("/thank-you", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/thank-you")
+def thank_you(lang=DEFAULT):
+    """Сторінка подяки — ціль конверсії для Google Ads / GA4."""
     return render_template("thank_you.html")
 
 
-@main_bp.route("/services")
-def services():
-    """Сторінка «Послуги» — детальний опис послуг перевезень."""
+@main_bp.route("/services", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/services")
+def services(lang=DEFAULT):
     return render_template("services.html")
 
 
+# Сторінка на кожен напрямок. Людина шукає «перевезення Київ Львів», а не
+# «вантажні перевезення» — загальна сторінка на такий запит не відповідає.
+# Слаг латиницею і однаковий для всіх мов: адреса лишається стабільною,
+# навіть якщо назва міста різна в кожній локалі.
+@main_bp.route("/perevezennya/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya/<slug>")
+def route_page(slug, lang=DEFAULT):
+    route = route_data.get(slug)
+    if route is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+    city = _t(route["city"])
+
+    # Калькулятор відкривається вже заповненим. Передаємо слаг, а не назви
+    # міст: у map.js для цих напрямків є готові координати, тож розрахунок
+    # відбувається миттєво й не витрачає ліміт геокодера.
+    calc_url = url_for("main.calculate_km") + "?" + urlencode({"route": slug})
+
+    # Ціну міжміського рейсу можна назвати чесно: вона залежить від
+    # відстані, а відстань відома. Погодинну — ні, бо ніхто наперед не
+    # знає, скільки триватиме завантаження.
+    price = pricing.quote_intercity(route["km"])
+    price_return = pricing.quote_intercity_return(route["km"])
+
+    return render_template(
+        "route.html",
+        route=route,
+        price=price,
+        price_return=price_return,
+        pricing=pricing,
+        copy=route_data.copy_for(route, locale),
+        via_names=[_t(k) for k in route.get("via", [])],
+        # Показуємо не всі напрямки, а п'ять найближчих за відстанню. Дві
+        # причини: список із десяти однакових рядків на кожній сторінці роздуває
+        # частку шаблонного тексту (а це саме те, за чим Google визначає
+        # дублікати), і читачеві корисніші сусідні плечі, а не повний перелік.
+        others=sorted(
+            (r for r in route_data.ROUTES if r["slug"] != slug),
+            key=lambda r: abs(r["km"] - route["km"]),
+        )[:5],
+        calc_url=calc_url,
+    )
+
+
+# Сторінка на кожне місто області. «Вантажне таксі Бровари» — запит із
+# набагато вищим наміром купити, ніж «перевезення Київ Чернівці»: більшість
+# роботи буса локальна, і саме цих сторінок у нас не було жодної.
+#
+# Окремий префікс, а не /perevezennya/<slug>: там живуть міжміські напрямки,
+# і змішувати в одному просторі імен дві різні моделі ціни (за км і за
+# годину) — це шлях до плутанини в адресах і в головах.
+@main_bp.route("/vantazhni-perevezennya/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/vantazhni-perevezennya/<slug>")
+def place_page(slug, lang=DEFAULT):
+    place = place_data.BY_SLUG.get(slug)
+    if place is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+
+    # Калькулятор відкривається заповненим: координати міста передаємо прямо,
+    # бо для області готових пресетів у map.js немає й заводити їх на кожне
+    # село немає сенсу.
+    calc_url = url_for("main.calculate_km") + "?" + urlencode({
+        "to": _t(place["city"]),
+        "lat": place["ll"][0],
+        "lng": place["ll"][1],
+    })
+
+    return render_template(
+        "place.html",
+        place=place,
+        pricing=pricing,
+        copy=place.get("copy", {}).get(locale) or place.get("copy", {}).get(DEFAULT, {}),
+        near=place_data.neighbours(slug),
+        calc_url=calc_url,
+    )
+
+
+@main_bp.route("/mizhmiski-perevezennya", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/mizhmiski-perevezennya")
+def mizhmiski(lang=DEFAULT):
+    """Міжміські перевезення по Україні."""
+    # Напрямки з власними сторінками показуємо посиланнями, решту — просто
+    # рядком. Так список не бреше: клікабельне те, що справді існує.
+    return render_template("mizhmiski.html", routes=route_data.ROUTES)
+
+
+@main_bp.route("/perevezennya-za-kordon", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya-za-kordon")
+def abroad(lang=DEFAULT):
+    """Міжнародні перевезення. Ціна — ставка за км, суму рахує калькулятор."""
+    return render_template("abroad.html", destinations=abroad_data.DESTINATIONS)
+
+
+# Окремий префікс під напрямок: /perevezennya-za-kordon — це хаб, а конкретне
+# місто живе під ним. Так адреса читається як шлях, і хлібні крихти збігаються
+# з реальною ієрархією, а не малюють вигадану.
+@main_bp.route("/perevezennya-za-kordon/<slug>", defaults={"lang": DEFAULT})
+@main_bp.route(LANG_RULE + "/perevezennya-za-kordon/<slug>")
+def abroad_page(slug, lang=DEFAULT):
+    dest = abroad_data.BY_SLUG.get(slug)
+    if dest is None:
+        abort(404)
+
+    from flask import g
+    locale = getattr(g, "locale", DEFAULT)
+
+    # Калькулятор відкривається на готовому напрямку: у map.js для цих п'яти
+    # пресети є, тож достатньо slug — координати він візьме сам.
+    calc_url = url_for("main.calculate_km") + "?route=" + slug
+
+    zone = pricing.ABROAD_ZONES.get(dest["zone"], {})
+    return render_template(
+        "abroad_place.html",
+        dest=dest,
+        rate=("%.2f" % zone.get("per_total_km", 0)).replace(".", ","),
+        copy=dest.get("copy", {}).get(locale) or dest.get("copy", {}).get(DEFAULT, {}),
+        near=abroad_data.neighbours(slug),
+        calc_url=calc_url,
+    )
+
+
+# ─── 301 зі старих URL ───────────────────────────────────────────────────────
+# Стара адреса містила літеру з наголосом (/zakordón -> /zakord%C3%B3n),
+# що псувало вигляд у видачі та в поширених посиланнях.
 @main_bp.route("/zakordón")
-def zakordon():
-    """Сторінка «Закордон» — перевезення за кордон (Європа тощо)."""
-    return render_template("zakordon.html")
+@main_bp.route("/zakordon")
+def zakordon_legacy():
+    # Раніше вела на міжміські, бо закордонної послуги не було. Тепер є.
+    return redirect(url_for("main.abroad"), code=301)
+
+
+
+# ── Іконки в корені сайту ────────────────────────────────────────────────────
+# Браузери й краулери запитують /favicon.ico і /apple-touch-icon.png самі,
+# незалежно від тегів у <head>. Стара версія сайту не мала тегів іконки
+# взагалі — саме тому в закладках Safari осів значок, узятий із кореня.
+# Якщо не віддати тут нову іконку, старий значок так і залишиться.
+def _root_icon(filename, mimetype):
+    path = os.path.join(current_app.static_folder, "images", filename)
+    resp = send_file(path, mimetype=mimetype)
+    # Доба, а не рік: адреса стала, тож при наступній зміні знака нам
+    # потрібно, щоб кеш сам оновився за розумний час.
+    resp.headers["Cache-Control"] = "public, max-age=86400"
+    return resp
+
+
+@main_bp.route("/favicon.ico")
+def favicon_ico():
+    return _root_icon("favicon.ico", "image/x-icon")
+
+
+@main_bp.route("/apple-touch-icon.png")
+def apple_icon():
+    return _root_icon("apple-touch-icon.png", "image/png")
+
+
+@main_bp.route("/site.webmanifest")
+def webmanifest():
+    """Маніфест для Android і «додати на головний екран»."""
+    return Response(
+        json.dumps({
+            "name": _t("brand.full"),
+            "short_name": _t("brand.word"),
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#0ea5e9",
+            "icons": [
+                {"src": url_for("static", filename="images/icon-192.png"),
+                 "sizes": "192x192", "type": "image/png"},
+                {"src": url_for("static", filename="images/icon-512.png"),
+                 "sizes": "512x512", "type": "image/png"},
+            ],
+        }, ensure_ascii=False),
+        mimetype="application/manifest+json",
+    )
 
 
 @main_bp.route("/robots.txt")
 def robots():
-    """robots.txt — інструкції для пошукових роботів."""
-    sitemap_url = url_for("main.sitemap", _external=True)
     lines = [
         "User-agent: *",
         "Allow: /",
         "",
         "# Службові сторінки — не індексувати",
         "Disallow: /thank-you",
+        "Disallow: /health",
         "",
-        f"Sitemap: {sitemap_url}",
+        f"Sitemap: {_abs_url('main.sitemap')}",
     ]
     return Response("\n".join(lines) + "\n", mimetype="text/plain; charset=utf-8")
 
 
 @main_bp.route("/sitemap.xml")
 def sitemap():
-    """Динамічна XML-карта сайту для Google, Bing тощо."""
     lastmod = date.today().isoformat()
+    # Кожна сторінка потрапляє в мапу тричі — по разу на мову. Без цього
+    # Google просто не дізнається, що російська та англійська версії існують.
     pages = [
         {
-            "loc": url_for(item["endpoint"], _external=True),
+            "loc": _abs_url(item["endpoint"], lang),
             "lastmod": lastmod,
             "changefreq": item["changefreq"],
-            "priority": item["priority"],
+            "priority": item["priority"] if lang == DEFAULT else item["priority_alt"],
         }
-        for item in SITEMAP_PAGES
+        for item in visible_pages()
+        for lang in LOCALES
+    ] + [
+        {
+            "loc": _abs_url("main.route_page", lang, slug=r["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.8" if lang == DEFAULT else "0.6",
+        }
+        for r in route_data.ROUTES
+        for lang in LOCALES
+    ] + [
+        # Локальні сторінки — вищий пріоритет за міжміські напрямки: намір
+        # купити в запиті «вантажне таксі Бровари» відчутно вищий.
+        {
+            "loc": _abs_url("main.place_page", lang, slug=p["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.85" if lang == DEFAULT else "0.65",
+        }
+        for p in place_data.PLACES
+        for lang in LOCALES
+    ] + [
+        # Закордонні напрямки: пріоритет нижчий за локальні сторінки — запитів
+        # менше, але й конкуренції менше, тож сторінки того варті.
+        {
+            "loc": _abs_url("main.abroad_page", lang, slug=d["slug"]),
+            "lastmod": lastmod,
+            "changefreq": "monthly",
+            "priority": "0.8" if lang == DEFAULT else "0.6",
+        }
+        for d in abroad_data.DESTINATIONS
+        for lang in LOCALES
     ]
-    sitemap_xml = render_template("sitemap_template.xml", pages=pages)
-    return Response(sitemap_xml, mimetype="application/xml; charset=utf-8")
+    xml = render_template("sitemap_template.xml", pages=pages)
+    return Response(xml, mimetype="application/xml; charset=utf-8")

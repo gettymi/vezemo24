@@ -5,11 +5,123 @@
 (function () {
   "use strict";
 
-  var NOMINATIM_UA = "Vezemo24/1.0 (https://vezemo24.com)";
   var KYIV = [50.4501, 30.5234];
-  var NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-  var NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse";
-  var OSRM_URL = "https://router.project-osrm.org/route/v1/driving";
+
+  /* Готові напрямки з зашитими координатами. Сенс не лише в зручності:
+     пресет не робить ЖОДНОГО запиту до геокодера, тож найпопулярніші
+     маршрути рахуються миттєво й не витрачають ліміт Nominatim. */
+  /* Розвʼязуємо переклад у момент виклику, а не при завантаженні файлу:
+     i18n.js має defer і виконується пізніше за цей скрипт, тож на момент
+     старту window.VZ ще не існує. Раніше через це на сторінку виводились
+     самі ключі («unit.km» замість «км»). */
+  var T = function (k, v) {
+    return window.VZ && window.VZ.t ? window.VZ.t(k, v) : k;
+  };
+  var KYIV_LL = [50.4501, 30.5234];
+  /* Координати всіх напрямків, що мають власну сторінку. Завдяки їм перехід
+     за ?route=<slug> будує маршрут миттєво й не витрачає ліміт геокодера.
+     Додаючи напрямок у content/routes.py, додайте пару і сюди. */
+  var ROUTE_COORDS = {
+    "kyiv-lviv":        { to: "city.lviv",        cc: "ua", ll: [49.8397, 24.0297] },
+    "kyiv-odesa":       { to: "city.odesa",       cc: "ua", ll: [46.4825, 30.7233] },
+    "kyiv-dnipro":      { to: "city.dnipro",      cc: "ua", ll: [48.4647, 35.0462] },
+    "kyiv-kharkiv":     { to: "city.kharkiv",     cc: "ua", ll: [49.9935, 36.2304] },
+    "kyiv-zhytomyr":    { to: "city.zhytomyr",    cc: "ua", ll: [50.2547, 28.6587] },
+    "kyiv-cherkasy":    { to: "city.cherkasy",    cc: "ua", ll: [49.4444, 32.0598] },
+    "kyiv-vinnytsia":   { to: "city.vinnytsia",   cc: "ua", ll: [49.2331, 28.4682] },
+    "kyiv-rivne":       { to: "city.rivne",       cc: "ua", ll: [50.6199, 26.2516] },
+    "kyiv-poltava":     { to: "city.poltava",     cc: "ua", ll: [49.5883, 34.5514] },
+    "kyiv-zaporizhzhia":{ to: "city.zapor",       cc: "ua", ll: [47.8388, 35.1396] },
+    "kyiv-chernivtsi":  { to: "city.chernivtsi",  cc: "ua", ll: [48.2917, 25.9352] },
+  };
+
+  /* Європейські напрямки. Відстань рахує OSRM за реальним маршрутом —
+     точних кілометражів до Європи ми не зашиваємо, щоб не назвати
+     неправильну ціну. zone визначає тарифну зону (схід/захід). */
+  var ABROAD_COORDS = {
+    "kyiv-warszawa":   { to: "city.warszawa",   zone: "east", cc: "pl", ll: [52.2297, 21.0122] },
+    "kyiv-krakow":     { to: "city.krakow",     zone: "east", cc: "pl", ll: [50.0647, 19.9450] },
+    "kyiv-praha":      { to: "city.praha",      zone: "east", cc: "cz", ll: [50.0755, 14.4378] },
+    "kyiv-bratislava": { to: "city.bratislava", zone: "east", cc: "sk", ll: [48.1486, 17.1077] },
+    "kyiv-berlin":     { to: "city.berlin",     zone: "west", cc: "de", ll: [52.5200, 13.4050] },
+  };
+
+  /* Зона поточного маршруту: null — Україна, інакше закордонний тариф. */
+  var activeZone = null;
+
+  /* У панелі показуємо лише найчастіші напрямки: одинадцять кнопок
+     перетворили б блок на стіну й відсунули б самі поля вводу вниз.
+     Решта доступні з відповідних сторінок напрямків. */
+  var PRESET_SLUGS = ["kyiv-lviv", "kyiv-odesa", "kyiv-dnipro", "kyiv-kharkiv"];
+
+  /* Геосервіси більше не викликаються з браузера напряму: усе йде через
+     власні /api/geo/*, де є кеш, коректний User-Agent і дотримання
+     інтервалу між запитами (див. routes/geo.py). */
+  var GEO_SEARCH = "/api/geo/search";
+  var GEO_REVERSE = "/api/geo/reverse";
+  var GEO_ROUTE = "/api/geo/route";
+
+  /* alert() блокує сторінку, виглядає як помилка браузера і не показує
+     контексту. Тепер повідомлення живе в самій панелі. */
+  /* Шари існують лише разом із картою. Без цієї перевірки будь-яка дія,
+     що чистить маршрут, падала з TypeError, коли Leaflet не завантажився —
+     і разом із нею вмирала вся форма. */
+  /* «540.0 км» і «6 год 0 хв» виглядають як вивід налагодження.
+     В українській десятковий роздільник — кома, а нульові хвилини зайві. */
+  /* 24300 -> «24 300». Без розділювача велика сума читається як
+     набір цифр, і її легко сприйняти неправильно. */
+  function formatMoney(n) {
+    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+  }
+
+  function formatKm(meters) {
+    var km = (meters || 0) / 1000;
+    var txt = km >= 100 ? String(Math.round(km)) : km.toFixed(1).replace(".", ",");
+    return txt.replace(",0", "") + " " + T("unit.km");
+  }
+
+  function formatDuration(seconds) {
+    var total = Math.round((seconds || 0) / 60);
+    var h = Math.floor(total / 60);
+    var m = total % 60;
+    if (h && m) return h + " " + T("unit.hour") + " " + m + " " + T("unit.min");
+    if (h) return h + " " + T("unit.hour");
+    return m + " " + T("unit.min");
+  }
+
+  function clearMapLayers() {
+    if (markersLayer) markersLayer.clearLayers();
+    if (routeLayer) routeLayer.clearLayers();
+  }
+
+  function notice(msg, kind) {
+    var box = document.getElementById("map-notice");
+    if (!box) return;
+    if (!msg) { box.classList.remove("is-shown"); box.textContent = ""; return; }
+    box.textContent = msg;
+    box.className = "notice notice--" + (kind || "error") + " is-shown";
+  }
+
+  /* Через серверний геокодер із витримкою в секунду маршрут може рахуватись
+     кілька секунд. Без цього стану сторінка виглядала так, ніби нічого не
+     сталось, і люди тиснули кнопку повторно. */
+  function setBusy(on) {
+    var btn = document.getElementById("build-route");
+    if (!btn) return;
+    btn.disabled = !!on;
+    btn.classList.toggle("is-busy", !!on);
+    if (on) {
+      if (!btn.getAttribute("data-label")) btn.setAttribute("data-label", btn.textContent);
+      btn.textContent = T("calc.busy");
+    } else if (btn.getAttribute("data-label")) {
+      btn.textContent = btn.getAttribute("data-label");
+    }
+  }
+
+  function getJSON(url) {
+    return fetch(url, { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : null; });
+  }
 
   var map = null;
   var routeLayer = null;
@@ -21,10 +133,93 @@
   var lastSearchAbort = null;
   var currentRouteData = null; // { distance: meters, duration: seconds }
 
+  /* Раніше все — і карта, і кнопки — піднімалось в одній функції, яка
+     починалась із L.map(). Якщо Leaflet не завантажився, кидався
+     ReferenceError і разом із картою вмирали «Розрахувати», «Очистити»
+     та підказки адрес. Тепер контроли не залежать від карти. */
+  function wireControls() {
+    renderPresets();
+
+    document.getElementById("add-point")?.addEventListener("click", addWayPoint);
+    document.getElementById("build-route")?.addEventListener("click", buildRoute);
+    document.getElementById("clear-route")?.addEventListener("click", clearRoute);
+
+    createAutocompleteDropdown();
+    document.querySelectorAll("#points-container .point__input").forEach(function (inp) {
+      if (!inp.readOnly) setupAutocomplete(inp);
+    });
+  }
+
+  function renderPresets() {
+    var host = document.getElementById("presets");
+    if (!host) return;
+    PRESET_SLUGS.forEach(function (slug) {
+      addPresetButton(host, ROUTE_COORDS[slug]);
+    });
+    // Закордонні напрямки окремим рядом. Без них у калькуляторі не було
+    // ЖОДНОГО способу дістати євровий тариф: кнопок немає, а пошук
+    // адрес донедавна не виходив за межі України.
+    var abroadHost = document.getElementById("presets-abroad");
+    if (!abroadHost) return;
+    Object.keys(ABROAD_COORDS).forEach(function (slug) {
+      addPresetButton(abroadHost, ABROAD_COORDS[slug]);
+    });
+  }
+
+  function addPresetButton(host, preset) {
+    if (!preset) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "preset";
+    b.textContent = T("city.kyiv") + " → " + T(preset.to);
+    b.addEventListener("click", function () { applyPreset(preset); });
+    host.appendChild(b);
+  }
+
+  function applyPreset(preset) {
+    clearRoute();
+    activeZone = preset.zone || null;
+    var rows = document.querySelectorAll("#points-container .point");
+    // preset.to — це або ключ перекладу («city.lviv»), або вже готова
+    // назва з адресного рядка. literal розрізняє ці два випадки: інакше
+    // T("Бровари") повернув би сам рядок і все одно спрацювало б, але
+    // мовчазний збіг — погана підстава покладатися на поведінку.
+    var toLabel = preset.literal ? preset.to : T(preset.to);
+    var points = [
+      [T("city.kyiv"), KYIV_LL[0], KYIV_LL[1], "ua"],
+      [toLabel, preset.ll[0], preset.ll[1], preset.cc || ""],
+    ];
+    points.forEach(function (pt, i) {
+      var row = rows[i];
+      if (!row) return;
+      var input = row.querySelector(".point__input");
+      input.value = pt[0];
+      row.setAttribute("data-lat", pt[1]);
+      row.setAttribute("data-lng", pt[2]);
+      if (pt[3]) row.setAttribute("data-cc", pt[3]);
+      else row.removeAttribute("data-cc");
+    });
+    buildRoute();
+  }
+
+  function showMapFallback() {
+    var fb = document.getElementById("map-fallback");
+    if (fb) fb.hidden = false;
+    var btn = document.getElementById("add-point-map");
+    if (btn) btn.hidden = true;   // без карти в цій кнопці немає сенсу
+  }
+
   function initMap() {
     if (map) return;
     var el = document.getElementById("map");
     if (!el) return;
+
+    if (typeof L === "undefined") {
+      showMapFallback();
+      return;   // форма далі працює — карта тут не обов'язкова
+    }
+
+    document.getElementById("add-point-map")?.addEventListener("click", enableMapClickMode);
 
     map = L.map("map", {
       center: KYIV,
@@ -38,73 +233,23 @@
     markersLayer = L.layerGroup().addTo(map);
     routeLayer = L.layerGroup().addTo(map);
 
-    document.getElementById("add-point")?.addEventListener("click", addWayPoint);
-    document.getElementById("add-point-map")?.addEventListener("click", enableMapClickMode);
-    document.getElementById("build-route")?.addEventListener("click", buildRoute);
-    document.getElementById("clear-route")?.addEventListener("click", clearRoute);
-
-    var vehicleRadios = document.querySelectorAll('input[name="vehicle"]');
-    vehicleRadios.forEach(function (radio) {
-      radio.addEventListener("change", function () {
-        syncServicePanel();
-        recalculatePrice();
-      });
-    });
-    syncServicePanel();
-    var samosvalServiceRadios = document.querySelectorAll('#services-samosval input[name="service"]');
-    samosvalServiceRadios.forEach(function (radio) {
-      radio.addEventListener("change", function () {
-        syncSamosvalQuantityBlock();
-        recalculatePrice();
-      });
-    });
-    var busServiceRadios = document.querySelectorAll('#services-bus input[name="service"]');
-    busServiceRadios.forEach(function (radio) {
-      radio.addEventListener("change", recalculatePrice);
-    });
-    var quantityInput = document.getElementById("samosval-quantity");
-    if (quantityInput) {
-      quantityInput.addEventListener("input", recalculatePrice);
-      quantityInput.addEventListener("change", recalculatePrice);
-    }
-
     map.on("click", onMapClick);
-
-    createAutocompleteDropdown();
-    document.querySelectorAll("#points-container .route-input").forEach(function (inp) {
-      if (!inp.readOnly) setupAutocomplete(inp);
-    });
   }
 
   function createAutocompleteDropdown() {
     if (autocompleteDropdown) return;
     autocompleteDropdown = document.createElement("div");
-    autocompleteDropdown.className = "autocomplete-dropdown";
+    autocompleteDropdown.className = "suggest";
     autocompleteDropdown.setAttribute("role", "listbox");
     document.body.appendChild(autocompleteDropdown);
   }
 
   function searchAddresses(query) {
     if (!query || query.length < 2) return Promise.resolve([]);
-    var params = new URLSearchParams({
-      q: query,
-      format: "json",
-      limit: 6,
-      countrycodes: "ua",
-    });
-    return fetch(NOMINATIM_URL + "?" + params, {
-      headers: { Accept: "application/json", "User-Agent": NOMINATIM_UA },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ q: query, limit: 6 });
+    return getJSON(GEO_SEARCH + "?" + params)
       .then(function (data) {
-        if (!Array.isArray(data)) return [];
-        return data.map(function (d) {
-          return {
-            lat: parseFloat(d.lat),
-            lng: parseFloat(d.lon),
-            display: d.display_name,
-          };
-        });
+        return data && Array.isArray(data.results) ? data.results : [];
       })
       .catch(function () { return []; });
   }
@@ -117,13 +262,13 @@
     autocompleteDropdown.style.width = Math.max(rect.width, 280) + "px";
     autocompleteDropdown.innerHTML = "";
     if (!results.length) {
-      autocompleteDropdown.classList.add("autocomplete-dropdown--empty");
-      autocompleteDropdown.innerHTML = '<div class="autocomplete-item autocomplete-item--hint">Нічого не знайдено</div>';
+      autocompleteDropdown.classList.add("suggest--empty");
+      autocompleteDropdown.innerHTML = '<div class="suggest__item suggest__item--hint">' + T("calc.nothing") + '</div>';
     } else {
-      autocompleteDropdown.classList.remove("autocomplete-dropdown--empty");
+      autocompleteDropdown.classList.remove("suggest--empty");
       results.forEach(function (r) {
         var div = document.createElement("div");
-        div.className = "autocomplete-item";
+        div.className = "suggest__item";
         div.setAttribute("role", "option");
         div.textContent = r.display;
         div.addEventListener("click", function () {
@@ -137,10 +282,14 @@
 
   function selectAutocompleteItem(input, item) {
     input.value = item.display;
-    var row = input.closest(".input-row");
-    if (row && !row.classList.contains("input-row-map")) {
+    var row = input.closest(".point");
+    if (row && !row.classList.contains("point--map")) {
       row.setAttribute("data-lat", item.lat);
       row.setAttribute("data-lng", item.lng);
+      // Країну зберігаємо разом із координатами: за нею калькулятор
+      // визначає тарифну зону, коли адресу ввели руками, а не обрали
+      // готовий напрямок.
+      if (item.cc) row.setAttribute("data-cc", item.cc);
     }
     hideAutocomplete();
     input.blur();
@@ -155,20 +304,25 @@
     input._autocompleteSetup = true;
 
     input.addEventListener("input", function () {
-      var row = input.closest(".input-row");
+      var row = input.closest(".point");
       if (row && row.getAttribute("data-lat") != null) {
         row.removeAttribute("data-lat");
         row.removeAttribute("data-lng");
-        row.classList.remove("input-row-map");
+        row.removeAttribute("data-cc");
+        row.classList.remove("point--map");
         if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
         row._mapMarker = null;
       }
-      if (row && row.classList.contains("input-row-map")) return;
+      if (row && row.classList.contains("point--map")) return;
       if (autocompleteTimer) clearTimeout(autocompleteTimer);
       var value = input.value.trim();
       if (value.length < 2) {
         hideAutocomplete();
-        if (row) { row.removeAttribute("data-lat"); row.removeAttribute("data-lng"); }
+        if (row) {
+          row.removeAttribute("data-lat");
+          row.removeAttribute("data-lng");
+          row.removeAttribute("data-cc");
+        }
         return;
       }
       autocompleteTimer = setTimeout(function () {
@@ -176,7 +330,7 @@
         searchAddresses(value).then(function (results) {
           showAutocomplete(input, results);
         });
-      }, 400);
+      }, 600);
     });
 
     input.addEventListener("focus", function () {
@@ -189,47 +343,49 @@
     });
 
     input.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") hideAutocomplete();
+      if (e.key === "Escape") { hideAutocomplete(); return; }
+      if (!autocompleteDropdown || autocompleteDropdown.style.display !== "block") return;
+
+      var items = autocompleteDropdown.querySelectorAll(".suggest__item:not(.suggest__item--hint)");
+      if (!items.length) return;
+      var current = -1;
+      items.forEach(function (el, i) { if (el.classList.contains("is-active")) current = i; });
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var next = e.key === "ArrowDown" ? current + 1 : current - 1;
+        if (next < 0) next = items.length - 1;
+        if (next >= items.length) next = 0;
+        items.forEach(function (el) { el.classList.remove("is-active"); });
+        items[next].classList.add("is-active");
+        items[next].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter" && current >= 0) {
+        e.preventDefault();
+        items[current].click();
+      }
     });
   }
 
   function geocode(query) {
-    var params = new URLSearchParams({
-      q: query,
-      format: "json",
-      limit: 1,
-    });
-    return fetch(NOMINATIM_URL + "?" + params, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": NOMINATIM_UA,
-      },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ q: query, limit: 1 });
+    return getJSON(GEO_SEARCH + "?" + params)
       .then(function (data) {
-        if (!data || !data[0]) return null;
-        var d = data[0];
-        return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), display: d.display_name };
-      });
+        var hit = data && data.results && data.results[0];
+        return hit || null;
+      })
+      .catch(function () { return null; });
   }
 
   function reverseGeocode(lat, lng) {
-    var params = new URLSearchParams({
-      lat: lat,
-      lon: lng,
-      format: "json",
-    });
-    return fetch(NOMINATIM_REVERSE + "?" + params, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": NOMINATIM_UA,
-      },
-    })
-      .then(function (r) { return r.json(); })
+    var params = new URLSearchParams({ lat: lat, lon: lng });
+    return getJSON(GEO_REVERSE + "?" + params)
       .then(function (data) {
-        return data && data.display_name ? data.display_name : "Точка на карті";
+        return {
+          display: (data && data.display) || T("calc.map_point"),
+          cc: (data && data.cc) || "",
+        };
       })
-      .catch(function () { return "Точка на карті"; });
+      .catch(function () { return { display: T("calc.map_point"), cc: "" }; });
   }
 
   function enableMapClickMode() {
@@ -237,15 +393,16 @@
     if (mapClickHint) mapClickHint.remove();
     mapClickHint = L.popup({ closeButton: true, autoClose: false })
       .setLatLng(map.getCenter())
-      .setContent("<strong>Натисніть на карту</strong>, щоб додати точку маршруту.")
+      .setContent(T("calc.click_hint"))
       .openOn(map);
-    map.getContainer().classList.add("map-click-mode");
+    if (!map) return;
+    map.getContainer().classList.add("map-picking");
   }
 
   function onMapClick(e) {
     if (!mapClickMode) return;
     mapClickMode = false;
-    map.getContainer().classList.remove("map-click-mode");
+    map.getContainer().classList.remove("map-picking");
     if (mapClickHint) {
       mapClickHint.remove();
       mapClickHint = null;
@@ -253,12 +410,12 @@
     var lat = e.latlng.lat;
     var lng = e.latlng.lng;
     var container = document.getElementById("points-container");
-    var rows = Array.from(container.querySelectorAll(".input-row"));
+    var rows = Array.from(container.querySelectorAll(".point"));
     if (rows.length === 0) return;
     var firstRow = rows[0];
     var lastRow = rows[rows.length - 1];
     function rowIsEmpty(row) {
-      var inp = row.querySelector(".route-input");
+      var inp = row.querySelector(".point__input");
       var hasCoords = row.getAttribute("data-lat") != null && row.getAttribute("data-lng") != null;
       var hasValue = inp && inp.value.trim().length > 0;
       return !hasCoords && !hasValue;
@@ -278,97 +435,58 @@
     if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
     row.setAttribute("data-lat", lat);
     row.setAttribute("data-lng", lng);
-    row.classList.add("input-row-map");
-    var inp = row.querySelector(".route-input");
+    row.classList.add("point--map");
+    var inp = row.querySelector(".point__input");
     if (!inp) return;
-    inp.value = "Точка на карті…";
-    reverseGeocode(lat, lng).then(function (label) {
-      inp.value = label;
+    inp.value = T("calc.pending");
+    reverseGeocode(lat, lng).then(function (place) {
+      inp.value = place.display;
+      if (place.cc) row.setAttribute("data-cc", place.cc);
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
-    marker.bindPopup(inp.value || "Точка на карті");
+    marker.bindPopup(inp.value || T("calc.map_point"));
     row._mapMarker = marker;
   }
 
   function addRowFromMapClick(lat, lng) {
     var container = document.getElementById("points-container");
-    var rows = container.querySelectorAll(".input-row");
+    var rows = container.querySelectorAll(".point");
     var lastRow = rows[rows.length - 1];
 
     var div = document.createElement("div");
-    div.className = "input-row input-row-map";
+    div.className = "point point--map";
     div.setAttribute("data-lat", lat);
     div.setAttribute("data-lng", lng);
     div.innerHTML =
-      '<div class="icon-marker waypoint">•</div>' +
-      '<input type="text" class="route-input" placeholder="Точка на карті" readonly>' +
-      '<button class="remove-btn" title="Видалити">✕</button>';
-    var inp = div.querySelector(".route-input");
-    inp.value = "Точка на карті…";
-    reverseGeocode(lat, lng).then(function (label) {
-      inp.value = label;
+      '<div class="point__pin point__pin--via">•</div>' +
+      '<input type="text" class="input point__input" readonly>' +
+      '<button class="point__remove">✕</button>';
+    var inp = div.querySelector(".point__input");
+    inp.setAttribute("placeholder", T("calc.map_point"));
+    div.querySelector(".point__remove").setAttribute("title", T("calc.remove"));
+    inp.value = T("calc.pending");
+    reverseGeocode(lat, lng).then(function (place) {
+      inp.value = place.display;
+      if (place.cc) div.setAttribute("data-cc", place.cc);
     });
     var marker = L.marker([lat, lng]).addTo(markersLayer);
-    marker.bindPopup(inp.value || "Точка на карті");
+    marker.bindPopup(inp.value || T("calc.map_point"));
     div._mapMarker = marker;
-    div.querySelector(".remove-btn").addEventListener("click", function () {
+    div.querySelector(".point__remove").addEventListener("click", function () {
       if (div._mapMarker && div._mapMarker.remove) div._mapMarker.remove();
       div.remove();
     });
     container.insertBefore(div, lastRow);
 
     inp.addEventListener("change", function () {
-      marker.getPopup().setContent(inp.value || "Точка на карті");
+      marker.getPopup().setContent(inp.value || T("calc.map_point"));
     });
-  }
-
-  function syncServicePanel() {
-    var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-    var vehicle = vehicleRadio ? vehicleRadio.value : "bus";
-    var busPanel = document.getElementById("services-bus");
-    var samosvalPanel = document.getElementById("services-samosval");
-    var quantityBlock = document.getElementById("samosval-quantity-block");
-    if (busPanel && samosvalPanel) {
-      if (vehicle === "samosval") {
-        busPanel.style.display = "none";
-        samosvalPanel.style.display = "flex";
-        var firstSamosval = samosvalPanel.querySelector('input[name="service"]');
-        if (firstSamosval) firstSamosval.checked = true;
-        if (quantityBlock) quantityBlock.style.display = "flex";
-        syncSamosvalQuantityBlock();
-      } else {
-        busPanel.style.display = "flex";
-        samosvalPanel.style.display = "none";
-        var firstBus = busPanel.querySelector('input[name="service"]');
-        if (firstBus) firstBus.checked = true;
-        if (quantityBlock) quantityBlock.style.display = "none";
-      }
-    }
-  }
-
-  function syncSamosvalQuantityBlock() {
-    var quantityBlock = document.getElementById("samosval-quantity-block");
-    var labelEl = document.getElementById("samosval-quantity-label");
-    var unitEl = document.getElementById("samosval-quantity-unit");
-    var serviceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-    if (!quantityBlock || !labelEl || !unitEl) return;
-    var serviceId = serviceRadio ? serviceRadio.value : "samosval_sand";
-    var config = typeof PriceCalculator !== "undefined" && PriceCalculator.getDumpServiceConfig && PriceCalculator.getDumpServiceConfig()[serviceId];
-    if (config && config.unit) {
-      quantityBlock.style.display = "flex";
-      labelEl.textContent = "Кількість (" + (config.unitLabel || "") + ")";
-      unitEl.textContent = config.unitLabel || "";
-      unitEl.style.display = "";
-    } else {
-      quantityBlock.style.display = "none";
-      unitEl.style.display = "none";
-    }
   }
 
   function clearRoute() {
     var container = document.getElementById("points-container");
     if (!container) return;
-    var rows = Array.from(container.querySelectorAll(".input-row"));
+    var rows = Array.from(container.querySelectorAll(".point"));
     rows.forEach(function (row, i) {
       if (row._mapMarker && row._mapMarker.remove) row._mapMarker.remove();
       row._mapMarker = null;
@@ -377,41 +495,40 @@
     var first = rows[0];
     var second = rows[1];
     if (first) {
-      var inp1 = first.querySelector(".route-input");
+      var inp1 = first.querySelector(".point__input");
       if (inp1) { inp1.value = ""; inp1.readOnly = false; }
       first.removeAttribute("data-lat");
       first.removeAttribute("data-lng");
-      first.classList.remove("input-row-map");
+      first.classList.remove("point--map");
     }
     if (second) {
-      var inp2 = second.querySelector(".route-input");
+      var inp2 = second.querySelector(".point__input");
       if (inp2) { inp2.value = ""; inp2.readOnly = false; }
       second.removeAttribute("data-lat");
       second.removeAttribute("data-lng");
-      second.classList.remove("input-row-map");
+      second.classList.remove("point--map");
     }
-    markersLayer.clearLayers();
-    routeLayer.clearLayers();
+    clearMapLayers();
     currentRouteData = null;
     var resCard = document.getElementById("route-result");
-    if (resCard) resCard.style.display = "none";
-    var qInput = document.getElementById("samosval-quantity");
-    if (qInput) qInput.value = "";
+    if (resCard) resCard.classList.remove("is-shown");
   }
 
   function addWayPoint() {
     var container = document.getElementById("points-container");
-    var rows = container.querySelectorAll(".input-row");
+    var rows = container.querySelectorAll(".point");
     var lastRow = rows[rows.length - 1];
 
     var div = document.createElement("div");
-    div.className = "input-row";
+    div.className = "point";
     div.innerHTML =
-      '<div class="icon-marker waypoint">•</div>' +
-      '<input type="text" class="route-input" placeholder="Проміжна точка (місто або адреса)" autocomplete="off">' +
-      '<button class="remove-btn" title="Видалити">✕</button>';
-    var inp = div.querySelector(".route-input");
-    div.querySelector(".remove-btn").addEventListener("click", function () {
+      '<div class="point__pin point__pin--via">•</div>' +
+      '<input type="text" class="input point__input" autocomplete="off">' +
+      '<button class="point__remove">✕</button>';
+    var inp = div.querySelector(".point__input");
+    inp.setAttribute("placeholder", T("calc.via_ph"));
+    div.querySelector(".point__remove").setAttribute("title", T("calc.remove"));
+    div.querySelector(".point__remove").addEventListener("click", function () {
       div.remove();
     });
     container.insertBefore(div, lastRow);
@@ -419,14 +536,16 @@
   }
 
   function getOrderedPoints() {
-    var rows = Array.from(document.querySelectorAll("#points-container .input-row"));
+    var rows = Array.from(document.querySelectorAll("#points-container .point"));
     return rows.map(function (row) {
       var lat = row.getAttribute("data-lat");
       var lng = row.getAttribute("data-lng");
-      var input = row.querySelector(".route-input");
+      var input = row.querySelector(".point__input");
       var value = input ? input.value.trim() : "";
+      var cc = row.getAttribute("data-cc") || "";
       if (lat != null && lng != null) {
-        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng), label: value || "Точка на карті" };
+        return { type: "coords", lat: parseFloat(lat), lng: parseFloat(lng),
+                 cc: cc, label: value || T("calc.map_point") };
       }
       return { type: "address", value: value, label: value };
     });
@@ -435,7 +554,7 @@
   function resolvePoints(points) {
     var promises = points.map(function (p) {
       if (p.type === "coords") {
-        return Promise.resolve({ lat: p.lat, lng: p.lng, display: p.label });
+        return Promise.resolve({ lat: p.lat, lng: p.lng, display: p.label, cc: p.cc });
       }
       if (!p.value) return Promise.resolve(null);
       return geocode(p.value);
@@ -450,202 +569,223 @@
     });
 
     if (filled.length < 2) {
-      alert("Вкажіть мінімум дві точки: звідки та куди. Можна вписати місто/адресу або додати точку на карті.");
+      notice(T("calc.need_two"));
       return;
     }
 
+    notice("");
+    setBusy(true);
     var resCard = document.getElementById("route-result");
-    resCard.style.display = "none";
-    markersLayer.clearLayers();
-    routeLayer.clearLayers();
+    resCard.classList.remove("is-shown");
+    clearMapLayers();
+
+    // Без цього прапорця не знайдена точка давала два alert поспіль:
+    // спершу «точку не знайдено», а потім ще й «маршрут не знайдено».
+    var aborted = false;
 
     resolvePoints(filled)
       .then(function (coords) {
         var missing = coords.findIndex(function (c) { return !c; });
         if (missing >= 0) {
-          var label = filled[missing].label || filled[missing].value || "Точка " + (missing + 1);
-          alert('Точку "' + label + '" не знайдено. Уточніть написання або поставте точку на карті.');
+          var label = filled[missing].label || filled[missing].value || T("calc.map_point");
+          notice(T("calc.not_found", { label: label }));
+          aborted = true;
           return;
         }
 
-        coords.forEach(function (c) {
-          L.marker([c.lat, c.lng])
-            .addTo(markersLayer)
-            .bindPopup(c.display);
-        });
+        // Тарифну зону беремо з країн самих точок. Раніше вона
+        // приходила ЛИШЕ з готового напрямку, тому введена руками
+        // «Варшава» рахувалась як звичайне міжмісто в гривні.
+        if (typeof PriceCalculator !== "undefined" && PriceCalculator.zoneForPoints) {
+          var detected = PriceCalculator.zoneForPoints(coords);
+          if (detected) activeZone = detected;
+          else if (coords.some(function (c) { return c && c.cc; })) activeZone = null;
+        }
+
+        if (map) {
+          coords.forEach(function (c) {
+            L.marker([c.lat, c.lng]).addTo(markersLayer).bindPopup(c.display);
+          });
+        }
 
         var coordsStr = coords.map(function (c) { return c.lng + "," + c.lat; }).join(";");
-        return fetch(OSRM_URL + "/" + coordsStr + "?overview=full&geometries=geojson", {
-          headers: { Accept: "application/json" },
-        }).then(function (r) { return r.json(); });
+        return getJSON(GEO_ROUTE + "?coords=" + encodeURIComponent(coordsStr));
       })
-      .then(function (osrm) {
-        if (!osrm || osrm.code !== "Ok") {
-          alert("Маршрут не знайдено. Перевірте точки або спробуйте інші адреси.");
+      .then(function (route) {
+        if (aborted) return;
+        if (!route || !route.geometry) {
+          notice(T("calc.no_route"));
           return;
         }
 
-        var route = osrm.routes[0];
-        var geometry = route.geometry;
-        var line = L.geoJSON(
-          { type: "LineString", coordinates: geometry.coordinates },
-          {
-            style: {
-              color: "#0ea5e9",
-              weight: 5,
-              opacity: 0.8,
-            },
-          }
-        ).addTo(routeLayer);
-
-        map.fitBounds(line.getBounds(), { padding: [40, 40] });
+        if (map) {
+          var line = L.geoJSON(
+            { type: "LineString", coordinates: route.geometry.coordinates },
+            { style: { color: "#0ea5e9", weight: 5, opacity: 0.8 } }
+          ).addTo(routeLayer);
+          map.fitBounds(line.getBounds(), { padding: [40, 40] });
+        }
 
         currentRouteData = { distance: route.distance, duration: route.duration };
-        var distKm = (route.distance / 1000).toFixed(1);
-        var durationSec = route.duration;
-        var hours = Math.floor(durationSec / 3600);
-        var minutes = Math.floor((durationSec % 3600) / 60);
-        var timeStr = hours > 0 ? hours + " год " + minutes + " хв" : minutes + " хв";
+        var distKm = formatKm(route.distance);
+        var timeStr = formatDuration(route.duration);
 
         var labels = filled.map(function (p) { return p.label || p.value || ""; });
         var legs = route.legs || [];
         var legsHtml = legs
           .map(function (leg, i) {
-            var a = (labels[i] || "Точка " + (i + 1)).split(",")[0].trim();
-            var b = (labels[i + 1] || "Точка " + (i + 2)).split(",")[0].trim();
-            var dist = ((leg.distance || 0) / 1000).toFixed(1);
-            return '<div class="leg-row"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + " км</strong></div>";
+            var a = (labels[i] || T("calc.map_point")).split(",")[0].trim();
+            var b = (labels[i + 1] || T("calc.map_point")).split(",")[0].trim();
+            var dist = formatKm(leg.distance);
+            return '<div class="result__leg"><span>' + (i + 1) + ". " + a + " → " + b + "</span><strong>" + dist + "</strong></div>";
           })
           .join("");
 
-        var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-        var vehicleValue = vehicleRadio ? vehicleRadio.value : "bus";
-        var vehicleLabel = vehicleValue === "samosval" ? "Самосвал" : "Бус";
         var resVehicle = document.getElementById("res-vehicle");
-        if (resVehicle) resVehicle.textContent = vehicleLabel;
-        var serviceRadio = document.querySelector('input[name="service"]:checked');
-        var serviceLabel = "";
-        if (serviceRadio) {
-          var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".service-option");
-          if (opt) serviceLabel = opt.textContent.trim();
-        }
-        var resService = document.getElementById("res-service");
-        if (resService) resService.textContent = serviceLabel || "—";
-        document.getElementById("res-distance").textContent = distKm + " км";
+        if (resVehicle) resVehicle.textContent = T("calc.vehicle");
+        document.getElementById("res-distance").textContent = distKm;
         document.getElementById("res-duration").textContent = timeStr;
         document.getElementById("legs-details").innerHTML = legsHtml || "";
 
-        if (typeof PriceCalculator !== "undefined") {
-          var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
-          var options;
-          if (serviceType === "DUMP_TRUCK") {
-            var dumpServiceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-            var dumpServiceId = dumpServiceRadio ? dumpServiceRadio.value : "samosval_sand";
-            var qInput = document.getElementById("samosval-quantity");
-            var quantity = qInput && qInput.value !== "" ? parseFloat(qInput.value) : null;
-            if (quantity !== null && isNaN(quantity)) quantity = null;
-            options = { dumpTruckServiceId: dumpServiceId, quantity: quantity };
-          } else if (serviceType === "BUS") {
-            var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
-            var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
-            options = { busServiceId: busServiceId };
-          }
-          var priceResult = PriceCalculator.calculate(route.distance, route.duration, serviceType, options);
-          var resPrice = document.getElementById("res-price");
-          if (resPrice) resPrice.textContent = priceResult.total + " грн";
-          var resBreakdown = document.getElementById("res-price-breakdown");
-          if (resBreakdown) {
-            resBreakdown.textContent = priceResult.breakdown;
-            resBreakdown.style.display = "block";
-          }
-          var hourlyRateItem = document.getElementById("hourly-rate-item");
-          var resHourlyRate = document.getElementById("res-hourly-rate");
-          if (hourlyRateItem && resHourlyRate) {
-            var serviceId = serviceType === "BUS" ? (options && options.busServiceId) || "bus_taxi" : (options && options.dumpTruckServiceId) || "samosval_sand";
-            var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
-            if (hourlyRate) {
-              resHourlyRate.textContent = hourlyRate + " грн/год";
-              hourlyRateItem.style.display = "flex";
-            } else {
-              hourlyRateItem.style.display = "none";
-            }
-          }
-        } else {
-          var resPrice = document.getElementById("res-price");
-          if (resPrice) resPrice.textContent = "—";
-          var resBreakdown = document.getElementById("res-price-breakdown");
-          if (resBreakdown) resBreakdown.style.display = "none";
-        }
+        renderQuote(route.distance);
 
-        resCard.style.display = "block";
+        resCard.classList.add("is-shown");
       })
       .catch(function (err) {
         console.error(err);
-        alert("Помилка побудови маршруту. Спробуйте пізніше або перевірте адреси.");
-      });
+        notice(T("calc.failed"));
+      })
+      .then(function () { setBusy(false); });
   }
 
-  function recalculatePrice() {
-    if (!currentRouteData) return;
-    var resCard = document.getElementById("route-result");
-    if (!resCard || resCard.style.display === "none") return;
+  /* Показуємо ціну за тією моделлю, яка справді застосовна до цієї
+     відстані. Три однакові погодинні картки тут більше не підходять:
+     по місту рахунок іде за годинами (машина чекає), а міжмісто — за
+     кілометрами (машина їде). */
+  function renderQuote(distanceMeters) {
+    var host = document.getElementById("res-quote");
+    if (!host || typeof PriceCalculator === "undefined") return;
 
-    var vehicleRadio = document.querySelector('input[name="vehicle"]:checked');
-    var vehicleValue = vehicleRadio ? vehicleRadio.value : "bus";
-    var vehicleLabel = vehicleValue === "samosval" ? "Самосвал" : "Бус";
-    var resVehicle = document.getElementById("res-vehicle");
-    if (resVehicle) resVehicle.textContent = vehicleLabel;
+    var q = PriceCalculator.quote(distanceMeters, activeZone);
+    host.innerHTML = "";
+    host.className = "quote quote--" + q.mode;
 
-    var serviceRadio = document.querySelector('input[name="service"]:checked');
-    var serviceLabel = "";
-    if (serviceRadio) {
-      var opt = serviceRadio.closest("label") && serviceRadio.closest("label").querySelector(".service-option");
-      if (opt) serviceLabel = opt.textContent.trim();
+    /* Підказка на вкладці «Київ та область». Скидаємо її на кожному
+       перерахунку: якщо наступний маршрут виявиться міжміським, підсвічувати
+       погодинний режим уже нема за що. */
+    var localTab = document.getElementById("mode-btn-local");
+    if (localTab) localTab.classList.remove("mode--hint");
+
+    var label = document.createElement("span");
+    label.className = "quote__label";
+    var value = document.createElement("strong");
+    value.className = "quote__value";
+    var note = document.createElement("span");
+    note.className = "quote__note";
+
+    if (q.mode === "abroad") {
+      label.textContent = T("quote.abroad");
+      value.textContent = formatMoney(q.eur) + " €";
+      note.textContent = T("quote.abroad_note", {
+        km: formatMoney(q.totalKm),
+        rate: q.perTotalKm.toFixed(2).replace(".", ","),
+        oneway: q.perOneWayKm.toFixed(2).replace(".", ","),
+      });
+    } else if (q.mode === "intercity") {
+      label.textContent = T("quote.intercity");
+      value.textContent = formatMoney(q.total) + " " + T("unit.uah");
+      note.textContent = T("quote.intercity_note", { rate: q.perKm });
+    } else {
+      label.textContent = T("quote.local");
+      value.textContent = T("quote.local_value", { rate: q.hourly });
+      note.textContent = T("quote.local_note", { hours: q.minHours, feed: q.feed });
     }
-    var resService = document.getElementById("res-service");
-    if (resService) resService.textContent = serviceLabel || "—";
 
-    if (typeof PriceCalculator !== "undefined") {
-      var serviceType = PriceCalculator.serviceTypeFromVehicle(vehicleValue);
-      var options;
-      if (serviceType === "DUMP_TRUCK") {
-        var dumpServiceRadio = document.querySelector('#services-samosval input[name="service"]:checked');
-        var dumpServiceId = dumpServiceRadio ? dumpServiceRadio.value : "samosval_sand";
-        var qInput = document.getElementById("samosval-quantity");
-        var quantity = qInput && qInput.value !== "" ? parseFloat(qInput.value) : null;
-        if (quantity !== null && isNaN(quantity)) quantity = null;
-        options = { dumpTruckServiceId: dumpServiceId, quantity: quantity };
-      } else if (serviceType === "BUS") {
-        var busServiceRadio = document.querySelector('#services-bus input[name="service"]:checked');
-        var busServiceId = busServiceRadio ? busServiceRadio.value : "bus_taxi";
-        options = { busServiceId: busServiceId };
+    host.appendChild(label);
+    host.appendChild(value);
+    host.appendChild(note);
+
+    /* По Києву й області ціна залежить від годин, а лічильник годин живе
+       в СУСІДНІЙ вкладці. Без цього містка людина бачить «від 800 грн/год»
+       і не має куди клікнути, щоб побачити свою суму. */
+    if (q.mode === "hourly" && localTab) {
+      localTab.classList.add("mode--hint");
+      if (!localTab.dataset.hintWired) {
+        localTab.dataset.hintWired = "1";
+        localTab.addEventListener("click", function () {
+          localTab.classList.remove("mode--hint");
+        });
       }
-      var priceResult = PriceCalculator.calculate(currentRouteData.distance, currentRouteData.duration, serviceType, options);
-      var resPrice = document.getElementById("res-price");
-      if (resPrice) resPrice.textContent = priceResult.total + " грн";
-      var resBreakdown = document.getElementById("res-price-breakdown");
-      if (resBreakdown) {
-        resBreakdown.textContent = priceResult.breakdown;
-        resBreakdown.style.display = "block";
-      }
-      var hourlyRateItem = document.getElementById("hourly-rate-item");
-      var resHourlyRate = document.getElementById("res-hourly-rate");
-      if (hourlyRateItem && resHourlyRate) {
-        var serviceId = serviceType === "BUS" ? (options && options.busServiceId) || "bus_taxi" : (options && options.dumpTruckServiceId) || "samosval_sand";
-        var hourlyRate = PriceCalculator.getHourlyRate(serviceType, serviceId);
-        if (hourlyRate) {
-          resHourlyRate.textContent = hourlyRate + " грн/год";
-          hourlyRateItem.style.display = "flex";
-        } else {
-          hourlyRateItem.style.display = "none";
-        }
-      }
+      var jump = document.createElement("button");
+      jump.type = "button";
+      jump.className = "btn btn--text quote__jump";
+      jump.textContent = T("quote.local_cta");
+      jump.addEventListener("click", function () {
+        // Перемикач режимів живе в localQuote.js — не дублюємо його логіку,
+        // а просто натискаємо ту саму кнопку. Немає localQuote.js — немає й
+        // переходу, але сторінка не ламається.
+        localTab.click();
+        localTab.focus();
+      });
+      host.appendChild(jump);
     }
+
+    /* Зворотний рейс показуємо окремим рядком, а не другою ціною поруч:
+       це доплата до вже названої суми, а не альтернатива їй. */
+    if (q.mode === "intercity") {
+      var ret = document.createElement("span");
+      ret.className = "quote__return";
+      ret.textContent = T("quote.return") + " — " +
+        formatMoney(q.totalReturn) + " " + T("unit.uah");
+      var retNote = document.createElement("span");
+      retNote.className = "quote__note";
+      retNote.textContent = T("quote.return_note");
+      host.appendChild(ret);
+      host.appendChild(retNote);
+    }
+
+    // orderRoute.js бере звідси, що переносити у форму заявки.
+    var hidden = document.getElementById("res-service");
+    if (hidden) hidden.textContent = label.textContent;
+    var hiddenPrice = document.getElementById("res-quote-value");
+    if (hiddenPrice) hiddenPrice.textContent = value.textContent;
+  }
+
+  /* Зі сторінки напрямку сюди приходять із ?route=kyiv-lviv. Беремо готові
+     координати за слагом: маршрут рахується миттєво й без жодного запиту
+     до геокодера — людина не переписує те, що вже прочитала в заголовку. */
+  function applyRouteFromQuery() {
+    var q = new URLSearchParams(window.location.search);
+    var slug = q.get("route");
+    if (slug) {
+      if (ROUTE_COORDS[slug]) applyPreset(ROUTE_COORDS[slug]);
+      else if (ABROAD_COORDS[slug]) applyPreset(ABROAD_COORDS[slug]);
+      return;
+    }
+
+    /* Зі сторінок міст області приходять із готовими координатами:
+       ?to=Бровари&lat=..&lng=.. Заводити на кожне місто ще й запис у
+       ROUTE_COORDS немає сенсу — їх стане десятки, а назва все одно вже
+       перекладена на сервері. */
+    var lat = parseFloat(q.get("lat"));
+    var lng = parseFloat(q.get("lng"));
+    var to = (q.get("to") || "").trim();
+    if (!to || !isFinite(lat) || !isFinite(lng)) return;
+    // Координати мають бути схожі на координати, а назва — не на розмітку:
+    // усе це приходить із рядка адреси, тобто від кого завгодно.
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180 || to.length > 80) return;
+    applyPreset({ to: to, cc: "ua", ll: [lat, lng], literal: true });
+  }
+
+  function boot() {
+    wireControls();
+    initMap();
+    applyRouteFromQuery();
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMap);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    initMap();
+    boot();
   }
 })();

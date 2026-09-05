@@ -1,68 +1,79 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
-<html lang="uk">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon.ico') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon.ico') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
-
+<html lang="{{ HREFLANG[LOCALE] }}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0ea5e9">
 
-  <title>{% block title %}Вантажні перевезення Київ та Київська область | Vezemo24{% endblock %}</title>
-  <meta name="description" content="{% block description %}Вантажні перевезення Київ та область: переїзд, вантажне таксі, самосвал, вантажники. Прозорі ціни, фіксація до старту. Швидкий виїзд.{% endblock %}">
-  <meta name="keywords" content="{% block keywords %}вантажні перевезення київ, переїзд київ, вантажне таксі київ, самосвал київ, вантажники київ, київська область{% endblock %}">
+  <title>{% block title %}{{ t('meta.home.title') }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ t('meta.home.desc') }}{% endblock %}">
 
-  <link rel="canonical" href="{{ request.base_url }}" />
-  <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url_for('main.sitemap', _external=True) }}">
+  <link rel="canonical" href="{{ SITE_URL }}{{ request.path }}">
+
+  {# Кажемо Google, що це одна сторінка трьома мовами, а не три схожі
+     сторінки, які конкурують між собою. x-default веде на українську. #}
+  {% for code, href in alternates() %}
+  <link rel="alternate" hreflang="{{ code }}" href="{{ SITE_URL }}{{ href }}">
+  {% endfor %}
+  <link rel="alternate" hreflang="x-default" href="{{ SITE_URL }}{{ locale_url(DEFAULT_LOCALE) }}">
+
+  {# Іконки. Google бере фавікон РОЗМІРОМ ВІД 48px, обрізає його в коло й
+     підкладає біле тло — тому в static/brand/favicon.svg квадрат на всю
+     площу без прозорих кутів (див. scripts/build_favicon.py).
+
+     Дві різні адреси навмисно:
+
+     SVG іде з ?v=<хеш вмісту> — браузери кешують фавікони дуже вперто
+     (у Safari іконка закладки може жити місяцями), і без зміни адреси
+     нова іконка просто не завантажиться.
+
+     .ico і apple-touch навпаки вказують на КОРІНЬ сайту, без хеша.
+     По-перше, це стала адреса, яку Google любить кешувати. По-друге —
+     і це головне — браузери й краулери лізуть по /favicon.ico самі,
+     не читаючи цей тег узагалі. Стара версія сайту не мала тега іконки
+     взагалі, тому Safari взяв саме /favicon.ico, і в закладках у людей
+     осів старий значок «24». Якщо новий сайт не віддасть щось за тією ж
+     адресою, він там і залишиться. #}
+  <link rel="icon" type="image/svg+xml" href="{{ static_url('images/favicon.svg') }}">
+  <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48"
+        href="{{ url_for('main.favicon_ico') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('main.apple_icon') }}">
+  <link rel="manifest" href="{{ url_for('main.webmanifest') }}">
+
   <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
   <meta property="og:description" content="{% block og_description %}{{ self.description() }}{% endblock %}">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="{{ request.url }}">
-  <meta property="og:image" content="{{ url_for('static', filename='img/og-image.jpg', _external=True) }}">
+  <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
+  <meta property="og:image" content="{{ SITE_URL }}{{ url_for('static', filename='images/og-image.jpg') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="{{ OG_LOCALE[LOCALE] }}">
+  {% for l in LOCALES if l != LOCALE %}
+  <meta property="og:locale:alternate" content="{{ OG_LOCALE[l] }}">
+  {% endfor %}
   <meta property="og:site_name" content="Vezemo24">
-  <meta name="referrer" content="no-referrer-when-downgrade">
-  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  {% block preload %}{% endblock %}
+
+  <link rel="sitemap" type="application/xml" href="{{ url_for('main.sitemap') }}">
+  <link rel="stylesheet" href="{{ static_url('css/app.css') }}">
   {% block head %}{% endblock %}
+
+  {% include 'partials/_analytics.html' %}
 </head>
-<body class="bg-page min-h-screen flex flex-col">
+<body>
+  <a class="visually-hidden" href="#main">{{ t('common.skip') }}</a>
 
-  <!-- HEADER: sticky, glassmorphism, phone CTA, burger on mobile -->
-  <header class="site-header" id="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="{{ url_for('main.index') }}">
-        <div class="logo-wrapper">
-          <span class="text-logo">Веземо</span>
-          <span class="badge-24">24</span>
-        </div>
-      </a>
+  {% include 'partials/_header.html' %}
 
-      <nav class="nav" id="main-nav" aria-label="Головна навігація">
-        <a class="nav-link" href="{{ url_for('main.index') }}">Головна</a>
-        <a class="nav-link" href="{{ url_for('main.services') }}">Послуги</a>
-        <a class="nav-link" href="{{ url_for('main.zakordon') }}">Закордон</a>
-        <a class="nav-link" href="{{ url_for('main.calculate_km') }}">Розрахунок відстані</a>
-        <a class="nav-link nav-btn" href="{{ url_for('contact.contact') }}">Залишити заявку</a>
-      </nav>
-
-      <button class="burger" id="burger" type="button" aria-label="Відкрити меню" aria-expanded="false" aria-controls="main-nav">
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-        <span class="burger-line"></span>
-      </button>
-    </div>
-  </header>
-
-  <main class="main-content">
+  <main class="page" id="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="container">
-          <div class="alerts">
+        <div class="container section--tight">
+          <div class="stack stack--sm">
             {% for category, msg in messages %}
-              <div class="alert {% if category == 'success' %}alert-success{% elif category == 'error' %}alert-error{% endif %}">{{ msg }}</div>
+              <div class="notice is-shown notice--{{ 'ok' if category == 'success' else 'error' }}">{{ msg }}</div>
             {% endfor %}
           </div>
         </div>
@@ -72,57 +83,18 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- FOOTER: темний, структурований, колонки, trust signals -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col footer-brand">
-          <a href="{{ url_for('main.index') }}" class="footer-logo">
-            <span class="footer-logo-text">Веземо</span>
-            <span class="footer-logo-badge">24</span>
-          </a>
-          <p class="footer-desc">
-            Вантажні перевезення <strong>Київ та Київська область</strong>. Надійно та швидко.
-          </p>
-        </div>
+  {% include 'partials/_footer.html' %}
+  {% include 'partials/_mobilebar.html' %}
 
-        <div class="footer-col">
-          <h4 class="footer-heading">Меню</h4>
-          <ul class="footer-links">
-            <li><a href="{{ url_for('main.index') }}">Головна</a></li>
-            <li><a href="{{ url_for('main.services') }}">Послуги</a></li>
-            <li><a href="{{ url_for('main.zakordon') }}">Закордон</a></li>
-            <li><a href="{{ url_for('main.calculate_km') }}">Розрахунок відстані</a></li>
-            <li><a href="{{ url_for('contact.contact') }}">Контакти / Заявка</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Послуги</h4>
-          <ul class="footer-links">
-            <li><a href="{{ url_for('main.services') }}">Вантажне таксі (бус)</a></li>
-            <li><a href="{{ url_for('main.services') }}">Квартирний переїзд</a></li>
-            <li><a href="{{ url_for('main.services') }}">Самосвал</a></li>
-            <li><a href="{{ url_for('main.zakordon') }}">Перевезення за кордон</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4 class="footer-heading">Локація</h4>
-          <ul class="footer-contact">
-            <li><strong>Київ та Київська область</strong></li>
-            <li>08:00 — 22:00 щодня</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p>© 2026 <strong>Веземо 24</strong>. Вантажні перевезення Київ та Київська область. Всі права захищено.</p>
-      </div>
-    </div>
-  </footer>
-
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {# Має йти перед рештою скриптів: вони беруть із нього рядки. #}
+  <script src="{{ static_url('js/i18n.js') }}" defer></script>
+  <script src="{{ static_url('js/site.js') }}" defer></script>
+  {# Форма заявки стоїть тепер унизу кожної сторінки, тож її скрипти
+     переїхали сюди зі сторінки контактів. Разом ~7 КБ до стиснення, обидва
+     defer — вони не блокують показ і не чіпають LCP. Обидва самі нічого не
+     роблять, якщо форми на сторінці немає. #}
+  <script src="{{ static_url('js/phoneField.js') }}" defer></script>
+  <script src="{{ static_url('js/contact.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

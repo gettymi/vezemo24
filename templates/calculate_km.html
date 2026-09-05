@@ -1,139 +1,198 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}{{ t('meta.calc.title') }}{% endblock %}
+{% block description %}{{ t('meta.calc.desc') }}{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/calculate_km.css') }}">
+<link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+{# Leaflet береться локально, щойно він зʼявиться в static/vendor/
+   (див. scripts/vendor_leaflet.sh). Доки його там немає — працює CDN,
+   тож сторінка не ламається ні до, ні після запуску скрипта. #}
+{% if has_static('vendor/leaflet/leaflet.css') %}
+<link rel="stylesheet" href="{{ static_url('vendor/leaflet/leaflet.css') }}">
+{% else %}
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+{% endif %}
+<link rel="stylesheet" href="{{ static_url('css/map.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="map-page">
-  <aside class="map-page-form">
-    <div class="control-panel">
-      <div class="panel-header">
-        <h2>Розрахунок відстані</h2>
-        <p>Вкажіть місто чи адресу або поставте точку на карті — побачите відстань і час у дорозі</p>
+<div class="mapview">
+  <aside class="mapview__panel">
+    <div class="panel">
+
+      <div class="panel__head">
+        <h1>{{ t('calc.h1') }}</h1>
+        <p>{{ t('calc.lead') }}</p>
       </div>
 
-      <div class="vehicle-type">
-        <span class="vehicle-type-label">Тип транспорту</span>
-        <div class="vehicle-type-options">
-          <label>
-            <input type="radio" name="vehicle" value="bus" checked>
-            <span class="vehicle-option">Бус</span>
-          </label>
-          <label>
-            <input type="radio" name="vehicle" value="samosval">
-            <span class="vehicle-option">Самосвал</span>
-          </label>
-        </div>
+      {# Два режими, бо це дві різні послуги з різними моделями ціни.
+         По Києву й області маршрут узагалі не потрібен: там платять за
+         час, а не за кілометри, тож замість карти достатньо одного
+         питання — скільки годин. Цей режим стоїть першим, бо більшість
+         роботи буса локальна. #}
+      <div class="modes" role="tablist" aria-label="{{ t('calc.h1') }}">
+        <button type="button" class="mode is-active" id="mode-btn-local"
+                role="tab" aria-selected="true" aria-controls="mode-local">
+          {{ t('calc.mode.local') }}
+        </button>
+        <button type="button" class="mode" id="mode-btn-route"
+                role="tab" aria-selected="false" aria-controls="mode-route">
+          {{ t('calc.mode.route') }}
+        </button>
       </div>
 
-      <div class="service-type" id="service-type-block">
-        <span class="service-type-label">Послуга</span>
-        <div id="services-bus" class="service-options service-options--bus">
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="bus_taxi" data-service-id="bus_taxi" checked>
-            <span class="service-option">Вантажне таксі (переїзд)</span>
-          </label>
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="bus_delivery" data-service-id="bus_delivery">
-            <span class="service-option">Доставка меблів / техніки</span>
-          </label>
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="bus_relocation" data-service-id="bus_relocation">
-            <span class="service-option">Переїзд під ключ</span>
-          </label>
-        </div>
-        <div id="services-samosval" class="service-options service-options--samosval" style="display: none;">
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="samosval_sand" data-service-id="samosval_sand">
-            <span class="service-option">Доставка піску</span>
-          </label>
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="samosval_waste" data-service-id="samosval_waste">
-            <span class="service-option">Буд. сміття</span>
-          </label>
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="samosval_rubble" data-service-id="samosval_rubble">
-            <span class="service-option">Мотлох / сміття</span>
-          </label>
-          <label class="service-option-wrap">
-            <input type="radio" name="service" value="samosval_metal" data-service-id="samosval_metal">
-            <span class="service-option">Металобрухт</span>
-          </label>
-        </div>
-        <div id="samosval-quantity-block" class="service-quantity-block" style="display: none;">
-          <label for="samosval-quantity" class="service-quantity-label" id="samosval-quantity-label">Кількість (т)</label>
-          <input type="number" id="samosval-quantity" class="service-quantity-input" min="0" step="0.1" placeholder="0" inputmode="decimal">
-          <span class="service-quantity-unit" id="samosval-quantity-unit">т</span>
-        </div>
-      </div>
+      {# ── Режим «Київ та область»: години -> ціна ─────────────────────
+         Початкове число рендерить сервер, тому ціна видна ще до того, як
+         виконається будь-який скрипт. JS лише перераховує її на кліку. #}
+      <div class="local" id="mode-local" role="tabpanel" aria-labelledby="mode-btn-local">
+        <p class="local__q">{{ t('calc.hours.q') }}</p>
+        <p class="local__help">{{ t('calc.hours.help') }}</p>
 
-      <div id="points-container" class="inputs-stack">
-        <div class="input-row" data-index="0">
-          <div class="icon-marker start">A</div>
-          <input type="text" class="route-input" placeholder="Звідки (місто або адреса)" autocomplete="off">
-        </div>
-        <div class="input-row" data-index="1">
-          <div class="icon-marker end">B</div>
-          <input type="text" class="route-input" placeholder="Куди (місто або адреса)" autocomplete="off">
-        </div>
-      </div>
-
-      <div class="actions actions-wrap">
-        <div class="actions-row actions-row--add">
-          <button type="button" id="add-point" class="btn-text">+ Додати точку</button>
-          <button type="button" id="add-point-map" class="btn-text">+ Точка на карті</button>
-        </div>
-        <div class="actions-row actions-row--main">
-          <button type="button" id="build-route" class="btn-primary btn-build">
-            <span>Розрахувати</span>
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </button>
-          <button type="button" id="clear-route" class="btn-clear" title="Очистити маршрут">Очистити</button>
-        </div>
-      </div>
-
-      <div id="route-result" class="result-card" style="display: none;">
-        <div class="result-item">
-          <span class="label">Транспорт:</span>
-          <span class="value" id="res-vehicle">Бус</span>
-        </div>
-        <div class="result-item">
-          <span class="label">Послуга:</span>
-          <span class="value" id="res-service">—</span>
-        </div>
-        <div class="result-item">
-          <span class="label">Відстань:</span>
-          <span class="value" id="res-distance">0 км</span>
-        </div>
-        <div class="result-item">
-          <span class="label">Час у дорозі:</span>
-          <span class="value" id="res-duration">0 год</span>
-        </div>
-        <div class="result-item result-item--hourly-rate" id="hourly-rate-item" style="display: none;">
-          <span class="label">Тариф за годину:</span>
-          <span class="value" id="res-hourly-rate">—</span>
-        </div>
-        <div class="result-item result-item--price">
-          <span class="label">
-            <span class="price-label-text">Орієнтовна вартість</span>
-            <span class="price-label-badge">орієнтовно</span>
+        <div class="hours">
+          <button type="button" class="hours__step" id="hours-minus"
+                  aria-label="{{ t('calc.hours.less') }}">−</button>
+          <span class="hours__value">
+            <output id="hours-value" for="hours-minus hours-plus">{{ PRICING.LOCAL_MIN_HOURS }}</output>
+            <span class="hours__unit">{{ t('calc.hours.unit') }}</span>
           </span>
-          <span class="value" id="res-price">—</span>
+          <button type="button" class="hours__step" id="hours-plus"
+                  aria-label="{{ t('calc.hours.more') }}">+</button>
         </div>
-        <p class="result-breakdown" id="res-price-breakdown" style="display: none;"></p>
-        <div id="legs-details" class="legs-list"></div>
-        <p class="result-disclaimer result-disclaimer--note" id="result-price-note">Усі цифри (відстань, час, вартість) — орієнтовні. Точну ціну розрахуємо після вашої заявки.</p>
+
+        <div class="quote quote--hourly local__quote" role="status" aria-live="polite">
+          <span class="quote__label">{{ t('calc.hours.total') }}</span>
+          <span class="quote__value" id="local-total">{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</span>
+          <span class="quote__note">{{ t('calc.hours.note', hours=PRICING.LOCAL_MIN_HOURS, feed=PRICING.LOCAL_FEED) }}</span>
+        </div>
+
+        <div class="result__cta">
+          <a class="btn btn--primary btn--block btn--phone" href="tel:{{ PHONE_E164 }}"
+             data-cta="phone-calc-local">{{ t('calc.order_at_price') }}</a>
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}"
+             data-cta="form-calc-local">{{ t('common.callback') }}</a>
+        </div>
       </div>
 
-      <p class="panel-disclaimer">Відстань і час — орієнтовні. Точну вартість перевезення підкажемо індивідуально.</p>
+      {# ── Режим «Інші міста та закордон»: маршрут на карті ──────────── #}
+      <div id="mode-route" role="tabpanel" aria-labelledby="mode-btn-route" hidden>
+
+      {# Повідомлення в самій панелі. Раніше тут були alert(): вони блокують
+         сторінку, виглядають як помилка браузера і не показують контексту. #}
+      <p class="notice notice--error" id="map-notice" role="status" aria-live="polite"></p>
+
+      {# Готові напрямки. Координати зашиті, тож пресет не робить жодного
+         запиту до геокодера — найчастіші маршрути рахуються миттєво. #}
+      <div class="presets">
+        <span class="presets__label">{{ t('calc.presets') }}</span>
+        <div class="presets__row" id="presets"></div>
+      </div>
+
+      {# Закордон окремим рядом: тариф інший (євро за повний пробіг), і
+         змішувати його з гривневими напрямками в одному ряду означало б
+         дати людині два різні числа під однаковими кнопками. #}
+      <div class="presets presets--abroad">
+        <span class="presets__label">{{ t('calc.presets_abroad') }}</span>
+        <div class="presets__row" id="presets-abroad"></div>
+      </div>
+
+      <div class="points" id="points-container">
+        <div class="point" data-index="0">
+          <div class="point__pin point__pin--start">A</div>
+          <input type="text" class="input point__input" placeholder="{{ t('calc.from_ph') }}"
+                 autocomplete="off" aria-label="{{ t('calc.from') }}">
+        </div>
+        <div class="point" data-index="1">
+          <div class="point__pin point__pin--end">B</div>
+          <input type="text" class="input point__input" placeholder="{{ t('calc.to_ph') }}"
+                 autocomplete="off" aria-label="{{ t('calc.to') }}">
+        </div>
+      </div>
+
+      <div class="panel__actions">
+        <div class="panel__actions-row">
+          <button type="button" id="add-point" class="btn btn--text">{{ t('calc.add_point') }}</button>
+          <button type="button" id="add-point-map" class="btn btn--text">{{ t('calc.add_map') }}</button>
+        </div>
+        <div class="panel__actions-row">
+          <button type="button" id="build-route" class="btn btn--primary">{{ t('calc.build') }}</button>
+          <button type="button" id="clear-route" class="btn btn--ghost">{{ t('calc.clear') }}</button>
+        </div>
+      </div>
+
+      <div class="result" id="route-result">
+        <div class="result__facts">
+          <div class="fact">
+            <span class="fact__label">{{ t('calc.distance') }}</span>
+            <strong class="fact__value" id="res-distance">—</strong>
+          </div>
+          <div class="fact">
+            <span class="fact__label">{{ t('calc.duration') }}</span>
+            <strong class="fact__value" id="res-duration">—</strong>
+          </div>
+          <div class="fact">
+            <span class="fact__label">{{ t('calc.vehicle') }}</span>
+            <strong class="fact__value" id="res-vehicle">{{ t('calc.vehicle_val') }}</strong>
+          </div>
+        </div>
+
+        {# Одна ціна за тією моделлю, яка застосовна до цієї відстані:
+           по Києву й області — за годинами, міжмісто — за кілометрами. #}
+        <div class="quote" id="res-quote" role="status" aria-live="polite"></div>
+
+        {# Читає orderRoute.js, коли переносить розрахунок у форму заявки. #}
+        <span id="res-service" hidden></span>
+        <span id="res-quote-value" hidden></span>
+
+        <div class="result__legs" id="legs-details"></div>
+
+        <div class="result__cta">
+          <a class="btn btn--primary btn--block btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-calculator">
+            {{ t('calc.order_at_price') }}
+          </a>
+          <a class="btn btn--ghost btn--block" id="order-this-route"
+             href="{{ url_for('contact.contact') }}" data-cta="form-calculator">
+            {{ t('common.callback') }}
+          </a>
+        </div>
+
+        <p class="result__disclaimer">
+          {{ t('calc.disclaimer') }}
+        </p>
+      </div>
+
+      </div>{# /mode-route #}
+
+      <p class="panel__note">{{ t('calc.note', hours=PRICING.LOCAL_MIN_HOURS,
+            feed=PRICING.LOCAL_FEED) }}</p>
     </div>
   </aside>
-  <div class="map-page-map" id="map"></div>
-</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="{{ url_for('static', filename='js/priceCalculator.js') }}"></script>
-<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+  <div class="mapview__canvas">
+    <div id="map"></div>
+    {# Якщо Leaflet або тайли не завантажились, тут раніше лишався просто
+       сірий прямокутник без пояснень. #}
+    <div class="map-fallback" id="map-fallback" hidden>
+      <p class="map-fallback__title">{{ t('calc.map_off.title') }}</p>
+      <p class="map-fallback__text">{{ t('calc.map_off.text') }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if has_static('vendor/leaflet/leaflet.js') %}
+<script src="{{ static_url('vendor/leaflet/leaflet.js') }}"></script>
+{% else %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endif %}
+<script src="{{ static_url('js/priceCalculator.js') }}"></script>
+<script src="{{ static_url('js/map.js') }}"></script>
+<script src="{{ static_url('js/orderRoute.js') }}" defer></script>
+{# Окремим файлом навмисно: погодинний режим не залежить ні від Leaflet,
+   ні від map.js, тому падіння карти його не чіпає — і навпаки. #}
+<script src="{{ static_url('js/localQuote.js') }}" defer></script>
 {% endblock %}

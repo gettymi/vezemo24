@@ -1,240 +1,409 @@
 {% extends 'base.html' %}
 
-{% block title %}Вантажні перевезення Київ та Київська область | Vezemo24{% endblock %}
-{% block description %}Вантажні перевезення Київ та область: переїзд під ключ, вантажне таксі, самосвал, вантажники. Прозорі ціни, фіксація до старту. Дзвоніть — розрахуємо вартість.{% endblock %}
-{% block keywords %}вантажні перевезення київ, переїзд київ, вантажне таксі київ, самосвал київ, вантажники київ, доставка вантажу київ, київська область{% endblock %}
+{% block title %}{{ t('meta.home.title') }}{% endblock %}
+{% block description %}{{ t('meta.home.desc') }}{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% block preload %}
+{# Постер героя — найбільший елемент першого екрана. Без цього браузер
+   знайде його лише після розбору CSS, бо це фон. #}
+{{ preload_image('video-poster.jpg', sizes='100vw') }}
 {% endblock %}
 
 {% block content %}
-<div class="index-page-wrap">
-
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
+  "@type": "MovingCompany",
   "name": "Vezemo24",
-  "image": "{{ url_for('static', filename='img/og-image.jpg', _external=True) }}",
-  "telephone": "+380970000000",
-  "email": "info@vezemo24.com",
-  "url": "{{ request.url_root }}",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Київ",
-    "addressRegion": "Київська область",
-    "addressCountry": "UA"
-  },
+  "alternateName": "Vezemo24",
+  "image": "{{ SITE_URL }}{{ url_for('static', filename='images/og-image.jpg') }}",
+  "logo": "{{ SITE_URL }}{{ url_for('static', filename='images/logo.png') }}",
+  "url": "{{ SITE_URL }}{{ url_for('main.index') }}",
+  {% if not PHONE_IS_PLACEHOLDER %}"telephone": "{{ PHONE_E164 }}",
+  {% endif %}"email": "{{ EMAIL }}",
+  "currenciesAccepted": "UAH",
+  "priceRange": "₴₴",
   "areaServed": [
-    { "@type": "City", "name": "Київ", "containedInPlace": { "@type": "AdministrativeArea", "name": "Київська область" } },
-    { "@type": "AdministrativeArea", "name": "Київська область" }
+    { "@type": "City", "name": "{{ t('schema.city') }}" },
+    { "@type": "AdministrativeArea", "name": "{{ t('schema.region') }}" },
+    { "@type": "Country", "name": "{{ t('common.country') }}" }
   ],
-  "priceRange": "$$",
-  "openingHoursSpecification": {
+  "openingHoursSpecification": [{
     "@type": "OpeningHoursSpecification",
-    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-    "opens": "08:00",
-    "closes": "22:00"
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "opens": "{{ HOURS_OPEN }}",
+    "closes": "{{ HOURS_CLOSE }}"
+  }],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "{{ t('schema.catalog') }}",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "{{ t('foot.svc_b2b') }}" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "{{ t('schema.svc_mizh') }}" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "{{ t('foot.svc_taxi') }}" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "{{ t('foot.svc_move') }}" } }
+    ]
   },
-  "description": "Вантажні перевезення Київ та Київська область: квартирний переїзд під ключ, вантажне таксі (бус до 2,5 т), самосвал до 10 т, вантажники. Прозорі ціни, фіксація до старту. Можливі перевезення в Європу."
+  "description": "{{ t('schema.desc') }}"
 }
 </script>
 
-<!-- HERO -->
-<section class="hero-video-container">
-  <video autoplay muted loop playsinline class="bg-video" poster="{{ url_for('static', filename='img/video-poster.jpg') }}" preload="metadata" disablePictureInPicture>
-    <source src="{{ url_for('static', filename='videos/hero.mp4') }}" type="video/mp4">
-    Ваш браузер не підтримує відео.
-  </video>
-  <div class="video-overlay"></div>
-  <div class="hero-content container">
-    <h1 class="hero-title">Вантажні перевезення Київ та Київська область</h1>
-    <p class="hero-lead">
-      Надійна доставка вантажів по Києву та області. Швидко, прозоро, чесні ціни.
+<!-- ГЕРОЙ -->
+<section class="hero">
+  {# ЗАМІНИТИ, щойно буде фото №1: наша машина в дорозі, завантажена,
+     горизонтально, від 2400 px завширшки. Зараз тут стокова траса.
+
+     Відео звідси прибрано. Воно було 1280x720 на 441 кбіт/с — для рухомого
+     кадру з полями й асфальтом цього замало на порядок, тому картинка
+     розсипалась. Головне ж: то була та сама стокова італійська траса, що
+     й у двох інших місцях сторінки, і про машину клієнта вона не казала
+     нічого. Власне відео з рейсу лишається нижче, там його і вмикають.
+
+     Постер лишився окремим <img>, а не атрибутом poster=: той не вміє
+     srcset, тому на телефон їхало зображення на 1920 px. #}
+  {{ picture('video-poster.jpg', alt='', sizes='100vw', loading='eager',
+             fetchpriority='high', img_class='hero__media') }}
+  <div class="hero__scrim"></div>
+  <div class="container hero__inner">
+    <p class="hero__eyebrow">{{ t('home.eyebrow') }}</p>
+    <h1 class="hero__title">{{ t('home.h1') }}</h1>
+    <p class="hero__lead">
+      {{ t('home.lead') }}
     </p>
-    <div class="main-screen__buttons">
-      <a href="{{ url_for('contact.contact') }}" class="btn-hero-cta btn-primary">Залишити заявку</a>
-      <a href="{{ url_for('main.calculate_km') }}" class="btn-hero-cta btn-outline-white">Розрахунок відстані</a>
+    <div class="cluster cluster--center">
+      <a class="btn btn--primary btn--lg btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-hero">{{ PHONE_DISPLAY }}
+      </a>
+      <a class="btn btn--on-dark btn--lg" href="{{ url_for('main.calculate_km') }}">{{ t('nav.calc') }}</a>
     </div>
+    <p class="hero__note">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }} · {{ t('hours.note') }}</p>
   </div>
 </section>
 
-<!-- ADVANTAGES -->
-<section class="advantages-section container">
-  <div class="advantages-grid">
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/truck.svg') }}" alt=""></div>
-      <h3 class="adv-title">Вчасна доставка</h3>
-      <p class="adv-text">Доставляємо ваші вантажі точно у вказаний час, без затримок.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/chat.svg') }}" alt=""></div>
-      <h3 class="adv-title">Постійна підтримка</h3>
-      <p class="adv-text">Ми завжди на зв’язку — консультуємо та оперативно реагуємо.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/card.svg') }}" alt=""></div>
-      <h3 class="adv-title">Прозоре ціноутворення</h3>
-      <p class="adv-text">Без прихованих платежів — усе зрозуміло ще до початку перевезення.</p>
-    </div>
-    <div class="adv-card">
-      <div class="adv-icon"><img src="{{ url_for('static', filename='icons/globe.svg') }}" alt=""></div>
-      <h3 class="adv-title">Київ та Київська область</h3>
-      <p class="adv-text">Працюємо по Києву та області. Можливі перевезення в Європу за індивідуальною домовленістю.</p>
-    </div>
-  </div>
-</section>
-
-<!-- SERVICES (короткий огляд + посилання на сторінку Послуги) -->
-<section class="services-section container">
-  <h2 class="section-title">Послуги перевезень у Києві та області</h2>
-  <div class="services-grid">
-    <div class="card">
-      <div class="card-content">
-        <h3 class="card-title">Бус до 2,5 тонн</h3>
-        <p class="card-text">Оптимальне рішення для невеликих вантажів.</p>
-      </div>
-      <div class="card-image">
-        <img src="{{ url_for('static', filename='images/busik.png') }}" alt="Бус до 2.5 тон">
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-content">
-        <h3 class="card-title">Самосвал до 10 тонн</h3>
-        <p class="card-text">Перевезення сипучих матеріалів та будівельних відходів.</p>
-      </div>
-      <div class="card-image">
-        <img src="{{ url_for('static', filename='images/samosval.png') }}" alt="Самосвал">
-      </div>
-    </div>
-  </div>
-  <p class="services-more">
-    <a href="{{ url_for('main.services') }}" class="link-more">Детальніше про послуги →</a>
-  </p>
-</section>
-
-<!-- PRICES -->
-<section class="prices-section container">
-  <h2 class="section-title">Ціни та тарифи</h2>
-  <p class="prices-intro">Орієнтовні вартості. Точну ціну розрахуємо під ваше замовлення.</p>
-
-  <div class="prices-grid" aria-label="Тарифи по Києву та області">
-    <div class="price-card">
-      <h3 class="price-card-title">Мінімум</h3>
-      <p class="price-card-desc">Подача + 2 години</p>
-      <p class="price-card-value"> 2399 <span class="price-unit">грн - виїзд</span></p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn">Замовити</a>
-    </div>
-    <div class="price-card price-card-featured">
-      <span class="price-card-badge">Популярно</span>
-      <h3 class="price-card-title">Стандарт</h3>
-      <p class="price-card-desc">Бус, до 2,5 т</p>
-      <p class="price-card-value">від 799 <span class="price-unit">грн/год</span></p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn">Замовити</a>
-    </div>
-    <div class="price-card">
-      <h3 class="price-card-title">Переїзд</h3>
-      <p class="price-card-desc">Квартира під ключ</p>
-      <p class="price-card-value">від 1099 <span class="price-unit">грн/год</span></p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn">Замовити</a>
-    </div>
-    <div class="price-card">
-      <h3 class="price-card-title">Вантажники</h3>
-      <p class="price-card-desc">Допомога з завантаженням</p>
-      <p class="price-card-value">від 399 <span class="price-unit">грн/год</span></p>
-      <a href="{{ url_for('contact.contact') }}" class="price-card-btn">Замовити</a>
-    </div>
-  </div>
-
-  <div class="prices-extras" aria-label="Спеціальні умови">
-    <a href="{{ url_for('main.zakordon') }}" class="price-extra price-extra--zakordon">
-      <span class="price-extra-label">Європа</span>
-      <div class="price-extra-content">
-        <h3 class="price-extra-title">Закордон</h3>
-        <p class="price-extra-desc">Перевезення в Європу, індивідуальні маршрути — ціна до обговорення</p>
-      </div>
-      <span class="price-extra-cta">Обговорити</span>
-    </a>
-    <a href="{{ url_for('contact.contact') }}" class="price-extra price-extra--promo">
-      <span class="price-extra-label price-extra-label--promo">Акція</span>
-      <div class="price-extra-content">
-        <h3 class="price-extra-title">Перший рейс вигідніше</h3>
-        <p class="price-extra-desc">Знижка <strong>10%</strong> на перше замовлення для нових клієнтів</p>
-      </div>
-      <span class="price-extra-value">−10%</span>
-      <span class="price-extra-cta price-extra-cta--promo">Скористатися</span>
-    </a>
-  </div>
-</section>
-
-<!-- Маніфест / Чому ми (Trust) — поява та переливання при скролі -->
-<section class="trust-section" id="trust-section">
+<!-- ПЕРЕВАГИ -->
+<!-- Іконки inline, а не <img src="icons/*.svg">: у тих файлах колір був
+       зашитий (#000000 / #1C274C), тож на світло-блакитній плитці стояли
+       чорні значки, і currentColor через <img> не працює в принципі.
+       Плюс мінус чотири запити й ~9 КБ. -->
+<section class="section section--tight">
   <div class="container">
-    <h2 class="trust-heading">Ми змінюємо ринок перевезень</h2>
-    <div class="trust-grid">
-      <p class="trust-line trust-line-1">Ми перші, хто зробив перевезення справді прозорими.</p>
-      <p class="trust-line trust-line-2">Жодних прихованих доплат — ціна фіксується до старту.</p>
-      <p class="trust-line trust-line-3">Ввічливість і охайність — це наш стандарт, а не опція.</p>
-    </div>
+    <ul class="grid grid--4">
+      <li class="card card--icon">
+        <div class="card__icon" aria-hidden="true">
+          {# Секундомір: «виїзд у день звернення», а не вантажівка — бус
+             стоїть у сусідній картці, дві машини поруч читались як одне. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="12" cy="12.6" r="8.4"/>
+            <path d="M12 8.2v4.6l3 1.9"/>
+            <path d="M9 2.6h6"/>
+          </svg>
+        </div>
+        <h2 class="card__title">{{ t('home.adv1.title') }}</h2>
+        <p class="card__text">{{ t('home.adv1.text', open=HOURS_OPEN, close=HOURS_CLOSE) }}</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon" aria-hidden="true">
+          {# Бус. Була коробка — вона нічого не казала про машину. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M1.8 6.8h11.4v9.6H1.8z"/>
+            <path d="M13.2 9.4h3.9l3.1 3.4v3.6h-7z"/>
+            <circle cx="7" cy="17.8" r="1.9"/>
+            <circle cx="17" cy="17.8" r="1.9"/>
+            <path d="M8.9 17.8h6.2M1.8 16.4h3.3M18.9 16.4h1.4"/>
+          </svg>
+        </div>
+        <h2 class="card__title">{{ t('home.adv2.title') }}</h2>
+        <p class="card__text">{{ t('home.adv2.text') }}</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon" aria-hidden="true">
+          {# Шпилька на мапі. Був силует України — він суперечив би
+             напрямку на Європу і в 30px однаково читався як пляма. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 21s6.4-5.6 6.4-10.4a6.4 6.4 0 1 0-12.8 0C5.6 15.4 12 21 12 21z"/>
+            <circle cx="12" cy="10.4" r="2.4"/>
+          </svg>
+        </div>
+        <h2 class="card__title">{{ t('home.adv3.title') }}</h2>
+        <p class="card__text">{{ t('home.adv3.text') }}</p>
+      </li>
+      <li class="card card--icon">
+        <div class="card__icon" aria-hidden="true">
+          {# Калькулятор: картка про те, що ціну можна порахувати на сайті
+             ще до дзвінка. Хмарка діалогу казала протилежне — «напишіть». #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <rect x="4.6" y="2.8" width="14.8" height="18.4" rx="2.2"/>
+            <rect x="7.4" y="5.8" width="9.2" height="3.4" rx="1"/>
+            <path d="M8.2 13.2h.01M12 13.2h.01M15.8 13.2h.01M8.2 17h.01M12 17h.01M15.8 17h.01"
+                  stroke-width="2.1"/>
+          </svg>
+        </div>
+        <h2 class="card__title">{{ t('home.adv4.title') }}</h2>
+        <p class="card__text">{{ t('home.adv4.text') }}</p>
+      </li>
+    </ul>
   </div>
 </section>
 
-
-{# CTA — заявка на сторінці Контакт (вимкнено)
-<section class="cta-section" aria-label="Замовити перевезення">
+<!-- ЩО ВОЗИМО -->
+<section class="section">
   <div class="container">
-    <div class="cta-inner">
-      <h2 class="cta-title">Готові замовити перевезення?</h2>
-      <p class="cta-text">Залиште заявку — розрахуємо вартість протягом 15 хвилин. Без зобов'язань.</p>
-      <a href="{{ url_for('contact.contact') }}" class="btn-primary btn-cta">Залишити заявку</a>
-      <p class="cta-trust">Швидка відповідь · Прозора ціна</p>
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('home.what.eyebrow') }}</span>
+      <h2>{{ t('home.what.h2') }}</h2>
+    </div>
+    <ul class="grid grid--3">
+      <li class="card card--feature card--link">
+        <div class="card__media card__media--contain">
+          {{ picture('busik.png', alt=t('home.img.van'),
+                     sizes='(min-width: 1100px) 260px, (min-width: 700px) 33vw, 100vw') }}
+        </div>
+        <span class="badge">{{ t('home.what.badge') }}</span>
+        <h3 class="card__title">{{ t('home.what.c1.title') }}</h3>
+        <p class="card__text">
+          {{ t('home.what.c1.text') }}
+        </p>
+        <div class="card__foot">
+          <a class="btn btn--outline btn--block" href="{{ url_for('contact.contact') }}">{{ t('home.what.c1.cta') }}</a>
+        </div>
+      </li>
+      <li class="card card--link">
+        {# Тут стояло road-card.jpg — той самий кадр, що в героя і в блоці
+           міжміських, тобто третій показ однієї фотографії на одній
+           сторінці. Замість нього самі напрямки: вони відповідають на
+           питання картки й водночас ведуть із головної на сторінки
+           маршрутів. Порожнього місця це не лишає, а посилань додає.
+
+           ЗАМІНИТИ на фото №7 (наша машина на трасі), коли буде. #}
+        <ul class="chips" role="list">
+          {% for r in ROUTES %}
+            <li><a class="chip" href="{{ url_for('main.route_page', slug=r.slug) }}">{{ t(r.city) }}</a></li>
+          {% endfor %}
+        </ul>
+        <h3 class="card__title">{{ t('home.what.c2.title') }}</h3>
+        <p class="card__text">
+          {{ t('home.what.c2.text') }}
+        </p>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('common.more') }}</a>
+        </div>
+      </li>
+      {# Емодзі-коробка стояла тут поруч із двома фотографіями й видавала
+         картку за недороблену. Це кадр вантажного відсіку зсередини — того
+         самого, що на сторінці транспорту. Він і виглядає нарівні з
+         сусідами, і відповідає на питання, з яким сюди приходять: «а моє
+         туди влізе». Фото наше, не стокове. #}
+      <li class="card card--link">
+        <div class="card__media">
+          {{ picture('cargo-card.jpg', alt=t('home.img.cargo'),
+                     sizes='(min-width: 1100px) 260px, (min-width: 700px) 33vw, 100vw') }}
+        </div>
+        <h3 class="card__title">{{ t('home.what.c3.title') }}</h3>
+        <p class="card__text">
+          {{ t('home.what.c3.text') }}
+        </p>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.services') }}">{{ t('common.more') }}</a>
+        </div>
+      </li>
+      {# Четверта картка — Європа. H1 сторінки обіцяє «по Україні та Європі»,
+         а далі жоден блок головної про закордон не згадував: єдиний шлях
+         туди був через підвал. Замість фото — самі напрямки, як у сусідній
+         картці міжміських: вони й відповідають на питання «а куди саме»,
+         і дають п'ять внутрішніх посилань на сторінки, до яких з головної
+         не вело нічого. #}
+      <li class="card card--link">
+        <ul class="chips" role="list">
+          {% for d in ABROAD %}
+            <li><a class="chip" href="{{ url_for('main.abroad_page', slug=d.slug) }}">{{ t(d.city) }}</a></li>
+          {% endfor %}
+        </ul>
+        <h3 class="card__title">{{ t('home.what.c4.title') }}</h3>
+        <p class="card__text">
+          {{ t('home.what.c4.text') }}
+        </p>
+        <div class="card__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('main.abroad') }}">{{ t('common.more') }}</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ТАРИФИ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="section-head__eyebrow">{{ t('home.price.eyebrow') }}</span>
+      <h2>{{ t('home.price.h2') }}</h2>
+      <p class="section-head__lead">{{ t('home.price.lead') }}</p>
+    </div>
+    <ul class="grid grid--3">
+      <li class="price price--feature">
+        <span class="badge">{{ t('home.what.badge') }}</span>
+        <h3 class="price__name">{{ t('home.price.p1.name') }}</h3>
+        <p class="price__desc">{{ t('home.price.p1.desc') }}</p>
+        <p class="price__value">{{ t('home.price.from') }} {{ PRICING.INTERCITY_PER_KM }}
+          <span class="price__unit">{{ t('home.price.unit_km') }}</span></p>
+        <div class="price__foot">
+          <a class="btn btn--primary btn--block" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
+        </div>
+      </li>
+      <li class="price">
+        <h3 class="price__name">{{ t('home.price.p2.name') }}</h3>
+        <p class="price__desc">{{ t('home.price.p2.desc') }}</p>
+        <p class="price__value">{{ t('home.price.from') }} {{ PRICING.LOCAL_HOURLY }}
+          <span class="price__unit">{{ t('home.price.unit') }}</span></p>
+        <div class="price__foot">
+          <a class="btn btn--ghost btn--block btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-price">{{ t('common.call') }}</a>
+        </div>
+      </li>
+      <li class="price">
+        <h3 class="price__name">{{ t('home.price.p3.name') }}</h3>
+        <p class="price__desc">{{ t('home.price.p3.desc') }}</p>
+        <p class="price__value price__value--soft">{{ t('home.price.p3.value') }}</p>
+        <div class="price__foot">
+          <a class="btn btn--ghost btn--block" href="{{ url_for('contact.contact') }}">{{ t('home.what.c1.cta') }}</a>
+        </div>
+      </li>
+    </ul>
+    <p class="price__note">
+      {{ t('home.price.note_pre') }} <strong>{{ t('home.price.note_strong', rate=PRICING.INTERCITY_PER_KM) }}</strong>.
+      {{ t('home.price.note_post', hours=PRICING.LOCAL_MIN_HOURS, feed=PRICING.LOCAL_FEED) }}
+    </p>
+  </div>
+</section>
+
+<!-- ШВИДКИЙ РОЗРАХУНОК -->
+{# Найпростіше питання, на яке людина приходить за відповіддю: «скільки це
+   коштує по Києву». Раніше відповідь була за два переходи — у калькулятор і
+   там ще перемкнути режим. Тепер вона тут, одразу під перевагами.
+
+   Ціну на мінімальні дві години малює СЕРВЕР, тому вона видна ще до того, як
+   виконається будь-який скрипт, і залишається видною, якщо скрипт не
+   виконається взагалі. JS лише перераховує на кліку; тарифи їдуть у
+   data-атрибутах, тож віджет не залежить від priceCalculator.js і не тягне
+   жодного зайвого файлу. #}
+<section class="section section--tight">
+  <div class="container">
+    <div class="homequote" data-quote
+         data-feed="{{ PRICING.LOCAL_FEED }}"
+         data-hourly="{{ PRICING.LOCAL_HOURLY }}"
+         data-min="{{ PRICING.LOCAL_MIN_HOURS }}">
+      <div class="homequote__side">
+        <span class="section-head__eyebrow">{{ t('quote.eyebrow') }}</span>
+        <h2>{{ t('quote.h2') }}</h2>
+        <p class="section-head__lead">{{ t('quote.lead', feed=PRICING.LOCAL_FEED,
+              rate=PRICING.LOCAL_HOURLY, hours=PRICING.LOCAL_MIN_HOURS) }}</p>
+      </div>
+
+      <div class="homequote__box">
+        <p class="homequote__label" id="quote-hours-label">{{ t('quote.hours') }}</p>
+        <div class="hours" role="group" aria-labelledby="quote-hours-label">
+          <button type="button" class="hours__btn" data-quote-minus
+                  aria-label="{{ t('quote.minus') }}">&minus;</button>
+          <output class="hours__value" data-quote-out
+                  for="quote-hours-label">{{ PRICING.LOCAL_MIN_HOURS }}</output>
+          <button type="button" class="hours__btn" data-quote-plus
+                  aria-label="{{ t('quote.plus') }}">+</button>
+        </div>
+
+        <p class="homequote__total">
+          <span class="routeprice__from">{{ t('home.price.from') }}</span>
+          <strong class="routeprice__value" data-quote-total>{{ '{:,}'.format(PRICING.local_floor()).replace(',', ' ') }} {{ t('unit.uah') }}</strong>
+        </p>
+        <p class="field__hint">{{ t('quote.note', feed=PRICING.LOCAL_FEED) }}</p>
+
+        <a class="btn btn--primary btn--block" href="{{ url_for('main.calculate_km') }}"
+           data-cta="quote-home">{{ t('quote.cta') }}</a>
+        <p class="field__hint center">{{ t('quote.other') }}</p>
+      </div>
     </div>
   </div>
 </section>
-#}
 
-<!-- Міжнародні перевезення — фоновый слайдер + Ken Burns -->
-<section class="international-section">
-  <div class="international-bg-slider" aria-hidden="true">
-    <div class="international-bg-slide international-bg-slide--active" data-slide="0" style="background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=1920')"></div>
-    <div class="international-bg-slide" data-slide="1" style="background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1920')"></div>
-    <div class="international-bg-slide" data-slide="2" style="background-image: url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1920')"></div>
-    <div class="international-bg-slide" data-slide="3" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920')"></div>
-  </div>
-  <div class="international-overlay"></div>
-  <div class="container international-inner">
-    <p class="international-hook">Потрібно далі, ніж Київська область? Ми возимо в Європу.</p>
-    <h2 class="international-title">Міжнародні перевезення та індивідуальні маршрути</h2>
-    <p class="international-desc">Переїзд до Європи чи доставка вантажу за кордон — розраховуємо індивідуально під ваш запит.</p>
-    <a href="{{ url_for('contact.contact') }}" class="international-btn">Обговорити маршрут</a>
+<!-- ДОВІРА -->
+<section class="section section--dark trust" id="trust">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('home.trust.eyebrow') }}</span>
+      <h2>{{ t('home.trust.h2') }}</h2>
+    </div>
+    <ul class="trust__grid">
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">
+          {# Замок: ціна замкнена до старту. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <rect x="4" y="10.2" width="16" height="10.3" rx="2.2"/>
+            <path d="M8 10.2V7.6a4 4 0 0 1 8 0v2.6"/>
+            <path d="M12 14.2v2.3"/>
+          </svg>
+        </div>
+        <h3 class="trust__title">{{ t('home.trust.t1.title') }}</h3>
+        <p class="trust__text">
+          {{ t('home.trust.t1.text') }}
+        </p>
+      </li>
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">
+          {# Слухавка. Раніше тут стояв символ ☎ (U+260E). На iOS у нього
+             емодзі-презентація за замовчуванням, тож айфон малював червону
+             емодзі-трубку замість знака в стилі сайту. Гліф не можна
+             «попросити» бути текстом надійно — тому малюємо самі. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M7.4 3.6h2.2c.6 0 1.1.4 1.2 1l.55 2.5c.1.5-.1 1-.5 1.3L9.5 9.5a12.6 12.6 0 0 0 5 5l1.1-1.35c.3-.4.8-.6 1.3-.5l2.5.55c.6.1 1 .6 1 1.2v2.2c0 .95-.8 1.7-1.75 1.6A15.6 15.6 0 0 1 5.8 5.35 1.6 1.6 0 0 1 7.4 3.6z"/>
+          </svg>
+        </div>
+        <h3 class="trust__title">{{ t('home.trust.t2.title') }}</h3>
+        <p class="trust__text">
+          {{ t('home.trust.t2.text') }}
+        </p>
+      </li>
+      <li class="trust__card">
+        <div class="trust__icon" aria-hidden="true">
+          {# Щит із галочкою: вантаж доїде цілим. Була просто галочка — та
+             сама, що в списках .checks нижче, тож вона нічого не додавала. #}
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 3.2 4.6 6.1v5.4c0 4.3 3 8.2 7.4 9.3 4.4-1.1 7.4-5 7.4-9.3V6.1L12 3.2z"/>
+            <path d="m9.2 12.2 2 2 3.6-3.9"/>
+          </svg>
+        </div>
+        <h3 class="trust__title">{{ t('home.trust.t3.title') }}</h3>
+        <p class="trust__text">
+          {{ t('home.trust.t3.text') }}
+        </p>
+      </li>
+    </ul>
   </div>
 </section>
 
-<script>
-(function() {
-  var slides = document.querySelectorAll('.international-bg-slide');
-  if (slides.length > 0) {
-    var i = 0;
-    setInterval(function() {
-      slides[i].classList.remove('international-bg-slide--active');
-      i = (i + 1) % slides.length;
-      slides[i].classList.add('international-bg-slide--active');
-    }, 6000);
-  }
-  var trust = document.getElementById('trust-section');
-  if (trust && 'IntersectionObserver' in window) {
-    var obs = new IntersectionObserver(function(entries) {
-      entries.forEach(function(e) {
-        if (e.isIntersecting) e.target.classList.add('trust-section--visible');
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-    obs.observe(trust);
-  } else if (trust) {
-    trust.classList.add('trust-section--visible');
-  }
-})();
-</script>
+<!-- МІЖМІСЬКІ -->
+{# Був .split з road-wide.jpg ліворуч — той самий кадр, що вже стоїть у
+   героєві. Двоколонковий макет тримався на фотографії: без неї він давав
+   високу порожню колонку, тому блок став на всю ширину. Класи всі наявні,
+   нового CSS не додано.
 
-</div><!-- .index-page-wrap -->
+   ПОВЕРНУТИ .split разом із фото №6 (українська траса). #}
+<section class="section">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="section-head__eyebrow">{{ t('home.split.hook') }}</span>
+      <h2>{{ t('home.split.h2') }}</h2>
+      <p class="section-head__lead">{{ t('home.split.text') }}</p>
+    </div>
+    <div class="cluster cluster--center">
+      <a class="btn btn--primary" href="{{ url_for('main.mizhmiski') }}">{{ t('home.split.cta') }}</a>
+      <a class="btn btn--ghost btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-split">{{ PHONE_DISPLAY }}</a>
+    </div>
+  </div>
+</section>
+
+{# Розмітка VideoObject тільки тут: той самий об'єкт на двох адресах
+   Google порахував би дублем. #}
+{% with schema = true %}{% include 'partials/_video.html' %}{% endwith %}
+
+{% include 'partials/_cta.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('js/home.js') }}" defer></script>
 {% endblock %}

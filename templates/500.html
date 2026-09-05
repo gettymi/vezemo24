@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ t('meta.500.title') }}{% endblock %}
+{% block description %}{{ t('meta.500.desc') }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container container--narrow outcome">
+    <p class="outcome__code">500</p>
+    <h1>{{ t('e500.h1') }}</h1>
+    <p class="outcome__text">{{ t('e500.text') }}</p>
+    <div class="cluster cluster--center">
+      <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-500">{{ PHONE_DISPLAY }}</a>
+      <a class="btn btn--ghost" href="{{ url_for('main.index') }}">{{ t('common.home_link') }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

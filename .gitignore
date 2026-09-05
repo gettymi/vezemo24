@@ -8,6 +8,10 @@ venv/
 myenv/
 .env
 .env.*
+# ...окрім зразка. Саме через .env.* його ніколи й не було в репозиторії,
+# хоча README казав «cp .env.example .env». Секретів у ньому немає — самі
+# назви змінних і пояснення, навіщо кожна.
+!.env.example
 .venv/
 
 # IDEs and editors
@@ -27,3 +31,23 @@ instance/
 # Secrets
 credentials.json
 */secret_*.json
+.phase0-backup/
+
+# Заявки (Phase 0)
+leads.db
+leads-fallback.jsonl
+
+# Кеш геокодера (Phase 2) — відтворюється сам, у репозиторії не потрібен
+geocache.db
+geocache.db-wal
+geocache.db-shm
+
+# Тимчасова тека для файлів, які треба видалити вручну
+_to_delete/
+
+# Логи застосунку (Phase 4)
+logs/
+
+# сміття від застряглих git-локів на мосту та .bak від sed -i
+_gitlocks/
+*.bak

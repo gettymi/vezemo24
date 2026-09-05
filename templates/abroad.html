@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('meta.abroad.title') }}{% endblock %}
+{% block description %}{{ t('meta.abroad.desc') }}{% endblock %}
+
+{% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": {{ t('abroad.faq.q1') | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('abroad.faq.a1') | tojson }} } },
+    { "@type": "Question", "name": {{ t('abroad.faq.q2') | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('abroad.faq.a2') | tojson }} } },
+    { "@type": "Question", "name": {{ t('abroad.faq.q3') | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ t('abroad.faq.a3') | tojson }} } }
+  ]
+}
+</script>
+
+<section class="section">
+  <div class="container">
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a>
+      <span aria-hidden="true">→</span>
+      <span>{{ t('nav.abroad') }}</span>
+    </nav>
+
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('abroad.eyebrow') }}</span>
+      <h1>{{ t('abroad.h1') }}</h1>
+      <p class="section-head__lead">{{ t('abroad.lead') }}</p>
+      <div class="cluster" style="margin-top: var(--sp-5)">
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}"
+           data-cta="phone-abroad">{{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost" href="{{ url_for('contact.contact') }}">{{ t('common.callback') }}</a>
+      </div>
+    </div>
+
+    {# Єдина сторінка послуг, де не було жодного зображення. Блок такий
+       самий, як на /mizhmiski: та сама смуга 21:9 на всю ширину, той самий
+       підпис. Знак на фото — реальний вʼїзд до Німеччини, однієї з країн,
+       які названі в тексті сторінки. #}
+    <div class="split__media" style="aspect-ratio: 21/9; margin-top: var(--sp-6)">
+      {{ picture('abroad-wide.jpg', alt=t('abroad.img.wide'),
+                 sizes='(min-width: 1140px) 1092px, 100vw') }}
+      <span class="split__tag">{{ t('abroad.split.tag') }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head">
+      <h2>{{ t('abroad.zones.h2') }}</h2>
+      <p class="section-head__lead">{{ t('abroad.zones.lead') }}</p>
+    </div>
+
+    {# Ставка, а не готова сума: точних європейських кілометражів у нас
+       немає, і вигадувати їх заради таблиці означало б назвати
+       неправильну ціну. Суму рахує калькулятор за реальним маршрутом. #}
+    <ul class="grid grid--2">
+      {% for zone, key in [('east', 'abroad.zone.east.name'), ('west', 'abroad.zone.west.name')] %}
+      {% set z = PRICING.ABROAD_ZONES[zone] %}
+      <li class="price {% if zone == 'east' %}price--feature{% endif %}">
+        <h3 class="price__name">{{ t(key) }}</h3>
+        <p class="price__desc">{{ z.countries | map('t_pass') | join(' · ') }}</p>
+        <p class="price__value">{{ ('%.2f' % z.per_total_km) | replace('.', ',') }}
+          <span class="price__unit">{{ t('abroad.zone.unit') }}</span></p>
+        {%- if zone == 'west' %}
+        <p class="field__hint">{{ t('abroad.zone.west.why') }}</p>
+        {%- endif %}
+        <div class="price__foot">
+          {# Кнопка веде в калькулятор ІЗ маршрутом. Без ?route= зона не
+             задавалась, і калькулятор рахував європейський рейс як
+             звичайне міжмісто в гривні. #}
+          <a class="btn {{ 'btn--primary' if zone == 'east' else 'btn--ghost' }} btn--block"
+             href="{{ url_for('main.calculate_km') }}?route={{ 'kyiv-warszawa' if zone == 'east' else 'kyiv-berlin' }}"
+             data-cta="calc-abroad-{{ zone }}">{{ t('nav.calc_short') }}</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{# Напрямки: досі вони приходили в шаблон і ніде не показувались, тому
+   з цієї сторінки не було ЖОДНОГО шляху до євроціни. Кожна кнопка веде
+   в калькулятор із готовим маршрутом — і зона, і кілометраж уже там. #}
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <h2>{{ t('abroad.dest.h2') }}</h2>
+      <p class="section-head__lead">{{ t('abroad.dest.lead') }}</p>
+    </div>
+    <div class="presets presets--center">
+      <div class="presets__row">
+        {% for d in destinations %}
+          {# Веде на сторінку напрямку, а не одразу в калькулятор: сторінка
+             існує в пошуку, калькулятор — ні, і людині корисніше спершу
+             прочитати про рейс. Кнопка розрахунку є на самій сторінці. #}
+          <a class="preset" href="{{ url_for('main.abroad_page', slug=d.slug) }}"
+             data-cta="dest-{{ d.slug }}">{{ t('city.kyiv') }} → {{ t(d.city) }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid--2">
+      <article class="card">
+        <h2 class="card__title">{{ t('abroad.incl.h2') }}</h2>
+        <ul class="checks">
+          <li>{{ t('abroad.incl.c1') }}</li>
+          <li>{{ t('abroad.incl.c2') }}</li>
+          <li>{{ t('abroad.incl.c3') }}</li>
+          <li>{{ t('abroad.incl.c4') }}</li>
+        </ul>
+      </article>
+
+      {# Простій виноситься окремо й чесно: це головне, через що в цій
+         ніші сваряться після рейсу. Конкретну ставку не публікуємо —
+         вона узгоджується під рейс і фіксується в договорі до виїзду. #}
+      <article class="card card--accent">
+        <h2 class="card__title">{{ t('abroad.extra.h2') }}</h2>
+        <p class="card__text">{{ t('abroad.extra.text') }}</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center">
+      <h2>{{ t('abroad.faq.h2') }}</h2>
+    </div>
+    <div class="faq">
+      {% for q, a in [('abroad.faq.q1','abroad.faq.a1'), ('abroad.faq.q2','abroad.faq.a2'),
+                      ('abroad.faq.q3','abroad.faq.a3')] %}
+      <details class="faq__item">
+        <summary class="faq__q">{{ t(q) }}</summary>
+        <p class="faq__a">{{ t(a) }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% with cta_title = t('abroad.cta.title'), cta_text = t('abroad.cta.text'), cta_source = 'abroad' %}
+  {% include 'partials/_cta.html' %}
+{% endwith %}
+{% endblock %}

@@ -1,61 +1,33 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Зв’язатися з нами — залишити заявку | Vezemo24{% endblock %}
-{% block description %}Залиште заявку на перевезення: достатньо номера телефону. Передзвонимо та розрахуємо вартість. Київ та Київська область.{% endblock %}
-{% block keywords %}замовити перевезення київ, заявка вантажне таксі, передзвонити переїзд{% endblock %}
-
-{% block head %}
-  {{ super() }}
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
-{% endblock %}
+{% block title %}{{ t('meta.contact.title') }}{% endblock %}
+{% block description %}{{ t('meta.contact.desc', phone=PHONE_DISPLAY) }}{% endblock %}
 
 {% block content %}
-<section class="contact-section">
+<section class="section">
   <div class="container">
-    <div class="form-card">
-      
-      <div class="form-header">
-        <h1 class="contact-title">Зв’язатися з нами</h1>
-        <p class="contact-desc">Залиште номер телефону — передзвонимо та розрахуємо вартість. Ім'я та коментар необов'язкові.</p>
-        <p class="contact-hint">Достатньо лише телефону — передзвонимо найближчим часом.</p>
+    <div class="formcard">
+      <div class="formcard__head">
+        <h1>{{ t('contact.h1') }}</h1>
+        <p>{{ t('contact.lead') }}</p>
       </div>
 
-      <form id="contactForm" method="POST" action="/contact">
-        
-        <div class="form-group form-group--phone">
-          <label for="phone">Телефон <span class="required">*</span></label>
-          <input id="phone" name="phone" type="tel" required class="form-input" placeholder="Номер телефону">
-        </div>
+      {# Дзвінок стоїть перед формою: у цій ніші це головний канал. #}
+      <a class="callbox" href="tel:{{ PHONE_E164 }}" data-cta="phone-contact-page">
+        <span class="i-phone i-phone--lg" aria-hidden="true"></span>
+        <span>
+          <span class="callbox__num">{{ PHONE_DISPLAY }}</span>
+          <span class="callbox__hours">{{ t('hours.label', open=HOURS_OPEN, close=HOURS_CLOSE) }}</span>
+        </span>
+      </a>
 
-        <div class="form-group">
-          <label for="name">Імʼя (необов'язково)</label>
-          <input type="text" id="name" name="name" placeholder="Ваше ім’я" class="form-input">
-        </div>
+      <div class="divider"><span>{{ t('contact.or') }}</span></div>
 
-        <div class="form-group">
-          <label for="email">Електронна пошта (необов’язково)</label>
-          <input type="email" id="email" name="email" placeholder="example@gmail.com" class="form-input">
-        </div>
-
-        <div class="form-group">
-          <label for="message">Повідомлення (необов'язково)</label>
-          <textarea id="message" name="message" rows="4" placeholder="Опишіть вантаж, маршрут або запитання — можна залишити порожнім" class="form-input"></textarea>
-        </div>
-
-        <button type="submit" id="submitBtn" class="btn-submit">
-          <span>Надіслати повідомлення</span>
-        </button>
-
-        <div id="formAlert" class="alert"></div>
-      </form>
-      
+      {% with fid = 'page', source = 'contact-page' %}{% include 'partials/_lead_form.html' %}{% endwith %}
     </div>
   </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
-<script src="{{ url_for('static', filename='js/contact.js') }}"></script>
 {% endblock %}

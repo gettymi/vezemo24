@@ -1,0 +1,41 @@
+<header class="header" id="js-header">
+  <div class="container header__inner">
+    {# Логотип і є посиланням на головну, тому окремого пункту «Головна»
+       в меню немає: він лише додавав кнопку, нічого не даючи. #}
+    <a class="logo" href="{{ url_for('main.index') }}" aria-label="{{ t('nav.logo_aria') }}"
+       {% if request.endpoint == 'main.index' %}aria-current="page"{% endif %}>
+      {% include 'partials/_logo.html' %}
+      <span class="logo__word">{{ t('brand.word') }}</span>
+    </a>
+
+    <nav class="nav" id="js-nav" aria-label="{{ t('nav.aria') }}">
+      {% set nav_items = [
+        ('main.services',     'nav.services'),
+        ('main.mizhmiski',    'nav.mizh'),
+        ('main.abroad',       'nav.abroad'),
+        ('main.calculate_km', 'nav.calc_short'),
+      ] %}
+      {% for endpoint, key in nav_items %}
+        <a class="nav__link{% if request.endpoint == endpoint %} is-current{% endif %}"
+           href="{{ url_for(endpoint) }}"
+           {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ t(key) }}</a>
+      {% endfor %}
+
+      {# Перемикач мов живе лише в підвалі. У шапці він займав місце трьох
+         кнопок поруч із меню, телефоном і головною дією; для Google мови
+         однаково знаходяться через hreflang у <head>, а не через видиму
+         кнопку. #}
+
+      <a class="header__phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-header">{{ PHONE_DISPLAY }}
+      </a>
+      <a class="btn btn--solid-dark" href="{{ url_for('contact.contact') }}">{{ t('nav.lead') }}</a>
+    </nav>
+
+    <button class="burger" id="js-burger" type="button"
+            aria-label="{{ t('nav.burger') }}" aria-expanded="false" aria-controls="js-nav">
+      <span class="burger__line"></span>
+      <span class="burger__line"></span>
+      <span class="burger__line"></span>
+    </button>
+  </div>
+</header>

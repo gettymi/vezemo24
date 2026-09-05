@@ -1,93 +1,122 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("contactForm");
-  const submitBtn = document.getElementById("submitBtn");
-  const alertBox = document.getElementById("formAlert");
-  const phoneInput = document.getElementById("phone");
+/**
+ * Надсилання заявки без перезавантаження сторінки.
+ *
+ * Форма тепер стоїть НЕ ЛИШЕ на сторінці контактів, а в блоці заклику
+ * внизу кожної сторінки, тож на одній сторінці їх може бути дві. Тому
+ * шукаємо всі [data-lead-form] і всередині кожної працюємо тільки з її
+ * власними полями: раніше все трималось на getElementById, і друга форма
+ * мовчки керувала б кнопкою першої.
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  var forms = document.querySelectorAll("[data-lead-form]");
+  if (!forms.length) return;
 
-  const iti = window.intlTelInput(phoneInput, {
-    initialCountry: "ua",
-    separateDialCode: true,
-    preferredCountries: ["ua", "pl", "de"],
-    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
-  });
+  // Переклад дістаємо в момент виклику: i18n.js має defer.
+  var VZT = function (k) { return window.VZ && window.VZ.t ? window.VZ.t(k) : k; };
 
-
-  const validatePhone = () => {
-    if (phoneInput.value.trim()) {
-      if (iti.isValidNumber()) {
-        phoneInput.classList.remove("error");
-        phoneInput.classList.add("valid");
-        return true;
-      } else {
-        phoneInput.classList.remove("valid");
-        phoneInput.classList.add("error");
-        return false;
-      }
-    }
-    return false;
+  // Сервер віддає КОД помилки, а не готову фразу: інакше українська
+  // відповідь показувалась би й на російській, і на англійській версії —
+  // саме тоді, коли людина помилилась і намагається залишити заявку.
+  // Білий список навмисно: на невідомий код падаємо назад на текст сервера,
+  // а не показуємо відвідувачу назву ключа.
+  var ERROR_KEYS = {
+    "phone_required": "form.phone_required",
+    "bad_phone": "form.bad_phone",
+    "too_many": "form.too_many",
+    "session_expired": "form.session_expired"
   };
 
-  phoneInput.addEventListener('keyup', validatePhone);
-  phoneInput.addEventListener('change', validatePhone);
+  function errorText(body) {
+    var key = body && body.error_code ? ERROR_KEYS[body.error_code] : null;
+    return (key && VZT(key)) || (body && body.error) || VZT("form.send_failed");
+  }
 
-  // 3. Обробка форми (обов'язкове лише поле "телефон")
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    resetUI();
+  Array.prototype.forEach.call(forms, function (form) {
+    var submitBtn = form.querySelector("[data-lead-submit]");
+    var alertBox = form.querySelector("[data-lead-alert]");
+    var phoneInput = form.querySelector("[data-lead-phone]");
+    var messageInput = form.querySelector("[data-lead-message]");
+    if (!submitBtn || !alertBox || !phoneInput) return;
 
-    const isPhoneValid = validatePhone();
-    const phoneVal = (phoneInput.value && iti.getNumber) ? iti.getNumber().trim() : phoneInput.value.trim();
+    var phone = window.PhoneField ? window.PhoneField.attach(phoneInput) : null;
 
-    if (!phoneVal || !isPhoneValid) {
-      showAlert("Введіть коректний номер телефону.", "error");
-      phoneInput.classList.add("error");
-      const itiInput = document.querySelector(".iti__tel-input, .iti input");
-      if (itiInput) itiInput.classList.add("error");
+    /* Маршрут із калькулятора — не змушуємо переписувати все заново. */
+    (function prefillRoute() {
+      var route = "";
+      try {
+        route = new URLSearchParams(window.location.search).get("route") || "";
+        if (!route) route = sessionStorage.getItem("vezemo_route") || "";
+      } catch (e) { /* приватний режим */ }
+      if (route && messageInput && !messageInput.value.trim()) {
+        messageInput.value = route;
+        var extra = form.querySelector(".disclosure");
+        if (extra) extra.open = true;
+      }
+    })();
+
+    function showAlert(message) {
+      alertBox.textContent = message;
+      alertBox.className = "notice notice--error is-shown";
       alertBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      return;
     }
 
-    submitBtn.disabled = true;
-    const formData = new FormData(form);
-    
-    formData.set("phone", iti.getNumber());
+    function resetUI() {
+      alertBox.classList.remove("is-shown");
+      phoneInput.classList.remove("is-error");
+    }
 
-    try {
-      const res = await fetch("/contact", {
-        method: "POST",
-        body: formData,
-        headers: { "Accept": "application/json" }
-      });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      resetUI();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        showAlert(data.error || "Помилка відправки", "error");
-        alertBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      var valid = phone ? phone.isValid() : phoneInput.value.replace(/\D/g, "").length >= 9;
+      if (!valid) {
+        phoneInput.classList.add("is-error");
+        phoneInput.focus();
+        showAlert(VZT("form.bad_phone"));
         return;
       }
 
-      // Google Ads / GTM: подія конверсії при успішній відправці
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "form_submission" });
-      window.location.href = "/thank-you";
+      submitBtn.disabled = true;
+      var btnLabel = submitBtn.querySelector("span");
+      var original = btnLabel ? btnLabel.textContent : "";
+      if (btnLabel) btnLabel.textContent = VZT("form.sending");
 
-    } catch (err) {
-      showAlert("Сервер недоступний. Спробуйте пізніше або зателефонуйте нам.", "error");
-      alertBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    } finally {
-      submitBtn.disabled = false;
-    }
+      var data = new FormData(form);            // csrf_token їде разом із формою
+      if (phone) data.set("phone", phone.getNumber());
+
+      fetch(form.action, {
+        method: "POST",
+        body: data,
+        headers: { "Accept": "application/json" }
+      })
+        .then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (body) {
+            return { ok: res.ok, body: body };
+          });
+        })
+        .then(function (r) {
+          if (!r.ok) {
+            showAlert(errorText(r.body));
+            return;
+          }
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: "generate_lead",
+            method: "form",
+            cta_location: form.querySelector("[name=source]") ?
+              form.querySelector("[name=source]").value : "unknown"
+          });
+          try { sessionStorage.removeItem("vezemo_route"); } catch (err) { /* ignore */ }
+          window.location.href = "/thank-you";
+        })
+        .catch(function () {
+          showAlert(VZT("form.no_connection"));
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          if (btnLabel) btnLabel.textContent = original;
+        });
+    });
   });
-
-  function showAlert(message, type) {
-    alertBox.textContent = message;
-    alertBox.className = `alert ${type}`;
-    alertBox.style.display = "block";
-  }
-
-  function resetUI() {
-    alertBox.style.display = "none";
-    form.querySelectorAll(".form-input, .iti input").forEach(el => el.classList.remove("error"));
-  }
 });

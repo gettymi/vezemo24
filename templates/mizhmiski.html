@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('meta.mizh.title') }}{% endblock %}
+{% block description %}{{ t('meta.mizh.desc') }}{% endblock %}
+
+{% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "{{ t('nav.home') }}", "item": "{{ SITE_URL }}{{ url_for('main.index') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ t('foot.mizh_full') }}", "item": "{{ SITE_URL }}{{ url_for('main.mizhmiski') }}" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "{{ t('mizh.faq.q1') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a1', rate=PRICING.INTERCITY_PER_KM) }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q2') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a2') }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q3') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a3') }}" } },
+    { "@type": "Question", "name": "{{ t('mizh.faq.q4') }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ t('mizh.faq.a4') }}" } }
+  ]
+}
+</script>
+
+<section class="section">
+  <div class="container">
+    <nav class="crumbs" aria-label="{{ t('svc.crumbs') }}">
+      <a href="{{ url_for('main.index') }}">{{ t('nav.home') }}</a> <span aria-hidden="true">→</span> <span>{{ t('foot.mizh_full') }}</span>
+    </nav>
+
+    <div class="section-head">
+      <span class="section-head__eyebrow">{{ t('mizh.eyebrow') }}</span>
+      <h1>{{ t('mizh.h1') }}</h1>
+      <p class="section-head__lead">
+        {{ t('mizh.lead') }}
+      </p>
+      <div class="cluster" style="margin-top: var(--sp-5)">
+        <a class="btn btn--primary btn--phone" href="tel:{{ PHONE_E164 }}" data-cta="phone-mizhmiski">{{ PHONE_DISPLAY }}</a>
+        <a class="btn btn--ghost" href="{{ url_for('main.calculate_km') }}">{{ t('mizh.calc') }}</a>
+      </div>
+    </div>
+
+    <div class="split__media" style="aspect-ratio: 21/9; margin-top: var(--sp-6)">
+      {{ picture('road-wide.jpg', alt=t('home.img.road_wide'),
+                 sizes='(min-width: 1140px) 1092px, 100vw') }}
+      <span class="split__tag">{{ t('home.split.tag') }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container">
+    <div class="section-head">
+      <h2>{{ t('mizh.routes.h2') }}</h2>
+      <p class="section-head__lead">{{ t('mizh.routes.lead') }}</p>
+    </div>
+    <ul class="routes">
+      {# Джерело — content/routes.py, тож список не може розійтися зі сторінками. #}
+      {% for r in routes %}
+      <li class="route">
+        <a class="route__link" href="{{ url_for('main.route_page', slug=r.slug) }}">
+          <span class="route__name">{{ t('city.kyiv') }} → {{ t(r.city) }}</span>
+          <span class="route__km">≈ {{ r.km }} {{ t('common.km') }}</span>
+        </a>
+      </li>
+      {% endfor %}
+      <li class="route route--any">
+        <span class="route__name">{{ t('mizh.routes.other') }}</span>
+        <span class="route__km">{{ t('mizh.routes.other_km') }}</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid--2">
+      <article class="card">
+        <h2 class="card__title">{{ t('mizh.what.h2') }}</h2>
+        <ul class="checks">
+          <li>{{ t('mizh.what.c1') }}</li>
+          <li>{{ t('mizh.what.c2') }}</li>
+          <li>{{ t('mizh.what.c3') }}</li>
+          <li>{{ t('mizh.what.c4') }}</li>
+        </ul>
+        <p class="field__hint">{{ t('mizh.what.note') }}</p>
+      </article>
+
+      <article class="card">
+        <h2 class="card__title">{{ t('mizh.how.h2') }}</h2>
+        <ol class="steps">
+          <li><strong>{{ t('mizh.how.s1b') }}</strong> {{ t('mizh.how.s1') }}</li>
+          <li><strong>{{ t('mizh.how.s2b') }}</strong> {{ t('mizh.how.s2') }}</li>
+          <li><strong>{{ t('mizh.how.s3b') }}</strong> {{ t('mizh.how.s3') }}</li>
+          <li><strong>{{ t('mizh.how.s4b') }}</strong> {{ t('mizh.how.s4') }}</li>
+        </ol>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--flush">
+  <div class="container container--narrow">
+    <div class="section-head section-head--center">
+      <h2>{{ t('mizh.faq.h2') }}</h2>
+    </div>
+    <div class="faq">
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('mizh.faq.q1') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a1', rate=PRICING.INTERCITY_PER_KM) }}</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('mizh.faq.q2') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a2') }}</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('mizh.faq.q3') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a3') }}</p>
+      </details>
+      <details class="faq__item">
+        <summary class="faq__q">{{ t('mizh.faq.q4') }}</summary>
+        <p class="faq__a">{{ t('mizh.faq.a4') }}</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+{% with cta_title = t('mizh.cta.title'), cta_text = t('mizh.cta.text'), cta_source = 'mizhmiski' %}
+  {% include 'partials/_cta.html' %}
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,372 @@
+/* ==========================================================================
+   Веземо24 — сторінка калькулятора маршруту.
+   Єдина сторінка з картою, тому винесена окремо: решта сайту не платить
+   за ці стилі. Токени й шари успадковані з app.css.
+   ========================================================================== */
+@layer pages {
+
+  /* Висота: 100dvh враховує панель браузера на мобільних — 100vh її не бачить
+     і карта виявлялась обрізаною. Висоту шапки беремо з токена, не з "72px". */
+  .mapview {
+    display: flex;
+    height: calc(100vh - var(--header-h));
+    min-height: 420px;
+    overflow: hidden;
+  }
+  @supports (height: 100dvh) {
+    .mapview { height: calc(100dvh - var(--header-h)); }
+  }
+
+  .mapview__panel {
+    flex: none;
+    width: 420px;
+    max-width: 100%;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mapview__canvas { position: relative; flex: 1; min-width: 0; height: 100%; }
+  #map { width: 100%; height: 100%; background: var(--ink-100); }
+
+  /* Показується, лише коли карта не піднялась. Сірий прямокутник без пояснень
+     виглядав як зламана сторінка і люди йшли геть, хоча форма працювала. */
+  .map-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+    display: grid;
+    place-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-6);
+    text-align: center;
+    background: var(--surface-sunk);
+  }
+  .map-fallback__title { font-weight: 800; color: var(--text-strong); }
+  .map-fallback__text {
+    max-width: 34ch;
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    line-height: var(--lh-snug);
+  }
+
+  .panel { display: flex; flex-direction: column; gap: var(--sp-5); padding: var(--sp-5); }
+  .panel__head h1 { font-size: var(--fs-xl); }
+  .panel__head p { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--text-muted); }
+  .panel__note { font-size: var(--fs-xs); color: var(--text-muted); }
+
+  /* ── Точки маршруту ─────────────────────────────────────────────────── */
+  .points { position: relative; display: flex; flex-direction: column; gap: var(--sp-3); }
+  .points::before {
+    content: "";
+    position: absolute;
+    left: 15px; top: 26px; bottom: 26px;
+    width: 2px;
+    background: repeating-linear-gradient(180deg, var(--line) 0 5px, transparent 5px 10px);
+  }
+  .point { position: relative; display: flex; align-items: center; gap: var(--sp-3); }
+  .point__input { flex: 1 1 auto; min-width: 0; }
+  .point__pin {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--brand-500);
+    color: var(--white);
+    font-size: var(--fs-xs);
+    font-weight: 800;
+    box-shadow: 0 0 0 4px var(--surface);
+  }
+  .point__pin--start { background: #10b981; }
+  .point__pin--end   { background: #ef4444; }
+  .point__pin--via   { background: var(--brand-500); width: 26px; height: 26px; margin-left: 3px; }
+  .point .input { padding-block: var(--sp-2); }
+  .point__remove {
+    flex: none;
+    width: 30px; height: 30px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--ink-400);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .point__remove:hover { color: var(--err-600); background: var(--err-50); }
+
+  /* Підказки адрес. z-index з токена і НИЖЧЕ шапки — раніше було 2000
+     проти 1000, і список малювався поверх навігації. */
+  .suggest {
+    position: fixed;
+    z-index: var(--z-dropdown);
+    display: none;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-3);
+    font-size: var(--fs-sm);
+  }
+  .suggest.is-open { display: block; }
+  .suggest__item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+  }
+  .suggest__item:last-child { border-bottom: 0; }
+  .suggest__item:hover, .suggest__item.is-active { background: var(--brand-50); }
+  .suggest__item--hint { color: var(--text-muted); cursor: default; }
+  .suggest__item--hint:hover { background: transparent; }
+
+  /* ── Дії ────────────────────────────────────────────────────────────── */
+  .panel__actions { display: flex; flex-direction: column; gap: var(--sp-3); }
+  .panel__actions-row { display: flex; gap: var(--sp-2); }
+  .panel__actions-row .btn { flex: 1; }
+  .btn--text {
+    min-height: 40px;
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--brand-700);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .btn--text:hover { background: var(--brand-50); transform: none; }
+
+  /* ── Ритм панелі ────────────────────────────────────────────────────
+     Усі блоки в панелі мали нульові поля й злипалися: остання пігулка
+     «Київ → Берлін» упиралась прямо у форму адрес, і дві різні речі
+     читалися як одна. Замість роздавати margin кожному блоку окремо
+     (і забути про наступний) задаємо відступ один раз на контейнері.
+     Приховані елементи — порожнє повідомлення й нерозгорнутий результат —
+     мають display:none, тож у розкладку не потрапляють і зайвої діри не
+     лишають. */
+  #mode-route,
+  #mode-local {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+  }
+  /* Дві групи напрямків спорідненіші між собою, ніж із формою адрес,
+     тому між ними відступ менший за загальний. */
+  .presets + .presets { margin-top: calc(var(--sp-4) - var(--sp-5)); }
+
+  /* ── Перемикач режимів ──────────────────────────────────────────────
+     Дві різні послуги з різними моделями ціни, тому це саме перемикач,
+     а не фільтр: одночасно доречний рівно один. */
+  .modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 2px;
+    margin-bottom: var(--sp-5);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+  .mode {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: var(--sp-2);
+    border: 0;
+    border-radius: calc(var(--r-md) - 3px);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .mode:hover { color: var(--text-strong); }
+  /* Обраний сегмент — суцільна заливка брендовим, БЕЗ тіні. Біла пігулка
+     з тінню на світлому тлі читалась як картка, що лежить зверху: клієнт
+     побачив дві кнопки, які «наїхали одна на одну». Заливка не лишає
+     сумнівів, який режим увімкнено. */
+  .mode.is-active {
+    background: var(--brand-500);
+    color: var(--white);
+  }
+
+  /* ── Погодинний режим ───────────────────────────────────────────────── */
+  .local__q { font-size: var(--fs-md); font-weight: 700; color: var(--text-strong); }
+  .local__help { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--text-muted); }
+  .hours {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    margin: var(--sp-5) 0;
+    padding: var(--sp-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+  }
+  .hours__step {
+    flex: none;
+    width: 48px; height: 48px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface-sunk);
+    color: var(--text-strong);
+    font-size: var(--fs-xl);
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  }
+  .hours__step:hover:not(:disabled) { border-color: var(--brand-300); background: var(--brand-50); }
+  .hours__step:disabled { opacity: .4; cursor: default; }
+  .hours__value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .hours__unit { font-size: var(--fs-md); font-weight: 600; color: var(--text-muted); }
+  .local__quote { margin-bottom: var(--sp-5); }
+
+  /* ── Блок вартості ──────────────────────────────────────────────────
+     Одна цифра замість трьох карток: моделі різні, порівнювати нема що. */
+  .quote {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-4) var(--sp-5);
+    border: 2px solid var(--brand-200);
+    border-radius: var(--r-lg);
+    background: linear-gradient(160deg, var(--brand-50) 0%, var(--white) 70%);
+  }
+  .quote:empty { display: none; }
+  .quote__label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--brand-700);
+  }
+  .quote__value {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    color: var(--brand-700);
+    font-variant-numeric: tabular-nums;
+  }
+  .quote__note {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    line-height: var(--lh-snug);
+  }
+  /* Погодинна модель — не підсумок, а ставка. Прибираємо акцент, щоб
+     цифру не читали як «стільки й заплачу». */
+  /* Зворотний рейс — доплата до названої суми, тому дрібніше за головну
+     цифру, але помітніше за виноску. */
+  .quote__return {
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    border-top: 1px dashed var(--brand-200);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .quote--hourly { border-color: var(--line); background: var(--surface-sunk); }
+  .quote--hourly .quote__value { font-size: var(--fs-xl); color: var(--text-strong); }
+
+  /* ── Ключові цифри маршруту ────────────────────────────────────────── */
+  .result__facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+  }
+  .fact { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fact__label { font-size: var(--fs-xs); color: var(--text-muted); }
+  .fact__value {
+    font-size: var(--fs-sm);
+    font-weight: 800;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Кнопка на час розрахунку: з проксі-геокодером маршрут може рахуватись
+     кілька секунд, і без цього стану сторінка виглядала мертвою. */
+  .btn.is-busy { opacity: .75; cursor: progress; }
+
+  /* ── Результат ──────────────────────────────────────────────────────── */
+  .result {
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+  .result.is-shown { display: flex; }
+  .result__leg { display: flex; justify-content: space-between; gap: var(--sp-2); }
+  .result__disclaimer { font-size: var(--fs-xs); color: var(--text-muted); }
+
+  /* Дія після розрахунку — раніше калькулятор був глухим кутом */
+  .result__cta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-4);
+    border-top: 1px dashed var(--line);
+  }
+
+  .map-picking { cursor: crosshair; }
+  .map-picking .leaflet-interactive { cursor: crosshair; }
+
+  /* ── Мобільна розкладка: панель зверху, карта під нею ───────────────── */
+  @media (max-width: 900px) {
+    .mapview {
+      flex-direction: column;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+    .mapview__panel {
+      width: 100%;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      overflow: visible;
+    }
+    .mapview__canvas { height: 58vh; min-height: 320px; }
+  }
+}
+
+/* ── Місток від маршруту до погодинного режиму ─────────────────────────────
+   Дописано ДРУГИМ відкриттям @layer pages: базові .mode і .quote живуть саме
+   там, і правило поза шаром програло б їм мовчки. */
+@layer pages {
+  .mode--hint {
+    color: var(--text-strong);
+    box-shadow: inset 0 0 0 2px var(--brand-500);
+    animation: mode-hint 1.8s var(--ease) 3;
+  }
+  @keyframes mode-hint {
+    0%, 100% { box-shadow: inset 0 0 0 2px var(--brand-500); }
+    50%      { box-shadow: inset 0 0 0 2px var(--brand-500), 0 0 0 5px var(--brand-100); }
+  }
+
+  .quote__jump { margin-top: var(--sp-3); justify-self: start; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mode--hint { animation: none; }
+  }
+}
