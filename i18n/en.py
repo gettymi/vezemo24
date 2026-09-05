@@ -123,6 +123,8 @@ STRINGS = {
     "home.img.road": "Packed boxes marked Fragile loaded in a cargo van",
     "home.img.cargo": "The van\u2019s cargo bay from inside: flat floor, high roof",
     "home.img.road_wide": "Naberezhne Highway in Kyiv — a route for intercity cargo transport",
+    "home.img.intercity": "A two-lane road between sunflower fields — an intercity run",
+    "home.img.europe": "A German autobahn with signs to Dresden and Frankfurt (Oder)",
 
     "home.price.eyebrow": "No surprises",
     "home.price.h2": "Prices",

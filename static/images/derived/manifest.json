@@ -35,6 +35,32 @@
       720
     ]
   },
+  "europe-card.jpg": {
+    "fallback": "jpg",
+    "h": 1000,
+    "stem": "europe-card",
+    "w": 1600,
+    "widths": [
+      400,
+      600,
+      800,
+      1080,
+      1600
+    ]
+  },
+  "intercity-card.jpg": {
+    "fallback": "jpg",
+    "h": 1000,
+    "stem": "intercity-card",
+    "w": 1600,
+    "widths": [
+      400,
+      600,
+      800,
+      1080,
+      1600
+    ]
+  },
   "road-card.jpg": {
     "fallback": "jpg",
     "h": 1250,
