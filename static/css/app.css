@@ -119,7 +119,7 @@
     --container: 1140px;
     --container-narrow: 780px;
     --header-h: 72px;
-    --mobilebar-h: 58px;
+    --mobilebar-h: 64px;
   }
 }
 
@@ -894,7 +894,11 @@
       gap: 1px;
       background: rgba(11,21,36,.14);
       box-shadow: 0 -6px 22px rgba(11,21,36,.16);
-      padding-bottom: env(safe-area-inset-bottom, 0);
+      /* Safari на айфоні тримає внизу власну панель, і вона то з'являється,
+         то ховається під час гортання. Через це наші кнопки опинялись упритул
+         до неї, і палець раз у раз влучав повз. max() дає гарантований зазор
+         навіть там, де safe-area дорівнює нулю. */
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 6px);
     }
     .mobilebar__btn {
       display: flex;
@@ -911,7 +915,7 @@
     .mobilebar__btn--viber { background: #7360f2; color: var(--white); }
     .mobilebar__btn--form  { background: var(--ink-900); color: var(--white); }
     .mobilebar__btn:active { filter: brightness(.9); }
-    body { padding-bottom: var(--mobilebar-h); }
+    body { padding-bottom: calc(var(--mobilebar-h) + env(safe-area-inset-bottom, 0px) + 6px); }
   }
 }
 
@@ -970,6 +974,25 @@
     color: rgba(255,255,255,.9);
   }
   .hero__note { font-size: var(--fs-sm); color: rgba(255,255,255,.75); }
+
+  /* На телефоні герой з'їдав майже весь перший екран: заголовок у три
+     рядки, лід у п'ять, і лише під ними кнопка з номером. Людина приходить
+     із пошуку «вантажне таксі Київ» — їй потрібен телефон, а не абзац.
+
+     Текст не скорочуємо: він працює і на пошук, і на розуміння. Замість
+     цього стискаємо — менша висота блоку, щільніший рядок у ліда, менші
+     відступи. Кнопка «Подзвонити» піднімається у видиму частину. */
+  @media (max-width: 640px) {
+    .hero { min-height: clamp(380px, 56vh, 460px); }
+    .hero__inner { padding-block: var(--sp-6); gap: var(--sp-3); }
+    .hero__title { font-size: clamp(1.7rem, 6.2vw, 2.1rem); max-width: 17ch; }
+    .hero__lead {
+      font-size: var(--fs-sm);
+      line-height: var(--lh-snug);
+      max-width: 40ch;
+    }
+    .hero__note { font-size: var(--fs-xs); }
+  }
 
   /* ── Тарифи ─────────────────────────────────────────────────────────── */
   .price {

@@ -151,11 +151,16 @@
       <span class="section-head__eyebrow">{{ t('home.what.eyebrow') }}</span>
       <h2>{{ t('home.what.h2') }}</h2>
     </div>
-    <ul class="grid grid--3">
+    {# Дві колонки, не чотири. З появою картки Європи auto-fit розклав
+       список у чотири вузькі стовпці: фотографії стиснулись, чипси
+       напрямків стали дрібними, а картки почали читатися як другорядні
+       плитки. Пара 2×2 повертає їм вагу — і фото, і назви напрямків
+       знову видно. #}
+    <ul class="grid grid--3 grid--2up">
       <li class="card card--feature card--link">
         <div class="card__media card__media--contain">
           {{ picture('busik.png', alt=t('home.img.van'),
-                     sizes='(min-width: 1100px) 260px, (min-width: 700px) 33vw, 100vw') }}
+                     sizes='(min-width: 1100px) 540px, (min-width: 700px) 50vw, 100vw') }}
         </div>
         <span class="badge">{{ t('home.what.badge') }}</span>
         <h3 class="card__title">{{ t('home.what.c1.title') }}</h3>
@@ -195,7 +200,7 @@
       <li class="card card--link">
         <div class="card__media">
           {{ picture('cargo-card.jpg', alt=t('home.img.cargo'),
-                     sizes='(min-width: 1100px) 260px, (min-width: 700px) 33vw, 100vw') }}
+                     sizes='(min-width: 1100px) 540px, (min-width: 700px) 50vw, 100vw') }}
         </div>
         <h3 class="card__title">{{ t('home.what.c3.title') }}</h3>
         <p class="card__text">
