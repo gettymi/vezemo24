@@ -14,6 +14,23 @@ document.addEventListener("DOMContentLoaded", function () {
   // Переклад дістаємо в момент виклику: i18n.js має defer.
   var VZT = function (k) { return window.VZ && window.VZ.t ? window.VZ.t(k) : k; };
 
+  // Сервер віддає КОД помилки, а не готову фразу: інакше українська
+  // відповідь показувалась би й на російській, і на англійській версії —
+  // саме тоді, коли людина помилилась і намагається залишити заявку.
+  // Білий список навмисно: на невідомий код падаємо назад на текст сервера,
+  // а не показуємо відвідувачу назву ключа.
+  var ERROR_KEYS = {
+    "phone_required": "form.phone_required",
+    "bad_phone": "form.bad_phone",
+    "too_many": "form.too_many",
+    "session_expired": "form.session_expired"
+  };
+
+  function errorText(body) {
+    var key = body && body.error_code ? ERROR_KEYS[body.error_code] : null;
+    return (key && VZT(key)) || (body && body.error) || VZT("form.send_failed");
+  }
+
   Array.prototype.forEach.call(forms, function (form) {
     var submitBtn = form.querySelector("[data-lead-submit]");
     var alertBox = form.querySelector("[data-lead-alert]");
@@ -80,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(function (r) {
           if (!r.ok) {
-            showAlert(r.body.error || VZT("form.send_failed"));
+            showAlert(errorText(r.body));
             return;
           }
           window.dataLayer = window.dataLayer || [];

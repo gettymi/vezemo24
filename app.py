@@ -107,14 +107,19 @@ def create_app():
             or request.path.startswith("/api/")
             or request.accept_mimetypes.best == "application/json"
         ):
-            return jsonify({"error": msg}), 429
+            # error_code — щоб фронт узяв переклад; error лишається для
+            # випадку без JS (див. _error() у routes/contact.py).
+            return jsonify({"error_code": "too_many", "error": msg}), 429
         return render_template("500.html"), 429
 
     @app.errorhandler(400)
     def bad_request(e):
         # Найчастіша причина 400 тут — протермінований CSRF-токен
         if request.path.startswith("/contact") and request.method == "POST":
-            return jsonify({"error": "Сесія застаріла. Оновіть сторінку і спробуйте ще раз."}), 400
+            return jsonify({
+                "error_code": "session_expired",
+                "error": "Сесія застаріла. Оновіть сторінку і спробуйте ще раз.",
+            }), 400
         return render_template("404.html"), 400
 
     @app.errorhandler(500)

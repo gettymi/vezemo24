@@ -2,7 +2,7 @@ import html
 import json
 import os
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import phonenumbers
 import requests
@@ -41,7 +41,49 @@ def init_db():
             )
             """
         )
+        # Індекс під перевірку дублів (find_duplicate). Без нього кожна
+        # заявка читала б таблицю цілком — спершу непомітно, потім ні.
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_leads_dedupe "
+            "ON leads (phone, created_at)"
+        )
         conn.commit()
+
+
+# Скільки часу вважаємо повторну відправку тією самою заявкою.
+DEDUPE_WINDOW_SECONDS = 300
+
+
+def find_duplicate(phone, ip, message):
+    """id недавньої ІДЕНТИЧНОЇ заявки, якщо така вже є.
+
+    Кнопку блокує contact.js, але це не рятує від сценарію, де JS відпрацював
+    правильно: повільний зв'язок, запит відвалився за таймаутом, людина
+    натиснула ще раз. Заявка при цьому вже лежить у базі, і власник отримує
+    два однакових повідомлення.
+
+    Збіг вимагаємо за трьома полями одразу — телефон, IP і текст. Тільки
+    телефон брати не можна: людина цілком може дописати «а ще піаніно»
+    другим повідомленням, і воно мусить дійти. Тут же збігається все, тобто
+    це та сама відправка, а не нова думка.
+    """
+    cutoff = (datetime.now(timezone.utc)
+              - timedelta(seconds=DEDUPE_WINDOW_SECONDS)).isoformat(timespec="seconds")
+    try:
+        init_db()
+        with sqlite3.connect(DB_PATH) as conn:
+            row = conn.execute(
+                """SELECT id FROM leads
+                   WHERE phone = ? AND ip = ? AND message = ? AND created_at >= ?
+                   ORDER BY id DESC LIMIT 1""",
+                (phone, ip, message, cutoff),
+            ).fetchone()
+        return row[0] if row else None
+    except sqlite3.Error as exc:
+        # Помилка перевірки не має коштувати заявки: краще зберегти двічі,
+        # ніж не зберегти взагалі.
+        current_app.logger.error("Перевірка дубля не вдалася: %s", exc)
+        return None
 
 
 def save_lead(data):
@@ -125,6 +167,21 @@ def contact(lang=DEFAULT):
 
 
 # POST лишається одним, спільним для всіх мов: форма шле дані, а не сторінку.
+def _error(code, fallback, status=400):
+    """Помилка форми — кодом, а не готовою фразою.
+
+    Раніше сервер віддавав саме текст, і contact.js показував його першим:
+    `showAlert(r.body.error || VZT("form.send_failed"))`. Через це
+    російськомовний або англомовний відвідувач бачив український рядок —
+    причому саме тоді, коли помилився й намагається залишити заявку.
+
+    Тепер мову обирає фронт: у static/js/i18n.js ці фрази вже є трьома
+    мовами. Поле `error` лишається для випадку без JS і для тих, хто читає
+    відповідь напряму.
+    """
+    return jsonify({"error_code": code, "error": fallback}), status
+
+
 @contact_bp.route("/contact", methods=["POST"])
 @limiter.limit("5 per hour")   # реальний ліміт: 5 заявок/год з одного IP
 def contact_submit():
@@ -135,7 +192,7 @@ def contact_submit():
 
     phone_raw = request.form.get("phone", "").strip()
     if not phone_raw:
-        return jsonify({"error": "Введіть номер телефону."}), 400
+        return _error("phone_required", "Введіть номер телефону.")
 
     try:
         # Номер приходить у міжнародному вигляді (+380…, +48…): у формі тепер
@@ -144,10 +201,10 @@ def contact_submit():
         region = None if phone_raw.startswith("+") else "UA"
         parsed = phonenumbers.parse(phone_raw, region)
         if not phonenumbers.is_valid_number(parsed):
-            return jsonify({"error": "Введіть коректний номер телефону."}), 400
+            return _error("bad_phone", "Введіть коректний номер телефону.")
         phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
     except phonenumbers.NumberParseException:
-        return jsonify({"error": "Введіть коректний номер телефону."}), 400
+        return _error("bad_phone", "Введіть коректний номер телефону.")
 
     name = html.escape(request.form.get("name", "").strip()) or "Не вказано"
     email = html.escape(request.form.get("email", "").strip()) or "Не вказано"
@@ -158,12 +215,21 @@ def contact_submit():
     # довіряти йому не можна.
     source = html.escape(request.form.get("source", "").strip())[:60] or "—"
     ip = get_client_ip()
+    full_message = message + ("" if source == "—" else "\n[джерело: %s]" % source)
+
+    # Та сама заявка вже прийшла хвилину тому — не зберігаємо вдруге й не
+    # шлемо друге повідомлення. Відвідувачу однаково відповідаємо успіхом:
+    # з його боку заявка справді залишена.
+    duplicate_id = find_duplicate(phone, ip, full_message)
+    if duplicate_id is not None:
+        current_app.logger.info("Повторна відправка заявки №%s, пропускаємо", duplicate_id)
+        return jsonify({"success": True}), 200
 
     lead_id = save_lead({
         "name": name,
         "phone": phone,
         "email": email,
-        "message": message + ("" if source == "—" else "\n[джерело: %s]" % source),
+        "message": full_message,
         "ip": ip,
         "user_agent": request.headers.get("User-Agent", "")[:400],
         "referer": request.headers.get("Referer", "")[:400],
